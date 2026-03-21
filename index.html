@@ -253,6 +253,15 @@ select option{background:var(--card)}
 .spin{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:sp .75s linear infinite;flex-shrink:0}
 @keyframes sp{to{transform:rotate(360deg)}}
 .mob-menu{display:none}
+/* TUTORIAL */
+.tut-overlay{position:fixed;inset:0;z-index:500;pointer-events:none}
+.tut-hole{position:absolute;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.72);transition:all .35s cubic-bezier(.4,0,.2,1);pointer-events:none}
+.tut-box{position:fixed;z-index:501;background:var(--panel);border:2px solid var(--teal);border-radius:var(--r);padding:16px 18px;max-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.6);animation:fadeup .3s ease}
+.tut-box-title{font-size:0.82rem;font-weight:900;color:var(--teal);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px}
+.tut-box-text{font-size:0.82rem;color:var(--text2);line-height:1.5;margin-bottom:12px}
+.tut-box-btns{display:flex;gap:8px;align-items:center}
+.tut-step{font-size:0.68rem;color:var(--text3);font-weight:700;flex:1}
+.tut-arrow{position:absolute;width:0;height:0}
 /* SPELL GAME */
 .sp-letter{
   width:44px;height:44px;border-radius:var(--rs);background:var(--card);border:2.5px solid var(--border2);
@@ -862,6 +871,7 @@ select option{background:var(--card)}
           <div class="sset-lbl">Про додаток</div>
           <div class="srow"><div class="sinfo"><strong>WordVault</strong><span>Розробник: Dmytro Shlapak</span></div></div>
           <div class="srow"><div class="sinfo"><strong>Контакт</strong><span>Ddima7955@gmail.com</span></div><button class="btn btn-ghost btn-sm" onclick="openOnboarding()">Інструкція</button></div>
+          <div class="srow"><div class="sinfo"><strong>Інтерактивний тур</strong><span>Покроковий гід по програмі</span></div><button class="btn btn-ghost btn-sm" onclick="tutReset()">Почати тур</button></div>
         </div>
       </div>
     </div>
@@ -1053,6 +1063,133 @@ function checkOnboarding(){
   }
 }
 
+
+/* TUTORIAL — інтерактивний покроковий гід */
+let tutIdx=0;
+const tutSteps=[
+  {
+    selector:'#p-home .g4',
+    title:'Твоя статистика',
+    text:'Тут завжди видно скільки слів у словнику, скільки вивчено і скільки пройдено сьогодні.',
+    pos:'bottom'
+  },
+  {
+    selector:'.ni[onclick*="add"]',
+    title:'Додати слово',
+    text:'Натисни сюди щоб додати нове слово. Вводиш українське — програма перекладає автоматично. Або навпаки.',
+    pos:'right'
+  },
+  {
+    selector:'.ni[onclick*="flash"]',
+    title:'Картки',
+    text:'Головний режим навчання. Програма показує слово — ти оцінюєш наскільки добре знаєш: Легко, Добре або Важко.',
+    pos:'right'
+  },
+  {
+    selector:'.ni[onclick*="quiz"]',
+    title:'Тест',
+    text:'Бачиш слово — вибираєш правильний переклад з 4 варіантів. Швидко і ефективно.',
+    pos:'right'
+  },
+  {
+    selector:'.ni[onclick*="match"]',
+    title:'Гра в пари',
+    text:'Знаходь пари: слово з перекладом якнайшвидше. Є таймер!',
+    pos:'right'
+  },
+  {
+    selector:'.streak-box',
+    title:'Дні поспіль',
+    text:'Займайся щодня — і цей лічильник буде рости. Він показує скільки днів поспіль ти вчишся.',
+    pos:'top'
+  },
+  {
+    selector:'.ni[onclick*="cfg"]',
+    title:'Налаштування',
+    text:'Тут можна змінити кількість карток за сесію, швидкість озвучення, тему і багато іншого.',
+    pos:'right',
+    last:true
+  },
+];
+
+function tutStart(){
+  if(localStorage.getItem('wv_tutor'))return;
+  tutIdx=0;
+  setTimeout(()=>tutShow(),600);
+}
+
+function tutShow(){
+  const step=tutSteps[tutIdx];
+  if(!step){tutEnd();return;}
+  const target=document.querySelector(step.selector);
+  if(!target){tutIdx++;tutShow();return;}
+
+  const overlay=document.getElementById('tutOverlay');
+  const hole=document.getElementById('tutHole');
+  const box=document.getElementById('tutBox');
+  const title=document.getElementById('tutTitle');
+  const text=document.getElementById('tutText');
+  const stepLbl=document.getElementById('tutStep');
+  const nextBtn=document.getElementById('tutNextBtn');
+
+  overlay.style.display='block';
+  box.style.display='block';
+
+  const rect=target.getBoundingClientRect();
+  const pad=8;
+  hole.style.left=(rect.left-pad)+'px';
+  hole.style.top=(rect.top-pad)+'px';
+  hole.style.width=(rect.width+pad*2)+'px';
+  hole.style.height=(rect.height+pad*2)+'px';
+
+  title.textContent=step.title;
+  text.textContent=step.text;
+  stepLbl.textContent=(tutIdx+1)+' / '+tutSteps.length;
+  nextBtn.textContent=step.last?'Готово':'Далі';
+
+  // Позиціонуємо підказку
+  const bw=290,bh=150;
+  const vw=window.innerWidth,vh=window.innerHeight;
+  let left,top;
+
+  if(step.pos==='right'){
+    left=Math.min(rect.right+16, vw-bw-10);
+    top=Math.max(10, rect.top+rect.height/2-bh/2);
+  }else if(step.pos==='bottom'){
+    left=Math.max(10, rect.left+rect.width/2-bw/2);
+    top=rect.bottom+16;
+  }else if(step.pos==='top'){
+    left=Math.max(10, rect.left+rect.width/2-bw/2);
+    top=Math.max(10, rect.top-bh-16);
+  }else{
+    left=Math.max(10, rect.left);
+    top=rect.bottom+16;
+  }
+  left=Math.min(left, vw-bw-10);
+  top=Math.min(top, vh-bh-10);
+
+  box.style.left=left+'px';
+  box.style.top=top+'px';
+  box.style.maxWidth=bw+'px';
+}
+
+function tutNext(){
+  tutIdx++;
+  if(tutIdx>=tutSteps.length){tutEnd();return;}
+  tutShow();
+}
+
+function tutSkip(){tutEnd();}
+
+function tutEnd(){
+  document.getElementById('tutOverlay').style.display='none';
+  document.getElementById('tutBox').style.display='none';
+  localStorage.setItem('wv_tutor','1');
+}
+
+// Команда для консолі: tutReset()
+function tutReset(){localStorage.removeItem('wv_tutor');tutIdx=0;tutStart();}
+
 /* DAILY GOAL */
 function updateDailyGoal(){
   const el=document.getElementById('dailyGoalBlock');
@@ -1113,6 +1250,8 @@ function load(){
   checkOnboarding();
   // Автоматично додаємо базові слова при першому запуску
   if(W.length===0)setTimeout(addDemo,400);
+  // Запускаємо туторіал якщо ще не проходив
+  setTimeout(tutStart, 1200);
   updateFlashSetup();
 }
 const sW=()=>{
@@ -2857,17 +2996,27 @@ function clearWd(){modal('Видалити всі слова?','ВСІ слов�
 function clearAll(){
   modal(
     'Скинути все?',
-    'Будуть видалені: всі слова, вся статистика, налаштування, збережена позиція. Дія незворотня.',
+    'Всі слова, статистика і налаштування будуть видалені. Базові слова повернуться автоматично.',
     ()=>{
       W=[];
       S={tests:0,correct:0,total:0,daily:{},streak:0,lastDay:''};
       C={cards:20,sound:true,autoT:true,autoSpeak:true,voiceUk:'uk-UA',voiceEn:'en-US',ttsRate:0.9};
       theme='dark';
+      // Зберігаємо прапор онбордингу щоб не показував знову
+      const onboardFlag=localStorage.getItem('wv_onboard');
+      // Зберігаємо прапор туторіалу
+      const tutorFlag=localStorage.getItem('wv_tutor');
       localStorage.clear();
       sessionStorage.clear();
+      if(onboardFlag)localStorage.setItem('wv_onboard',onboardFlag);
+      if(tutorFlag)localStorage.setItem('wv_tutor',tutorFlag);
       applyTheme();applyStg();
-      renderDict();updateHome();updateStreak();
-      notify('Всі дані видалено','info');
+      // Відновлюємо дефолтні слова
+      setTimeout(()=>{
+        addDemo();
+        renderDict();updateHome();updateStreak();
+        notify('Скидання виконано. Базові слова відновлено.','info');
+      },100);
     }
   );
 }
@@ -3020,6 +3169,20 @@ window.addEventListener('beforeunload',e=>{
   }
 });
 </script>
+<!-- TUTORIAL -->
+<div id="tutOverlay" class="tut-overlay" style="display:none">
+  <div id="tutHole" class="tut-hole"></div>
+</div>
+<div id="tutBox" class="tut-box" style="display:none">
+  <div class="tut-box-title" id="tutTitle"></div>
+  <div class="tut-box-text" id="tutText"></div>
+  <div class="tut-box-btns">
+    <span class="tut-step" id="tutStep"></span>
+    <button class="btn btn-ghost btn-sm" onclick="tutSkip()">Пропустити</button>
+    <button class="btn btn-green btn-sm" onclick="tutNext()" id="tutNextBtn">Далі</button>
+  </div>
+</div>
+
 <script>
 // Розблоковуємо AudioContext при першій взаємодії користувача
 document.addEventListener('click', unlockAudio, {once:true});
