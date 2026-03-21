@@ -428,10 +428,10 @@ select option{background:var(--card)}
         <!-- Попередній перегляд перекладів -->
         <div id="bulkPreview" style="display:none;margin-top:8px;max-height:180px;overflow-y:auto;border:2px solid var(--border);border-radius:var(--rm);background:var(--card2)"></div>
         <div id="bulkProgress" style="display:none;margin-top:8px;font-size:0.78rem;color:var(--text2);font-weight:600;text-align:center"></div>
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="btn btn-ghost btn-sm" onclick="translateBulkPreview()" id="bulkTranslateBtn" style="flex-shrink:0">Перекласти</button>
-          <button class="btn btn-blue w100" onclick="saveBulkWords()" id="bulkBtn" disabled>Додати до словника</button>
-          <button class="btn btn-ghost" onclick="clearBulk()" title="Очистити" style="flex-shrink:0;padding:0 14px">&#x2715;</button>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="translateBulkPreview()" id="bulkTranslateBtn">Перекласти</button>
+          <button class="btn btn-blue" onclick="saveBulkWords()" id="bulkBtn" disabled style="flex:1;min-width:120px">Додати до словника</button>
+          <button class="btn btn-ghost btn-sq btn-sm" onclick="clearBulk()" title="Очистити" style="flex-shrink:0;width:36px;height:36px;padding:0">&#x2715;</button>
         </div>
       </div>
     </div>
@@ -1027,15 +1027,23 @@ function closeOnboarding(){
   },280);
   localStorage.setItem('wv_onboard','1');
 }
+function unlockAudio(){
+  // Розблоковуємо AudioContext через dummy звук при першій взаємодії
+  try{
+    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const buf=ac.createBuffer(1,1,22050);
+    const src=ac.createBufferSource();
+    src.buffer=buf;src.connect(ac.destination);src.start(0);
+    setTimeout(()=>ac.close(),100);
+  }catch(e){}
+}
 function openOnboarding(){
   const el=document.getElementById('onboardWrap');
   el.style.display='flex';
-  // Чекаємо два кадри щоб display:flex застосувався до CSS transition
   requestAnimationFrame(()=>{
     requestAnimationFrame(()=>{
       el.classList.add('open');
-      // Звук трохи після початку анімації — щоб збігалися
-      setTimeout(()=>onboardSound(true), 80);
+      setTimeout(()=>onboardSound(true), 120);
     });
   });
 }
@@ -1051,7 +1059,8 @@ function updateDailyGoal(){
   if(!el)return;
   const todayCount=S.daily[today()]||0;
   const goal=5; // ціль: 5 нових слів
-  const newAdded=W.filter(w=>w.added&&w.added.startsWith(today())).length;
+  // Рахуємо тільки слова додані вручну сьогодні (не дефолтні)
+  const newAdded=W.filter(w=>w.added&&w.added.startsWith(today())&&!w.isDefault).length;
   const pct=Math.min(100,Math.round(newAdded/goal*100));
   const done=newAdded>=goal;
   el.innerHTML=`
@@ -1102,6 +1111,8 @@ function load(){
   updateRepeatBtns();
   applyAddDir();
   checkOnboarding();
+  // Автоматично додаємо базові слова при першому запуску
+  if(W.length===0)setTimeout(addDemo,400);
   updateFlashSetup();
 }
 const sW=()=>{
@@ -1312,19 +1323,33 @@ if(window.speechSynthesis){
   speechSynthesis.onvoiceschanged=loadVoices;
   loadVoices();
 }
+let ttsAudio=null;
 function speak(text,lang){
   if(!text||!text.trim()||text==='—')return;
-  if(!window.speechSynthesis){notify('TTS не підтримується','err');return;}
+  const isUk=lang==='uk';
+  const tl=isUk?(C.voiceUk||'uk').split('-')[0]:'en';
+  // Google TTS — однаковий голос на всіх пристроях
+  try{
+    if(ttsAudio){ttsAudio.pause();ttsAudio=null;}
+    const rate=C.ttsRate||0.9;
+    const url='https://translate.googleapis.com/translate_tts?ie=UTF-8&q='+encodeURIComponent(text.trim())+'&tl='+tl+'&client=tw-ob&ttsspeed='+rate;
+    ttsAudio=new Audio(url);
+    ttsAudio.playbackRate=1;
+    ttsAudio.play().catch(()=>{
+      // Fallback на браузерний TTS якщо Google заблокований
+      speakFallback(text,lang);
+    });
+  }catch(e){speakFallback(text,lang);}
+}
+function speakFallback(text,lang){
+  if(!window.speechSynthesis)return;
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text.trim());
   const isUk=lang==='uk';
-  const targetLang=isUk?C.voiceUk:C.voiceEn;
-  const targetPrefix=isUk?'uk':'en';
-  // Оновлюємо список голосів якщо порожній
+  const targetLang=isUk?C.voiceUk:'en-US';
   if(!cachedVoices.length)cachedVoices=speechSynthesis.getVoices();
-  // Шукаємо точний збіг, потім за префіксом мови
   const exact=cachedVoices.find(v=>v.lang===targetLang);
-  const prefix=cachedVoices.find(v=>v.lang.startsWith(targetPrefix));
+  const prefix=cachedVoices.find(v=>v.lang.startsWith(isUk?'uk':'en'));
   if(exact)u.voice=exact;
   else if(prefix)u.voice=prefix;
   u.lang=targetLang;
@@ -2881,6 +2906,30 @@ function victorySound(){
   }catch(e){}
 }
 
+// UI звук кліку — легкий тик для будь-яких кнопок
+function clickSound(){
+  if(!C.sound)return;
+  try{
+    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    o.frequency.value=800;o.type='sine';
+    g.gain.setValueAtTime(0.06,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.08);
+    o.start();o.stop(ac.currentTime+0.09);
+  }catch(e){}
+}
+
+// Глобальний обробник кліків на кнопки
+document.addEventListener('click',e=>{
+  const btn=e.target.closest('button,.ni,.opt,.mi,.sp-letter,.wact');
+  if(btn&&!btn.disabled){
+    // Не грати якщо це кнопки оцінки карток (вони мають свій звук)
+    const skipIds=['fcHard','fcOk','fcEasy'];
+    if(!skipIds.includes(btn.id)) clickSound();
+  }
+},{passive:true});
+
 function beep(ok){
   if(!C.sound)return;
   try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=ok?740:220;o.type=ok?'sine':'sawtooth';g.gain.setValueAtTime(0.12,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.22);o.start();o.stop(ac.currentTime+0.22);}catch(e){}
@@ -2926,22 +2975,30 @@ function beepRating(rating){
 
 /* DEMO */
 function addDemo(){
+  // Дата 30 днів тому щоб дефолтні слова не впливали на завдання дня
+  const pastDate=new Date();pastDate.setDate(pastDate.getDate()-30);
+  const pd=pastDate.toISOString();
   const demo=[
-    {uk:'привіт',en:'hello',cat:'general',example:'Hello, how are you?',transcription:'/həˈloʊ/'},
-    {uk:'яблуко',en:'apple',cat:'food',example:'I eat an apple every day.',transcription:'/ˈæpəl/'},
-    {uk:'кіт',en:'cat',cat:'general',example:'The cat is sleeping.',transcription:'/kæt/'},
-    {uk:'книга',en:'book',cat:'general',example:'I love reading books.',transcription:'/bʊk/'},
-    {uk:'вода',en:'water',cat:'general',example:'Drink more water.',transcription:'/ˈwɔːtər/'},
-    {uk:'робота',en:'work',cat:'work',example:'I enjoy my work.',transcription:'/wɜːrk/'},
-    {uk:'дерево',en:'tree',cat:'nature',example:'The tree is very tall.',transcription:'/triː/'},
-    {uk:'місто',en:'city',cat:'travel',example:'London is a big city.',transcription:'/ˈsɪti/'},
-    {uk:'любов',en:'love',cat:'emotions',example:'Love is a beautiful feeling.',transcription:'/lʌv/'},
-    {uk:'телефон',en:'phone',cat:'tech',example:'My phone has a new update.',transcription:'/foʊn/'},
-    {uk:'їжа',en:'food',cat:'food',example:'This food is delicious.',transcription:'/fuːd/'},
-    {uk:'друг',en:'friend',cat:'general',example:'He is my best friend.',transcription:'/frend/'},
+    {uk:'я',en:'I'},{uk:'ти',en:'you'},{uk:'він',en:'he'},{uk:'вона',en:'she'},
+    {uk:'воно',en:'it'},{uk:'і',en:'and'},{uk:'але',en:'but'},{uk:'або',en:'or'},
+    {uk:'так',en:'yes'},{uk:'ні',en:'no'},{uk:'хто',en:'who'},{uk:'що',en:'what'},
+    {uk:'бути',en:'be'},{uk:'робити',en:'do'},{uk:'мати',en:'have'},{uk:'йти',en:'go'},
+    {uk:'казати',en:'say'},{uk:'отримати',en:'get'},{uk:'знати',en:'know'},{uk:'думати',en:'think'},
+    {uk:'бачити',en:'see'},{uk:'хотіти',en:'want'},{uk:'час',en:'time'},{uk:'день',en:'day'},
+    {uk:'людина',en:'person'},{uk:'світ',en:'world'},{uk:'дім',en:'house'},{uk:'робота',en:'work'},
+    {uk:'їжа',en:'food'},{uk:'вода',en:'water'},
   ];
-  demo.forEach(d=>{if(!W.find(w=>w.uk===d.uk))W.push({id:Date.now()+Math.random()*999|0,...d,level:'new',added:new Date().toISOString(),nextReview:new Date().toISOString(),reviewCount:0,correctCount:0,interval:1});});
-  sW();renderDict();updateHome();notify('Демо-слова додано!');
+  let added=0;
+  demo.forEach(d=>{
+    if(!W.find(w=>w.uk===d.uk&&w.en===d.en)){
+      W.push({id:Date.now()+Math.random()*999|0,...d,cat:'general',level:'new',
+        added:pd,nextReview:pd,reviewCount:0,correctCount:0,interval:1,
+        easeFactor:2.5,correctStreak:0,isDefault:true});
+      added++;
+    }
+  });
+  if(added>0){sW();renderDict();updateHome();notify(added+' базових слів додано!');}
+  else notify('Базові слова вже є','info');
 }
 
 function sv(id,v){
@@ -2962,6 +3019,11 @@ window.addEventListener('beforeunload',e=>{
     e.returnValue='';
   }
 });
+</script>
+<script>
+// Розблоковуємо AudioContext при першій взаємодії користувача
+document.addEventListener('click', unlockAudio, {once:true});
+document.addEventListener('touchstart', unlockAudio, {once:true});
 </script>
 </body>
 </html>
