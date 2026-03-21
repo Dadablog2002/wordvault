@@ -741,7 +741,7 @@ select option{background:var(--card)}
         <!-- Зона відповіді — сюди перетягують букви -->
         <div style="margin-bottom:12px">
           <div style="font-size:0.6rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:8px;text-align:center">Твоя відповідь</div>
-          <div id="spAnswer" style="min-height:58px;max-height:120px;background:var(--card2);border:2.5px dashed var(--border2);border-radius:var(--rm);display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;align-items:center;align-content:center;justify-content:center;transition:border-color .2s;overflow-y:auto;flex-shrink:0"></div>
+          <div id="spAnswer" style="min-height:58px;height:auto;background:var(--card2);border:2.5px dashed var(--border2);border-radius:var(--rm);display:flex;flex-wrap:nowrap;gap:4px;padding:8px 14px;align-items:center;justify-content:center;transition:all .3s ease;overflow:hidden;flex-shrink:0;width:auto;max-width:100%;margin:0 auto;box-sizing:border-box"></div>
         </div>
         <!-- Зона букв -->
         <div style="margin-bottom:18px">
@@ -1170,35 +1170,36 @@ function tutRender(step){
     document.getElementById('tutStep').textContent=(tutIdx+1)+' / '+tutSteps.length;
     document.getElementById('tutNextBtn').textContent=step.last?'Готово':'Далі';
 
-    // Позиціонуємо підказку
-    const bw=Math.min(280,window.innerWidth-24);
-    const bh=160;
+    // Позиціонуємо підказку — ніколи не перекриває hole
+    const bw=Math.min(276,window.innerWidth-24);
     const vw=window.innerWidth,vh=window.innerHeight;
-    let left,top;
+    // Виміряємо реальну висоту box після render
+    box.style.left='-9999px';box.style.top='-9999px';box.style.width=bw+'px';
+    const bh=box.offsetHeight||160;
 
-    if(step.needSB&&window.innerWidth<=700){
-      // На мобільному з відкритим sidebar — показуємо знизу
-      left=12;
-      top=Math.min(rect.bottom+16, vh-bh-10);
-      if(top+bh>vh-10)top=Math.max(10,rect.top-bh-16);
-    }else if(step.pos==='right'){
-      left=Math.min(rect.right+14, vw-bw-8);
-      top=Math.max(8, rect.top+rect.height/2-bh/2);
-    }else if(step.pos==='bottom'){
-      left=Math.max(8, Math.min(rect.left+rect.width/2-bw/2, vw-bw-8));
-      top=Math.min(rect.bottom+14, vh-bh-8);
-    }else if(step.pos==='top'){
-      left=Math.max(8, Math.min(rect.left+rect.width/2-bw/2, vw-bw-8));
-      top=Math.max(8, rect.top-bh-14);
-    }else{
-      left=Math.max(8, rect.left);
-      top=rect.bottom+14;
-    }
-    left=Math.max(8,Math.min(left,vw-bw-8));
-    top=Math.max(8,Math.min(top,vh-bh-8));
+    const holeCx=rect.left+rect.width/2;
+    const holeCy=rect.top+rect.height/2;
+    const gap=14;
 
-    box.style.left=left+'px';
-    box.style.top=top+'px';
+    // Визначаємо найкращу позицію: знизу, зверху, справа, зліва
+    const candidates=[
+      {side:'bottom',left:Math.max(8,Math.min(holeCx-bw/2,vw-bw-8)),top:rect.bottom+gap},
+      {side:'top',   left:Math.max(8,Math.min(holeCx-bw/2,vw-bw-8)),top:rect.top-bh-gap},
+      {side:'right', left:rect.right+gap,                             top:Math.max(8,Math.min(holeCy-bh/2,vh-bh-8))},
+      {side:'left',  left:rect.left-bw-gap,                          top:Math.max(8,Math.min(holeCy-bh/2,vh-bh-8))},
+    ];
+    // Перевага: preferred pos з кроку, потім перший що вміщується
+    const preferred=step.pos||'bottom';
+    const fits=c=>c.left>=4&&c.top>=4&&c.left+bw<=vw-4&&c.top+bh<=vh-4;
+    let chosen=candidates.find(c=>c.side===preferred&&fits(c))
+      ||candidates.find(c=>fits(c))
+      ||candidates[0];
+    // Не виходить за краї
+    chosen.left=Math.max(8,Math.min(chosen.left,vw-bw-8));
+    chosen.top =Math.max(8,Math.min(chosen.top, vh-bh-8));
+
+    box.style.left=chosen.left+'px';
+    box.style.top=chosen.top+'px';
     box.style.width=bw+'px';
   },300);
 }
@@ -1517,43 +1518,47 @@ if(window.speechSynthesis){
   speechSynthesis.onvoiceschanged=loadVoices;
   loadVoices();
 }
+// TTS через Web Speech API з розумним вибором голосу
 let ttsAudio=null;
+let _voicesReady=false;
+
 function speak(text,lang){
   if(!text||!text.trim()||text==='—')return;
-  const isUk=lang==='uk';
-  const tl=isUk?'uk':'en';
-  const rate=C.ttsRate||0.9;
-  // Використовуємо Google Translate TTS — однаковий голос на всіх пристроях
-  try{
-    if(ttsAudio){ttsAudio.pause();ttsAudio.src='';ttsAudio=null;}
-    const url='https://translate.googleapis.com/translate_tts?ie=UTF-8&q='+
-      encodeURIComponent(text.trim())+'&tl='+tl+'&client=tw-ob';
-    const audio=new Audio(url);
-    audio.playbackRate=rate;
-    ttsAudio=audio;
-    const p=audio.play();
-    if(p&&p.catch)p.catch(()=>speakFallback(text,lang));
-  }catch(e){speakFallback(text,lang);}
-}
-function speakFallback(text,lang){
-  // Запасний варіант — браузерний TTS з пріоритетом Google голосу
+  // Завжди використовуємо Web Speech API — найнадійніше між пристроями
+  // Google TTS заблокований на iOS і багатьох мережах
   if(!window.speechSynthesis)return;
+  if(ttsAudio){ttsAudio.pause();ttsAudio.src='';ttsAudio=null;}
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text.trim());
   const isUk=lang==='uk';
-  if(!cachedVoices.length)cachedVoices=speechSynthesis.getVoices();
-  // Пріоритет: Google голос → будь-який з потрібною мовою
-  const googleVoice=cachedVoices.find(v=>
-    v.name.toLowerCase().includes('google')&&
-    v.lang.startsWith(isUk?'uk':'en')
-  );
-  const anyVoice=cachedVoices.find(v=>v.lang.startsWith(isUk?'uk':'en'));
-  if(googleVoice)u.voice=googleVoice;
-  else if(anyVoice)u.voice=anyVoice;
   u.lang=isUk?'uk-UA':'en-US';
   u.rate=C.ttsRate||0.9;
   u.pitch=1;
+
+  // Вибираємо найкращий голос
+  if(!cachedVoices.length)cachedVoices=speechSynthesis.getVoices()||[];
+  if(cachedVoices.length){
+    const voice=pickVoice(isUk);
+    if(voice)u.voice=voice;
+  }
   speechSynthesis.speak(u);
+}
+
+function pickVoice(isUk){
+  const voices=cachedVoices;
+  const prefix=isUk?'uk':'en';
+  // Пріоритети: Google > Apple > Microsoft > будь-який
+  const preferred=['Google','Siri','Microsoft','Alex','Samantha','Karen','Daniel'];
+  // Спочатку шукаємо Google з потрібною мовою
+  for(const pref of preferred){
+    const v=voices.find(v=>v.name.includes(pref)&&v.lang.startsWith(prefix));
+    if(v)return v;
+  }
+  // Потім будь-який онлайн голос
+  const online=voices.find(v=>v.lang.startsWith(prefix)&&!v.localService);
+  if(online)return online;
+  // Потім локальний
+  return voices.find(v=>v.lang.startsWith(prefix))||null;
 }
 
 /* TRANSLATE — Google Translate (двонаправлений) */
@@ -2896,17 +2901,30 @@ function renderSpellAnswer(){
   zone.innerHTML='';
   if(!spAnswerIds.length){
     zone.style.borderColor='';
+    zone.style.minWidth='80px';
     return;
   }
+  // Підбираємо розмір букв залежно від кількості
+  const count=spAnswerIds.length;
+  const containerW=zone.parentElement?zone.parentElement.offsetWidth-32:300;
+  // Максимальний розмір букви щоб все влізло в один рядок
+  const maxSize=Math.max(28,Math.min(44,Math.floor((containerW-(count-1)*4-28)/count)));
   spAnswerIds.forEach(id=>{
     const item=spLetterData.find(l=>l.id===id);
     if(!item)return;
     const btn=document.createElement('button');
     btn.className='sp-letter in-answer';
     btn.textContent=item.char.toUpperCase();
+    // Плавно зменшуємо розмір при великій кількості букв
+    btn.style.width=maxSize+'px';
+    btn.style.height=maxSize+'px';
+    btn.style.fontSize=Math.max(0.65,maxSize/44*1.1)+'rem';
+    btn.style.flexShrink='0';
     btn.onclick=()=>returnLetter(id);
     zone.appendChild(btn);
   });
+  // Ширина поля росте з буквами
+  zone.style.minWidth=Math.min(containerW-16, count*(maxSize+4)+28)+'px';
 }
 
 function pickLetter(id){
