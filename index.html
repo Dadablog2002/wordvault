@@ -1034,6 +1034,8 @@ function closeOnboarding(){
   setTimeout(()=>{
     el.style.display='none';
     el.classList.remove('closing');
+    // Після закриття інструкції — запускаємо туторіал (якщо ще не проходив)
+    setTimeout(tutStart, 500);
   },280);
   localStorage.setItem('wv_onboard','1');
 }
@@ -1059,7 +1061,11 @@ function openOnboarding(){
 }
 function checkOnboarding(){
   if(!localStorage.getItem('wv_onboard')){
+    // Перший раз — показуємо інструкцію, туторіал запуститься після неї
     setTimeout(openOnboarding, 300);
+  } else {
+    // Онбординг вже пройдено — запускаємо тільки туторіал
+    setTimeout(tutStart, 800);
   }
 }
 
@@ -1306,8 +1312,6 @@ function load(){
   checkOnboarding();
   // Автоматично додаємо базові слова при першому запуску
   if(W.length===0)setTimeout(addDemo,400);
-  // Запускаємо туторіал якщо ще не проходив
-  setTimeout(tutStart, 1200);
   updateFlashSetup();
 }
 const sW=()=>{
