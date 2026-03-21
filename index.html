@@ -741,7 +741,9 @@ select option{background:var(--card)}
         <!-- Зона відповіді — сюди перетягують букви -->
         <div style="margin-bottom:12px">
           <div style="font-size:0.6rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:8px;text-align:center">Твоя відповідь</div>
-          <div id="spAnswer" style="min-height:58px;height:auto;background:var(--card2);border:2.5px dashed var(--border2);border-radius:var(--rm);display:flex;flex-wrap:nowrap;gap:4px;padding:8px 14px;align-items:center;justify-content:center;transition:all .3s ease;overflow:hidden;flex-shrink:0;width:auto;max-width:100%;margin:0 auto;box-sizing:border-box"></div>
+          <div style="display:flex;justify-content:center;width:100%">
+            <div id="spAnswer" style="min-height:54px;background:var(--card2);border:2.5px dashed var(--border2);border-radius:var(--rm);display:inline-flex;flex-wrap:nowrap;gap:4px;padding:8px 14px;align-items:center;justify-content:center;transition:all .3s ease;overflow:hidden;min-width:80px;max-width:100%;box-sizing:border-box"></div>
+          </div>
         </div>
         <!-- Зона букв -->
         <div style="margin-bottom:18px">
@@ -1001,7 +1003,7 @@ let theme='dark';
 /* ONBOARDING */
 function onboardSound(open){
   try{
-    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const ac=getAC();if(!ac)return;
     if(open){
       // Відкриття — висхідні 3 ноти
       [[392,0],[523,0.1],[659,0.22]].forEach(([freq,delay])=>{
@@ -1039,14 +1041,23 @@ function closeOnboarding(){
   },280);
   localStorage.setItem('wv_onboard','1');
 }
+// Єдиний глобальний AudioContext
+let _ac=null;
+function getAC(){
+  if(!_ac||_ac.state==='closed'){
+    try{_ac=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}
+  }
+  if(_ac.state==='suspended'){_ac.resume();}
+  return _ac;
+}
 function unlockAudio(){
-  // Розблоковуємо AudioContext через dummy звук при першій взаємодії
+  // Розблоковуємо при першій взаємодії
+  const ac=getAC();
+  if(!ac)return;
   try{
-    const ac=new(window.AudioContext||window.webkitAudioContext)();
     const buf=ac.createBuffer(1,1,22050);
     const src=ac.createBufferSource();
     src.buffer=buf;src.connect(ac.destination);src.start(0);
-    setTimeout(()=>ac.close(),100);
   }catch(e){}
 }
 function openOnboarding(){
@@ -1234,7 +1245,7 @@ function tutEnd(){
   localStorage.setItem('wv_tutor','1');
   // Звук завершення
   try{
-    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const ac=getAC();if(!ac)return;
     [[523,0],[659,0.12],[784,0.24],[1047,0.36]].forEach(([freq,delay])=>{
       const o=ac.createOscillator(),g=ac.createGain();
       o.connect(g);g.connect(ac.destination);
@@ -1514,55 +1525,18 @@ function modal(t,txt,onOk){document.getElementById('mTitle').textContent=t;docum
 function closeM(){document.getElementById('mwrap').classList.remove('open');}
 
 /* TTS */
-let cachedVoices=[];
-function loadVoices(){
-  cachedVoices=window.speechSynthesis?.getVoices()||[];
-}
-if(window.speechSynthesis){
-  speechSynthesis.onvoiceschanged=loadVoices;
-  loadVoices();
-}
-// TTS через Web Speech API з розумним вибором голосу
-let ttsAudio=null;
-let _voicesReady=false;
-
+// Web Speech API — системний голос для кожної мови
+// TTS — тільки Web Speech API, тільки lang без вибору конкретного голосу
 function speak(text,lang){
   if(!text||!text.trim()||text==='—')return;
-  // Завжди використовуємо Web Speech API — найнадійніше між пристроями
-  // Google TTS заблокований на iOS і багатьох мережах
   if(!window.speechSynthesis)return;
-  if(ttsAudio){ttsAudio.pause();ttsAudio.src='';ttsAudio=null;}
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text.trim());
-  const isUk=lang==='uk';
-  u.lang=isUk?'uk-UA':'en-US';
+  u.lang=lang==='uk'?'uk-UA':'en-US';
   u.rate=C.ttsRate||0.9;
   u.pitch=1;
-
-  // Вибираємо найкращий голос
-  if(!cachedVoices.length)cachedVoices=speechSynthesis.getVoices()||[];
-  if(cachedVoices.length){
-    const voice=pickVoice(isUk);
-    if(voice)u.voice=voice;
-  }
+  // НЕ встановлюємо u.voice — браузер сам обере системний голос для мови
   speechSynthesis.speak(u);
-}
-
-function pickVoice(isUk){
-  const voices=cachedVoices;
-  const prefix=isUk?'uk':'en';
-  // Пріоритети: Google > Apple > Microsoft > будь-який
-  const preferred=['Google','Siri','Microsoft','Alex','Samantha','Karen','Daniel'];
-  // Спочатку шукаємо Google з потрібною мовою
-  for(const pref of preferred){
-    const v=voices.find(v=>v.name.includes(pref)&&v.lang.startsWith(prefix));
-    if(v)return v;
-  }
-  // Потім будь-який онлайн голос
-  const online=voices.find(v=>v.lang.startsWith(prefix)&&!v.localService);
-  if(online)return online;
-  // Потім локальний
-  return voices.find(v=>v.lang.startsWith(prefix))||null;
 }
 
 /* TRANSLATE — Google Translate (двонаправлений) */
@@ -3084,21 +3058,19 @@ function clearAll(){
       S={tests:0,correct:0,total:0,daily:{},streak:0,lastDay:''};
       C={cards:20,sound:true,autoT:true,autoSpeak:true,voiceUk:'uk-UA',voiceEn:'en-US',ttsRate:0.9};
       theme='dark';
-      // Зберігаємо прапор онбордингу щоб не показував знову
-      const onboardFlag=localStorage.getItem('wv_onboard');
-      // Зберігаємо прапор туторіалу
-      const tutorFlag=localStorage.getItem('wv_tutor');
+      // Очищаємо все — включно з онбордингом і туторіалом
       localStorage.clear();
       sessionStorage.clear();
-      if(onboardFlag)localStorage.setItem('wv_onboard',onboardFlag);
-      if(tutorFlag)localStorage.setItem('wv_tutor',tutorFlag);
       applyTheme();applyStg();
-      // Відновлюємо дефолтні слова
+      // Переходимо на головну
+      goForce('home',null);
+      // Відновлюємо дефолтні слова і перезапускаємо онбординг+туторіал
       setTimeout(()=>{
         addDemo();
         renderDict();updateHome();updateStreak();
-        notify('Скидання виконано. Базові слова відновлено.','info');
-      },100);
+        // Запускаємо інструкцію заново — після неї автоматично туторіал
+        setTimeout(openOnboarding, 400);
+      },200);
     }
   );
 }
@@ -3122,7 +3094,7 @@ function showCelebration(){
 }
 function victorySound(){
   try{
-    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const ac=getAC();if(!ac)return;
     const notes=[523,659,784,1047];
     notes.forEach((freq,i)=>{
       const o=ac.createOscillator(),g=ac.createGain();
@@ -3141,7 +3113,7 @@ function victorySound(){
 function clickSound(){
   if(!C.sound)return;
   try{
-    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const ac=getAC();if(!ac)return;
     const o=ac.createOscillator(),g=ac.createGain();
     o.connect(g);g.connect(ac.destination);
     o.frequency.value=800;o.type='sine';
@@ -3163,14 +3135,14 @@ document.addEventListener('click',e=>{
 
 function beep(ok){
   if(!C.sound)return;
-  try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=ok?740:220;o.type=ok?'sine':'sawtooth';g.gain.setValueAtTime(0.12,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.22);o.start();o.stop(ac.currentTime+0.22);}catch(e){}
+  try{const ac=getAC();if(!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=ok?740:220;o.type=ok?'sine':'sawtooth';g.gain.setValueAtTime(0.12,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.22);o.start();o.stop(ac.currentTime+0.22);}catch(e){}
 }
 
 // Звуки для кнопок карток
 function beepRating(rating){
   if(!C.sound)return;
   try{
-    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    const ac=getAC();if(!ac)return;
     if(rating==='easy'){
       // Легко — два висхідних тони (радісний акорд)
       [[523,0],[659,0.1],[784,0.2]].forEach(([freq,delay])=>{
