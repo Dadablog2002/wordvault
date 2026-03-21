@@ -158,9 +158,9 @@ select option{background:var(--card)}
 .flash-mode-desc{font-size:0.72rem;color:var(--text3);font-weight:600}
 .flash-mode-count{font-size:1.3rem;font-weight:900;margin-left:12px;flex-shrink:0}
 /* Єдиний стиль рядка виходу для ВСІХ сесій */
-.sess-header{display:flex;align-items:center;gap:10px;margin:8px 0 10px;flex-shrink:0}
+.sess-header{display:flex;align-items:center;gap:10px;margin:8px 0 10px;flex-shrink:0;position:relative}
 .sess-header .btn-exit{padding:7px 14px;font-size:0.78rem;font-weight:800;border-radius:var(--rs);flex-shrink:0}
-.sess-ctr{flex:1;text-align:center;font-size:0.8rem;font-weight:700;color:var(--text2);display:flex;align-items:center;justify-content:center}
+.sess-ctr{flex:1;text-align:center;font-size:0.8rem;font-weight:700;color:var(--text2);display:flex;align-items:center;justify-content:center;position:absolute;left:0;right:0;pointer-events:none}
 /* QUIZ */
 .quiz-q{text-align:center;background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:24px 20px 20px;margin-bottom:14px}
 .qword{font-size:2.2rem;font-weight:900;color:var(--gold);margin-bottom:4px;line-height:1.2}
@@ -1070,124 +1070,179 @@ const tutSteps=[
   {
     selector:'#p-home .g4',
     title:'Твоя статистика',
-    text:'Тут завжди видно скільки слів у словнику, скільки вивчено і скільки пройдено сьогодні.',
-    pos:'bottom'
+    text:'Тут видно скільки слів у словнику, скільки вивчено і скільки пройдено сьогодні.',
+    pos:'bottom', page:'home', needSB:false
   },
   {
     selector:'.ni[onclick*="add"]',
     title:'Додати слово',
-    text:'Натисни сюди щоб додати нове слово. Вводиш українське — програма перекладає автоматично. Або навпаки.',
-    pos:'right'
+    text:'Натисни сюди щоб додати нове слово. Вводиш слово — програма перекладає автоматично.',
+    pos:'right', page:'home', needSB:true
   },
   {
     selector:'.ni[onclick*="flash"]',
     title:'Картки',
-    text:'Головний режим навчання. Програма показує слово — ти оцінюєш наскільки добре знаєш: Легко, Добре або Важко.',
-    pos:'right'
+    text:'Головний режим. Програма показує слово — ти оцінюєш: Легко, Добре або Важко.',
+    pos:'right', page:'home', needSB:true
   },
   {
     selector:'.ni[onclick*="quiz"]',
     title:'Тест',
-    text:'Бачиш слово — вибираєш правильний переклад з 4 варіантів. Швидко і ефективно.',
-    pos:'right'
+    text:'Вибираєш правильний переклад з 4 варіантів. Швидко і ефективно.',
+    pos:'right', page:'home', needSB:true
   },
   {
     selector:'.ni[onclick*="match"]',
     title:'Гра в пари',
-    text:'Знаходь пари: слово з перекладом якнайшвидше. Є таймер!',
-    pos:'right'
+    text:'Знаходь пари слів якнайшвидше. Є таймер!',
+    pos:'right', page:'home', needSB:true
   },
   {
     selector:'.streak-box',
     title:'Дні поспіль',
-    text:'Займайся щодня — і цей лічильник буде рости. Він показує скільки днів поспіль ти вчишся.',
-    pos:'top'
+    text:'Займайся щодня — цей лічильник росте. Показує скільки днів поспіль ти вчишся.',
+    pos:'top', page:'home', needSB:true
   },
   {
     selector:'.ni[onclick*="cfg"]',
     title:'Налаштування',
-    text:'Тут можна змінити кількість карток за сесію, швидкість озвучення, тему і багато іншого.',
-    pos:'right',
-    last:true
+    text:'Кількість карток, швидкість озвучення, тема — все тут.',
+    pos:'right', page:'home', needSB:true, last:true
   },
 ];
 
 function tutStart(){
   if(localStorage.getItem('wv_tutor'))return;
   tutIdx=0;
-  setTimeout(()=>tutShow(),600);
+  setTimeout(()=>tutShowStep(),600);
 }
 
-function tutShow(){
+function tutShowStep(){
   const step=tutSteps[tutIdx];
   if(!step){tutEnd();return;}
-  const target=document.querySelector(step.selector);
-  if(!target){tutIdx++;tutShow();return;}
 
-  const overlay=document.getElementById('tutOverlay');
-  const hole=document.getElementById('tutHole');
-  const box=document.getElementById('tutBox');
-  const title=document.getElementById('tutTitle');
-  const text=document.getElementById('tutText');
-  const stepLbl=document.getElementById('tutStep');
-  const nextBtn=document.getElementById('tutNextBtn');
+  // Йдемо на потрібну сторінку
+  if(step.page)goForce(step.page,null);
 
-  overlay.style.display='block';
-  box.style.display='block';
-
-  const rect=target.getBoundingClientRect();
-  const pad=8;
-  hole.style.left=(rect.left-pad)+'px';
-  hole.style.top=(rect.top-pad)+'px';
-  hole.style.width=(rect.width+pad*2)+'px';
-  hole.style.height=(rect.height+pad*2)+'px';
-
-  title.textContent=step.title;
-  text.textContent=step.text;
-  stepLbl.textContent=(tutIdx+1)+' / '+tutSteps.length;
-  nextBtn.textContent=step.last?'Готово':'Далі';
-
-  // Позиціонуємо підказку
-  const bw=290,bh=150;
-  const vw=window.innerWidth,vh=window.innerHeight;
-  let left,top;
-
-  if(step.pos==='right'){
-    left=Math.min(rect.right+16, vw-bw-10);
-    top=Math.max(10, rect.top+rect.height/2-bh/2);
-  }else if(step.pos==='bottom'){
-    left=Math.max(10, rect.left+rect.width/2-bw/2);
-    top=rect.bottom+16;
-  }else if(step.pos==='top'){
-    left=Math.max(10, rect.left+rect.width/2-bw/2);
-    top=Math.max(10, rect.top-bh-16);
-  }else{
-    left=Math.max(10, rect.left);
-    top=rect.bottom+16;
+  // Відкриваємо sidebar на мобільному якщо потрібно
+  const isMob=window.innerWidth<=700;
+  if(step.needSB&&isMob){
+    openSB();
+  }else if(!step.needSB&&isMob){
+    closeSB();
   }
-  left=Math.min(left, vw-bw-10);
-  top=Math.min(top, vh-bh-10);
 
-  box.style.left=left+'px';
-  box.style.top=top+'px';
-  box.style.maxWidth=bw+'px';
+  // Чекаємо поки DOM оновиться
+  setTimeout(()=>tutRender(step),350);
+}
+
+function tutRender(step){
+  const target=document.querySelector(step.selector);
+  if(!target){tutIdx++;tutShowStep();return;}
+
+  // Скролимо до елементу
+  target.scrollIntoView({behavior:'smooth',block:'center'});
+
+  setTimeout(()=>{
+    const overlay=document.getElementById('tutOverlay');
+    const hole=document.getElementById('tutHole');
+    const box=document.getElementById('tutBox');
+
+    overlay.style.display='block';
+    box.style.display='block';
+
+    // Блокуємо фон
+    const app=document.querySelector('.app');
+    if(app)app.style.pointerEvents='none';
+    // Але дозволяємо взаємодію з tutorial box
+    box.style.pointerEvents='all';
+    overlay.style.pointerEvents='all';
+
+    const rect=target.getBoundingClientRect();
+    const pad=10;
+    hole.style.left=(rect.left-pad)+'px';
+    hole.style.top=(rect.top-pad)+'px';
+    hole.style.width=(rect.width+pad*2)+'px';
+    hole.style.height=(rect.height+pad*2)+'px';
+
+    document.getElementById('tutTitle').textContent=step.title;
+    document.getElementById('tutText').textContent=step.text;
+    document.getElementById('tutStep').textContent=(tutIdx+1)+' / '+tutSteps.length;
+    document.getElementById('tutNextBtn').textContent=step.last?'Готово':'Далі';
+
+    // Позиціонуємо підказку
+    const bw=Math.min(280,window.innerWidth-24);
+    const bh=160;
+    const vw=window.innerWidth,vh=window.innerHeight;
+    let left,top;
+
+    if(step.needSB&&window.innerWidth<=700){
+      // На мобільному з відкритим sidebar — показуємо знизу
+      left=12;
+      top=Math.min(rect.bottom+16, vh-bh-10);
+      if(top+bh>vh-10)top=Math.max(10,rect.top-bh-16);
+    }else if(step.pos==='right'){
+      left=Math.min(rect.right+14, vw-bw-8);
+      top=Math.max(8, rect.top+rect.height/2-bh/2);
+    }else if(step.pos==='bottom'){
+      left=Math.max(8, Math.min(rect.left+rect.width/2-bw/2, vw-bw-8));
+      top=Math.min(rect.bottom+14, vh-bh-8);
+    }else if(step.pos==='top'){
+      left=Math.max(8, Math.min(rect.left+rect.width/2-bw/2, vw-bw-8));
+      top=Math.max(8, rect.top-bh-14);
+    }else{
+      left=Math.max(8, rect.left);
+      top=rect.bottom+14;
+    }
+    left=Math.max(8,Math.min(left,vw-bw-8));
+    top=Math.max(8,Math.min(top,vh-bh-8));
+
+    box.style.left=left+'px';
+    box.style.top=top+'px';
+    box.style.width=bw+'px';
+  },300);
 }
 
 function tutNext(){
   tutIdx++;
   if(tutIdx>=tutSteps.length){tutEnd();return;}
-  tutShow();
+  // Ховаємо hole під час переходу
+  document.getElementById('tutHole').style.width='0';
+  document.getElementById('tutHole').style.height='0';
+  tutShowStep();
 }
 
 function tutSkip(){tutEnd();}
 
 function tutEnd(){
+  // Розблоковуємо фон
+  const app=document.querySelector('.app');
+  if(app)app.style.pointerEvents='';
   document.getElementById('tutOverlay').style.display='none';
   document.getElementById('tutBox').style.display='none';
+  // Закриваємо sidebar на мобільному
+  closeSB();
+  // Переходимо на головну
+  goForce('home',null);
   localStorage.setItem('wv_tutor','1');
+  // Звук завершення
+  try{
+    const ac=new(window.AudioContext||window.webkitAudioContext)();
+    [[523,0],[659,0.12],[784,0.24],[1047,0.36]].forEach(([freq,delay])=>{
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.connect(g);g.connect(ac.destination);
+      o.frequency.value=freq;o.type='sine';
+      const t=ac.currentTime+delay;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(0.12,t+0.04);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+      o.start(t);o.stop(t+0.31);
+    });
+  }catch(e){}
+  setTimeout(()=>notify('Тур завершено! Вдачі у навчанні.'),500);
 }
 
-// Команда для консолі: tutReset()
+// Команди для консолі
 function tutReset(){localStorage.removeItem('wv_tutor');tutIdx=0;tutStart();}
 
 /* DAILY GOAL */
@@ -1466,33 +1521,38 @@ let ttsAudio=null;
 function speak(text,lang){
   if(!text||!text.trim()||text==='—')return;
   const isUk=lang==='uk';
-  const tl=isUk?(C.voiceUk||'uk').split('-')[0]:'en';
-  // Google TTS — однаковий голос на всіх пристроях
+  const tl=isUk?'uk':'en';
+  const rate=C.ttsRate||0.9;
+  // Використовуємо Google Translate TTS — однаковий голос на всіх пристроях
   try{
-    if(ttsAudio){ttsAudio.pause();ttsAudio=null;}
-    const rate=C.ttsRate||0.9;
-    const url='https://translate.googleapis.com/translate_tts?ie=UTF-8&q='+encodeURIComponent(text.trim())+'&tl='+tl+'&client=tw-ob&ttsspeed='+rate;
-    ttsAudio=new Audio(url);
-    ttsAudio.playbackRate=1;
-    ttsAudio.play().catch(()=>{
-      // Fallback на браузерний TTS якщо Google заблокований
-      speakFallback(text,lang);
-    });
+    if(ttsAudio){ttsAudio.pause();ttsAudio.src='';ttsAudio=null;}
+    const url='https://translate.googleapis.com/translate_tts?ie=UTF-8&q='+
+      encodeURIComponent(text.trim())+'&tl='+tl+'&client=tw-ob';
+    const audio=new Audio(url);
+    audio.playbackRate=rate;
+    ttsAudio=audio;
+    const p=audio.play();
+    if(p&&p.catch)p.catch(()=>speakFallback(text,lang));
   }catch(e){speakFallback(text,lang);}
 }
 function speakFallback(text,lang){
+  // Запасний варіант — браузерний TTS з пріоритетом Google голосу
   if(!window.speechSynthesis)return;
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text.trim());
   const isUk=lang==='uk';
-  const targetLang=isUk?C.voiceUk:'en-US';
   if(!cachedVoices.length)cachedVoices=speechSynthesis.getVoices();
-  const exact=cachedVoices.find(v=>v.lang===targetLang);
-  const prefix=cachedVoices.find(v=>v.lang.startsWith(isUk?'uk':'en'));
-  if(exact)u.voice=exact;
-  else if(prefix)u.voice=prefix;
-  u.lang=targetLang;
-  u.rate=C.ttsRate||0.9;u.pitch=1;
+  // Пріоритет: Google голос → будь-який з потрібною мовою
+  const googleVoice=cachedVoices.find(v=>
+    v.name.toLowerCase().includes('google')&&
+    v.lang.startsWith(isUk?'uk':'en')
+  );
+  const anyVoice=cachedVoices.find(v=>v.lang.startsWith(isUk?'uk':'en'));
+  if(googleVoice)u.voice=googleVoice;
+  else if(anyVoice)u.voice=anyVoice;
+  u.lang=isUk?'uk-UA':'en-US';
+  u.rate=C.ttsRate||0.9;
+  u.pitch=1;
   speechSynthesis.speak(u);
 }
 
