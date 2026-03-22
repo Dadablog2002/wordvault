@@ -1605,84 +1605,60 @@ function notify(txt,type='ok'){const el=document.getElementById('notif');documen
 function modal(t,txt,onOk){document.getElementById('mTitle').textContent=t;document.getElementById('mText').textContent=txt;document.getElementById('mwrap').classList.add('open');document.getElementById('mOk').onclick=()=>{closeM();onOk();};}
 function closeM(){document.getElementById('mwrap').classList.remove('open');}
 
-/* TTS */
+/* TTS — VoiceRSS (справжній UK голос, без CORS, працює скрізь) */
 let _ttsAudio = null;
-let _voices = [];
+let _ttsCache = {}; // кеш blob URL — кожне слово завантажується лише раз
+const _VRSS_KEY = 'b16d097235bd4ca9b70b77eef7b21cf3';
 
-function initVoices(){
-  if(!window.speechSynthesis) return;
-  const load = () => { const v=speechSynthesis.getVoices(); if(v.length)_voices=v; };
-  load(); speechSynthesis.onvoiceschanged = load;
+function initVoices(){} // не потрібен, залишаємо для сумісності
+
+function _vrssUrl(word, lang, rate){
+  const hl = lang === 'uk' ? 'uk-ua' : (C.voiceEn||'en-us').toLowerCase();
+  // VoiceRSS rate: -10..10 (0=normal, -2=slow, 2=fast)
+  const r = rate <= 0.7 ? -3 : rate >= 1.2 ? 3 : 0;
+  return 'https://api.voicerss.org/?key='+_VRSS_KEY
+    +'&hl='+hl+'&src='+encodeURIComponent(word)
+    +'&c=MP3&f=16khz_16bit_stereo&r='+r+'&b64=false';
 }
-initVoices();
-
-function _bestVoice(lang){
-  if(!_voices.length && window.speechSynthesis) _voices=speechSynthesis.getVoices();
-  const isUk = lang==='uk';
-  if(isUk){
-    return _voices.find(v=>v.lang==='uk-UA'&&v.name.includes('Google'))
-      ||_voices.find(v=>v.lang==='uk-UA'&&!v.localService)
-      ||_voices.find(v=>v.lang==='uk-UA')
-      ||_voices.find(v=>v.lang.startsWith('uk'))||null;
-  }
-  const t=C.voiceEn||'en-US';
-  return _voices.find(v=>v.lang===t&&v.name.includes('Google'))
-    ||_voices.find(v=>v.lang===t&&!v.localService)
-    ||_voices.find(v=>v.lang===t)
-    ||_voices.find(v=>v.lang.startsWith('en')&&v.name.includes('Google'))
-    ||_voices.find(v=>v.lang.startsWith('en')&&!v.localService)
-    ||_voices.find(v=>v.lang.startsWith('en'))||null;
-}
-
-function _wss(word, lang, rate){
-  if(!window.speechSynthesis) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(word);
-  u.lang = lang==='uk' ? 'uk-UA' : (C.voiceEn||'en-US');
-  u.rate = rate; u.pitch=1; u.volume=1;
-  const v=_bestVoice(lang); if(v) u.voice=v;
-  speechSynthesis.speak(u);
-}
-
-function _playBlob(url, lang, word, rate){
-  fetch(url)
-    .then(r=>{ if(!r.ok) throw new Error(r.status); return r.blob(); })
-    .then(blob=>{
-      const bu = URL.createObjectURL(blob);
-      const a = new Audio(bu);
-      _ttsAudio = a;
-      a.onended = ()=>URL.revokeObjectURL(bu);
-      a.onerror = ()=>{ URL.revokeObjectURL(bu); _wss(word,lang,rate); };
-      a.play().catch(()=>{ URL.revokeObjectURL(bu); _wss(word,lang,rate); });
-    })
-    .catch(()=>_wss(word,lang,rate));
-}
-
-const _isLocal = location.protocol==='file:'
-  || location.hostname==='localhost'
-  || location.hostname==='127.0.0.1';
 
 function speak(text, lang){
   if(!text||!text.trim()||text==='—') return;
   const word = text.trim();
   const rate = parseFloat(C.ttsRate)||0.9;
-  const tl = lang==='uk' ? 'uk' : (C.voiceEn||'en-US').split('-')[0];
-  const gtts = 'https://translate.googleapis.com/translate_tts?ie=UTF-8&q='
-    +encodeURIComponent(word)+'&tl='+tl+'&ttsspeed='+rate+'&client=tw-ob';
 
-  if(_ttsAudio){try{_ttsAudio.pause();_ttsAudio.src='';}catch(e){}_ttsAudio=null;}
-  if(window.speechSynthesis) speechSynthesis.cancel();
+  if(_ttsAudio){ try{_ttsAudio.pause();_ttsAudio.src='';}catch(e){} _ttsAudio=null; }
 
-  if(_isLocal){
-    // Локально — Google TTS напряму (без CORS)
-    const a = new Audio(gtts);
+  const cacheKey = lang+'|'+word+'|'+rate;
+
+  const playUrl = (url) => {
+    const a = new Audio(url);
     _ttsAudio = a;
-    a.play().catch(()=>_wss(word,lang,rate));
-  } else {
-    // GitHub Pages — Google TTS через allorigins proxy
-    const proxy = 'https://api.allorigins.win/raw?url='+encodeURIComponent(gtts);
-    _playBlob(proxy, lang, word, rate);
+    a.play().catch(()=>{});
+  };
+
+  // Є в кеші — грає миттєво без запиту
+  if(_ttsCache[cacheKey]){
+    playUrl(_ttsCache[cacheKey]);
+    return;
   }
+
+  // Завантажуємо і кешуємо
+  fetch(_vrssUrl(word, lang, rate))
+    .then(r=>{ if(!r.ok) throw new Error(r.status); return r.blob(); })
+    .then(blob=>{
+      const bu = URL.createObjectURL(blob);
+      _ttsCache[cacheKey] = bu; // зберігаємо в кеш
+      playUrl(bu);
+    })
+    .catch(()=>{
+      // Fallback: Web Speech
+      if(!window.speechSynthesis) return;
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(word);
+      u.lang = lang==='uk' ? 'uk-UA' : (C.voiceEn||'en-US');
+      u.rate = rate; u.pitch=1;
+      setTimeout(()=>speechSynthesis.speak(u), 50);
+    });
 }
 /* TRANSLATE — Google Translate (двонаправлений) */
 let addDir = 'uk2en'; // 'uk2en' або 'en2uk'
