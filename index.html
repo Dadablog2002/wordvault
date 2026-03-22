@@ -1043,39 +1043,28 @@ function closeOnboarding(){
   },280);
   localStorage.setItem('wv_onboard','1');
 }
-// Єдиний глобальний AudioContext — створюється тільки після кліку
-let _ac=null;
-let _acUnlocked=false;
-function getAC(){
-  // Не створюємо без user gesture
-  if(!_acUnlocked)return null;
-  if(!_ac||_ac.state==='closed'){
-    try{_ac=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}
-  }
-  if(_ac.state==='suspended'){_ac.resume();}
-  return _ac;
+// Звуки через Web Audio прибрані, щоб не було блокування AudioContext у браузері.
+// Онбординг і туторіал працюють без системних аудіоефектів.
+function onboardSound(open){}
+function closeOnboarding(){
+  const el=document.getElementById('onboardWrap');
+  el.classList.add('closing');
+  el.classList.remove('open');
+  setTimeout(()=>{
+    el.style.display='none';
+    el.classList.remove('closing');
+    setTimeout(tutStart, 500);
+  },280);
+  localStorage.setItem('wv_onboard','1');
 }
-function unlockAudio(){
-  if(_acUnlocked)return;
-  _acUnlocked=true;
-  try{
-    _ac=new(window.AudioContext||window.webkitAudioContext)();
-    // Тихий звук щоб розблокувати
-    const buf=_ac.createBuffer(1,1,22050);
-    const src=_ac.createBufferSource();
-    src.buffer=buf;src.connect(_ac.destination);src.start(0);
-  }catch(e){}
-}
+function getAC(){return null;}
+function unlockAudio(){return true;}
 function openOnboarding(){
   const el=document.getElementById('onboardWrap');
   el.style.display='flex';
   requestAnimationFrame(()=>{
     requestAnimationFrame(()=>{
       el.classList.add('open');
-      // Звук тільки якщо AudioContext вже розблокований (є user gesture)
-      if(_ac&&_ac.state==='running'){
-        setTimeout(()=>onboardSound(true), 120);
-      }
     });
   });
 }
@@ -1589,122 +1578,109 @@ function modal(t,txt,onOk){document.getElementById('mTitle').textContent=t;docum
 function closeM(){document.getElementById('mwrap').classList.remove('open');}
 
 /* TTS */
-// ЄДИНИЙ голос на всіх пристроях:
-// прибрали browser/system voices (speechSynthesis), залишили тільки один зовнішній TTS-джерело.
-// Тепер і українська, і англійська звучать через один і той самий сервіс, а не через голоси ОС.
-let _ttsAudio=null;
-let _ttsToken=0;
-let _ttsBlobUrl='';
-let _ttsUnlocked=false;
-let _ttsUnlockInProgress=null;
-let _ttsUnlockHintShown=false;
+// Один і той самий TTS-сервіс для всіх пристроїв.
+// Без speechSynthesis, без AudioContext і без попереднього fetch перед play().
+// Це важливо: на мобільних браузерах audio.play() часто блокується,
+// якщо перед ним був await/fetch і жест користувача вже "втратився".
+let _ttsAudio = null;
+let _ttsToken = 0;
+let _ttsPlayer = null;
+let _ttsBlockedHintShown = false;
+let _ttsAutoBlockedHintShown = false;
 
-function cleanupTtsBlob(){
-  if(_ttsBlobUrl){
-    try{ URL.revokeObjectURL(_ttsBlobUrl); }catch(e){}
-    _ttsBlobUrl='';
-  }
+function ensureTtsPlayer(){
+  if(_ttsPlayer) return _ttsPlayer;
+  const a = document.createElement('audio');
+  a.preload = 'none';
+  a.autoplay = false;
+  a.crossOrigin = 'anonymous';
+  a.setAttribute('playsinline','');
+  a.setAttribute('webkit-playsinline','');
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  _ttsPlayer = a;
+  return a;
 }
 
 function stopSpeak(){
-  if(_ttsAudio){
-    try{_ttsAudio.pause();}catch(e){}
-    try{_ttsAudio.currentTime=0;}catch(e){}
-    _ttsAudio.onended=null;
-    _ttsAudio.onerror=null;
-    _ttsAudio=null;
-  }
-  cleanupTtsBlob();
+  const a = ensureTtsPlayer();
+  try{ a.pause(); }catch(e){}
+  try{ a.currentTime = 0; }catch(e){}
+  a.onended = null;
+  a.onerror = null;
+  a.removeAttribute('src');
+  try{ a.load(); }catch(e){}
+  _ttsAudio = null;
 }
 
-async function unlockTts(){
-  if(_ttsUnlocked)return true;
-  if(_ttsUnlockInProgress)return _ttsUnlockInProgress;
-
-  _ttsUnlockInProgress=(async()=>{
-    try{
-      const a=new Audio();
-      a.playsInline=true;
-      a.muted=true;
-      a.preload='auto';
-      a.src='data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAACAAACcQCA' +
-            'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
-      const p=a.play();
-      if(p && typeof p.then==='function') await p;
-      try{a.pause();}catch(e){}
-      _ttsUnlocked=true;
-      return true;
-    }catch(err){
-      return false;
-    }finally{
-      _ttsUnlockInProgress=null;
+function isLikelyUserGesture(){
+  try{
+    if(typeof navigator !== 'undefined' && navigator.userActivation){
+      return !!navigator.userActivation.isActive;
     }
-  })();
-
-  return _ttsUnlockInProgress;
+  }catch(e){}
+  return false;
 }
-
-['pointerdown','touchstart','click','keydown'].forEach(evt=>{
-  document.addEventListener(evt, ()=>{ unlockTts(); }, {passive:true, once:true});
-});
 
 async function speak(text,lang){
-  if(!text||!text.trim()||text==='—')return;
+  if(!text || !text.trim() || text === '—') return;
 
-  const word=text.trim().replace(/\s+/g,' ');
-  const tl=lang==='uk'?'uk':'en';
-  const rate=Math.max(0.24, Math.min(1, parseFloat(C.ttsRate)||0.9));
-  const myToken=++_ttsToken;
-
-  const unlocked=await unlockTts();
-  if(!unlocked){
-    if(!_ttsUnlockHintShown){
-      _ttsUnlockHintShown=true;
-      notify('Браузер ще не дозволив аудіо. Натисни будь-де по сторінці і потім кнопку озвучення.','err');
-    }
-    return;
-  }
+  const word = text.trim().replace(/\s+/g,' ');
+  const tl = lang === 'uk' ? 'uk' : 'en';
+  const rate = Math.max(0.24, Math.min(1, parseFloat(C.ttsRate) || 0.9));
+  const myToken = ++_ttsToken;
+  const fromGesture = isLikelyUserGesture();
 
   stopSpeak();
 
-  const url='https://translate.googleapis.com/translate_tts?ie=UTF-8&q='+
-    encodeURIComponent(word)+'&tl='+tl+'&client=tw-ob&ttsspeed='+rate;
+  const url = 'https://translate.googleapis.com/translate_tts?ie=UTF-8&q=' +
+    encodeURIComponent(word) + '&tl=' + tl + '&client=tw-ob&ttsspeed=' + rate;
+
+  const audio = ensureTtsPlayer();
+  audio.preload = 'auto';
+  audio.src = url;
+  _ttsAudio = audio;
+
+  audio.onended = () => {
+    if(_ttsAudio === audio) _ttsAudio = null;
+  };
+
+  audio.onerror = () => {
+    if(myToken !== _ttsToken) return;
+    if(_ttsAudio === audio) _ttsAudio = null;
+    notify('Не вдалося озвучити. Перевір інтернет або доступ до TTS.','err');
+  };
 
   try{
-    const res=await fetch(url,{mode:'cors'});
-    if(!res.ok)throw new Error('tts_http_'+res.status);
-    const blob=await res.blob();
-    if(myToken!==_ttsToken)return;
-    const blobUrl=URL.createObjectURL(blob);
-    _ttsBlobUrl=blobUrl;
-
-    const audio=new Audio();
-    audio.preload='auto';
-    audio.playsInline=true;
-    audio.crossOrigin='anonymous';
-    audio.src=blobUrl;
-    _ttsAudio=audio;
-
-    audio.onended=()=>{
-      if(_ttsAudio===audio)_ttsAudio=null;
-      if(_ttsBlobUrl===blobUrl)cleanupTtsBlob();
-    };
-    audio.onerror=()=>{
-      if(myToken!==_ttsToken)return;
-      if(_ttsAudio===audio)_ttsAudio=null;
-      if(_ttsBlobUrl===blobUrl)cleanupTtsBlob();
-      notify('Не вдалося озвучити. Перевір інтернет або доступ до TTS.','err');
-    };
-
-    await audio.play();
+    const playPromise = audio.play();
+    if(playPromise && typeof playPromise.then === 'function') await playPromise;
+    _ttsBlockedHintShown = false;
+    _ttsAutoBlockedHintShown = false;
   }catch(err){
-    if(myToken!==_ttsToken)return;
-    if(_ttsAudio){
-      try{_ttsAudio.pause();}catch(e){}
-      _ttsAudio=null;
+    if(myToken !== _ttsToken) return;
+    if(_ttsAudio === audio) _ttsAudio = null;
+
+    const errName = String((err && err.name) || '').toLowerCase();
+    const blocked = errName === 'notallowederror' || errName === 'aborterror';
+
+    if(blocked){
+      if(fromGesture){
+        if(!_ttsBlockedHintShown){
+          _ttsBlockedHintShown = true;
+          notify('Браузер заблокував звук із зовнішнього TTS. Відкрий файл через локальний сервер або хостинг, а не напряму як file://','err');
+        }
+      }else{
+        // Це, як правило, автоозвучення після відкриття картки. На багатьох браузерах
+        // автозапуск без прямого кліку заборонений — не показуємо помилку кожного разу.
+        if(!_ttsAutoBlockedHintShown){
+          _ttsAutoBlockedHintShown = true;
+          // тихо ігноруємо, щоб не дратувати користувача
+        }
+      }
+      return;
     }
-    cleanupTtsBlob();
-    notify('Не вдалося відтворити озвучення. На деяких браузерах потрібен інтернет і дозвіл на медіа після першого дотику.','err');
+
+    notify('Не вдалося відтворити озвучення. Перевір інтернет і доступ до зовнішнього TTS.','err');
   }
 }
 
@@ -3415,9 +3391,7 @@ window.addEventListener('beforeunload',e=>{
 </div>
 
 <script>
-// Розблоковуємо AudioContext при першій взаємодії користувача
-document.addEventListener('click', unlockAudio, {once:true});
-document.addEventListener('touchstart', unlockAudio, {once:true});
+// AudioContext більше не використовується.
 </script>
 </body>
 </html>
