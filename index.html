@@ -1603,40 +1603,82 @@ function notify(txt,type='ok'){const el=document.getElementById('notif');documen
 function modal(t,txt,onOk){document.getElementById('mTitle').textContent=t;document.getElementById('mText').textContent=txt;document.getElementById('mwrap').classList.add('open');document.getElementById('mOk').onclick=()=>{closeM();onOk();};}
 function closeM(){document.getElementById('mwrap').classList.remove('open');}
 
-/* TTS — Google Translate */
-let _ttsAudio = null;
+/* TTS — Web Speech API з найкращим доступним голосом
+   Працює однаково і локально, і на GitHub Pages, і на будь-якому хості.
+   Chrome має вбудовані онлайн-голоси Google (uk-UA, en-US) — вони завантажуються автоматично.
+*/
+let _ttsVoices = [];
+let _ttsReady = false;
+
+function initVoices(){
+  if(!window.speechSynthesis) return;
+  const load = () => {
+    const v = speechSynthesis.getVoices();
+    if(v.length){ _ttsVoices = v; _ttsReady = true; }
+  };
+  load();
+  speechSynthesis.onvoiceschanged = load;
+}
+
+function _pickVoice(lang){
+  // Шукаємо найкращий голос для мови
+  // Пріоритет: онлайн Google/Microsoft > локальний системний
+  const isUk = lang === 'uk';
+  const targets = isUk
+    ? ['uk-UA','uk']
+    : [(C.voiceEn||'en-US'), 'en-US', 'en-GB', 'en'];
+
+  for(const target of targets){
+    // Спочатку шукаємо онлайн голос (Google/Microsoft — вища якість)
+    const online = _ttsVoices.find(v =>
+      v.lang.startsWith(target.split('-')[0]) &&
+      (v.lang === target || v.lang.startsWith(target)) &&
+      !v.localService
+    );
+    if(online) return online;
+    // Потім локальний
+    const local = _ttsVoices.find(v =>
+      v.lang === target || v.lang.startsWith(target)
+    );
+    if(local) return local;
+  }
+  // Будь-який голос потрібної мови
+  const prefix = isUk ? 'uk' : 'en';
+  return _ttsVoices.find(v => v.lang.startsWith(prefix)) || null;
+}
 
 function speak(text, lang){
   if(!text || !text.trim() || text === '—') return;
+  if(!window.speechSynthesis) return;
   const word = text.trim();
-  const tl = lang === 'uk' ? 'uk' : (C.voiceEn || 'en-US').split('-')[0];
   const rate = parseFloat(C.ttsRate) || 0.9;
+  const langCode = lang === 'uk' ? 'uk-UA' : (C.voiceEn || 'en-US');
 
-  // Зупиняємо попереднє
-  if(_ttsAudio){ try{ _ttsAudio.pause(); _ttsAudio.src=''; }catch(e){} _ttsAudio=null; }
-  if(window.speechSynthesis) speechSynthesis.cancel();
+  speechSynthesis.cancel();
 
-  const url = 'https://translate.googleapis.com/translate_tts?ie=UTF-8'
-    + '&q=' + encodeURIComponent(word)
-    + '&tl=' + tl
-    + '&ttsspeed=' + rate
-    + '&client=tw-ob';
-
-  const audio = new Audio(url);
-  _ttsAudio = audio;
-  audio.play().catch(() => {
-    // Fallback: Web Speech API
-    if(!window.speechSynthesis) return;
-    speechSynthesis.cancel();
+  const doSpeak = () => {
     const u = new SpeechSynthesisUtterance(word);
-    u.lang = lang === 'uk' ? 'uk-UA' : (C.voiceEn || 'en-US');
+    u.lang = langCode;
     u.rate = rate;
     u.pitch = 1;
+    u.volume = 1;
+    const voice = _pickVoice(lang);
+    if(voice) u.voice = voice;
     speechSynthesis.speak(u);
-  });
-}
+  };
 
-function initVoices(){} // залишаємо для сумісності
+  // Якщо голоси ще не завантажились — чекаємо
+  if(_ttsReady){
+    setTimeout(doSpeak, 50);
+  } else {
+    // Перший раз — ініціалізуємо і чекаємо
+    initVoices();
+    const wait = setInterval(() => {
+      if(_ttsReady){ clearInterval(wait); setTimeout(doSpeak, 50); }
+    }, 100);
+    setTimeout(() => { clearInterval(wait); doSpeak(); }, 2000);
+  }
+}
 /* TRANSLATE — Google Translate (двонаправлений) */
 let addDir = 'uk2en'; // 'uk2en' або 'en2uk'
 
