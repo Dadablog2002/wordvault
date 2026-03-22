@@ -1615,31 +1615,48 @@ function initVoices(){}
 // Визначаємо iOS один раз
 const _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
+// Показуємо повідомлення на екрані (для дебагу на iOS де немає консолі)
+function _ttsLog(msg){
+  let el = document.getElementById('_ttsDebug');
+  if(!el){
+    el = document.createElement('div');
+    el.id = '_ttsDebug';
+    el.style.cssText = 'position:fixed;bottom:80px;left:10px;right:10px;background:rgba(0,0,0,0.85);color:#0f0;font-size:11px;padding:8px;border-radius:8px;z-index:99999;font-family:monospace;max-height:120px;overflow-y:auto;white-space:pre-wrap;pointer-events:none';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg + '\n' + el.textContent;
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>{ if(el.parentNode) el.parentNode.removeChild(el); }, 8000);
+}
+
 function speak(text, lang){
   if(!text||!text.trim()||text==='—') return;
   const word = text.trim();
   const tl = lang==='uk' ? 'uk' : (C.voiceEn||'en-US').split('-')[0];
   const rate = parseFloat(C.ttsRate)||0.9;
   const url = 'https://translate.googleapis.com/translate_tts?ie=UTF-8'
-    +'&q='+encodeURIComponent(word)
-    +'&tl='+tl
-    +'&ttsspeed='+rate
-    +'&client=tw-ob';
+    +'&q='+encodeURIComponent(word)+'&tl='+tl+'&ttsspeed='+rate+'&client=tw-ob';
 
   if(_ttsAudio){try{_ttsAudio.pause();_ttsAudio.src='';}catch(e){}_ttsAudio=null;}
   if(window.speechSynthesis) speechSynthesis.cancel();
 
+  _ttsLog('speak: "'+word+'" lang='+lang+' iOS='+_isIOS+' synth='+!!window.speechSynthesis);
+
   if(_isIOS){
-    // iOS: Web Speech API — єдине що працює без user gesture trick
-    if(!window.speechSynthesis) return;
+    if(!window.speechSynthesis){_ttsLog('ERROR: no speechSynthesis');return;}
+    const voices = speechSynthesis.getVoices();
+    _ttsLog('voices count: '+voices.length);
     const u = new SpeechSynthesisUtterance(word);
     u.lang = lang==='uk' ? 'uk-UA' : (C.voiceEn||'en-US');
     u.rate = rate; u.pitch=1; u.volume=1;
+    u.onstart = ()=>_ttsLog('speaking started');
+    u.onend = ()=>_ttsLog('speaking ended');
+    u.onerror = e=>_ttsLog('ERROR: '+e.error);
     speechSynthesis.speak(u);
+    _ttsLog('speak() called, pending='+speechSynthesis.pending+' speaking='+speechSynthesis.speaking);
     return;
   }
 
-  // Android / PC — Google TTS Audio напряму
   const a = new Audio(url);
   _ttsAudio = a;
   a.play().catch(()=>{
