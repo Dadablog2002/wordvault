@@ -2,6 +2,8 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1066,7 +1068,10 @@ function openOnboarding(){
   requestAnimationFrame(()=>{
     requestAnimationFrame(()=>{
       el.classList.add('open');
-      setTimeout(()=>onboardSound(true), 120);
+      // Звук тільки якщо AudioContext вже розблокований (є user gesture)
+      if(_ac&&_ac.state==='running'){
+        setTimeout(()=>onboardSound(true), 120);
+      }
     });
   });
 }
@@ -1144,19 +1149,29 @@ function tutShowStep(){
   const step=tutSteps[tutIdx];
   if(!step){tutEnd();return;}
 
-  // Йдемо на потрібну сторінку
-  if(step.page)goForce(step.page,null);
-
-  // Відкриваємо sidebar на мобільному якщо потрібно
-  const isMob=window.innerWidth<=700;
-  if(step.needSB&&isMob){
-    openSB();
-  }else if(!step.needSB&&isMob){
-    closeSB();
+  // Переходимо на сторінку тільки якщо ми не на ній вже
+  if(step.page){
+    const currentPage=document.querySelector('.page.on');
+    const targetId='p-'+step.page;
+    if(!currentPage||currentPage.id!==targetId){
+      // Перехід без closeSB — щоб sidebar не закрився
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+      const pg=document.getElementById(targetId);
+      if(pg){pg.classList.add('on');pg.scrollTop=0;}
+      document.querySelectorAll('.ni').forEach(b=>b.classList.remove('on'));
+      document.querySelectorAll('.ni').forEach(b=>{
+        if((b.getAttribute('onclick')||'').includes("'"+step.page+"'"))b.classList.add('on');
+      });
+      document.getElementById('ptitle').textContent=titles[step.page]||'';
+    }
   }
 
-  // Чекаємо поки DOM оновиться
-  setTimeout(()=>tutRender(step),350);
+  // Sidebar на мобільному
+  const isMob=window.innerWidth<=700;
+  if(step.needSB&&isMob) openSB();
+  else if(!step.needSB&&isMob) closeSB();
+
+  setTimeout(()=>tutRender(step),300);
 }
 
 function tutRender(step){
@@ -1282,14 +1297,13 @@ function updateDailyGoal(){
   const newAdded=W.filter(w=>w.added&&w.added.startsWith(t)&&!w.isDefault).length;
   // Завдання 2: Пройди 10 карток/відповідей сьогодні
   const todayAns=S.daily[t]||0;
-  // Завдання 3: Досягни 70% точності сьогодні (мін 5 відповідей)
+  // Завдання 3: 7 правильних відповідей сьогодні
   const todayCorrect=S.dailyCorrect?.[t]||0;
-  const todayAcc=todayAns>=5?Math.round(todayCorrect/todayAns*100):0;
 
   const tasks=[
-    {label:'Додай 5 нових слів',      cur:newAdded,   goal:5,  key:'add5'},
-    {label:'Дай 10 відповідей',        cur:todayAns,   goal:10, key:'ans10'},
-    {label:'Точність 70%+ (мін. 5)',   cur:todayAcc,   goal:70, key:'acc70', suffix:'%', hideCur:todayAns<5},
+    {label:'Додай 5 нових слів',         cur:newAdded,     goal:5,  key:'add5'},
+    {label:'Дай 10 відповідей',           cur:todayAns,     goal:10, key:'ans10'},
+    {label:'7 правильних відповідей',     cur:todayCorrect, goal:7,  key:'cor7'},
   ];
 
   // Сповіщаємо про виконання (один раз на день)
@@ -1572,31 +1586,57 @@ function closeM(){document.getElementById('mwrap').classList.remove('open');}
 
 /* TTS */
 // Web Speech API — системний голос для кожної мови
-// TTS — Google Translate Audio (однаковий голос на всіх пристроях)
+// TTS — soundoftext.com (Google голос, однаковий на всіх пристроях)
 let _ttsAudio=null;
-function speak(text,lang){
+let _ttsCache={};
+
+async function speak(text,lang){
   if(!text||!text.trim()||text==='—')return;
   const word=text.trim();
-  const tl=lang==='uk'?'uk':'en';
+  const tl=lang==='uk'?'uk':'en-US';
   const rate=C.ttsRate||0.9;
-  // Зупиняємо попередній звук
   if(_ttsAudio){_ttsAudio.pause();_ttsAudio.currentTime=0;_ttsAudio=null;}
   if(window.speechSynthesis)speechSynthesis.cancel();
-  // Намагаємось через Google TTS (однаковий голос скрізь)
-  const url='https://translate.googleapis.com/translate_tts?ie=UTF-8&q='+
-    encodeURIComponent(word)+'&tl='+tl+'&client=tw-ob';
-  const audio=new Audio(url);
-  audio.playbackRate=rate;
-  _ttsAudio=audio;
-  audio.play().catch(()=>{
-    // Fallback: Web Speech API (різний голос але хоч щось)
-    if(!window.speechSynthesis)return;
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(word);
-    u.lang=tl==='uk'?'uk-UA':'en-US';
-    u.rate=rate;u.pitch=1;
-    speechSynthesis.speak(u);
-  });
+
+  // Кешуємо URL щоб не запитувати двічі
+  const cacheKey=tl+'|'+word;
+  let audioUrl=_ttsCache[cacheKey];
+
+  if(!audioUrl){
+    try{
+      // soundoftext API — повертає Google TTS MP3
+      const resp=await fetch('https://api.soundoftext.com/sounds',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({engine:'Google',data:{text:word,voice:tl}})
+      });
+      const json=await resp.json();
+      if(json.success&&json.id){
+        // Чекаємо поки файл буде готовий
+        await new Promise(r=>setTimeout(r,600));
+        audioUrl='https://files.soundoftext.com/'+json.id+'.mp3';
+        _ttsCache[cacheKey]=audioUrl;
+      }
+    }catch(e){}
+  }
+
+  if(audioUrl){
+    const audio=new Audio(audioUrl);
+    audio.playbackRate=rate;
+    _ttsAudio=audio;
+    audio.play().catch(()=>_speakFallback(word,lang,rate));
+  }else{
+    _speakFallback(word,lang,rate);
+  }
+}
+
+function _speakFallback(word,lang,rate){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(word);
+  u.lang=lang==='uk'?'uk-UA':'en-US';
+  u.rate=rate||0.9;u.pitch=1;
+  speechSynthesis.speak(u);
 }
 
 /* TRANSLATE — Google Translate (двонаправлений) */
