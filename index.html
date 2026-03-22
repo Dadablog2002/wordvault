@@ -1056,27 +1056,31 @@ function getAC(){
   return _ac;
 }
 function unlockAudio(){
-  if(_acUnlocked)return;
-  _acUnlocked=true;
-  try{
-    _ac=new(window.AudioContext||window.webkitAudioContext)();
-    // Тихий звук щоб розблокувати
-    const buf=_ac.createBuffer(1,1,22050);
-    const src=_ac.createBufferSource();
-    src.buffer=buf;src.connect(_ac.destination);src.start(0);
-    // Якщо suspended — resume
-    if(_ac.state==='suspended')_ac.resume();
-  }catch(e){}
-  // Розблоковуємо speechSynthesis на iOS/Safari
+  // AudioContext — тільки один раз
+  if(!_acUnlocked){
+    _acUnlocked=true;
+    try{
+      _ac=new(window.AudioContext||window.webkitAudioContext)();
+      const buf=_ac.createBuffer(1,1,22050);
+      const src=_ac.createBufferSource();
+      src.buffer=buf;src.connect(_ac.destination);src.start(0);
+      if(_ac.state==='suspended')_ac.resume();
+    }catch(e){}
+  }else{
+    // Після першого разу — тільки resume якщо suspended
+    try{ if(_ac&&_ac.state==='suspended')_ac.resume(); }catch(e){}
+  }
+  // speechSynthesis розблоковуємо КОЖЕН раз — iOS скидає дозвіл
   if(window.speechSynthesis){
     try{
+      speechSynthesis.cancel();
       const u=new SpeechSynthesisUtterance('');
-      u.volume=0;u.rate=1;
+      u.volume=0; u.rate=1;
       speechSynthesis.speak(u);
     }catch(e){}
   }
 }
-// Прив'язуємо розблокування до будь-якого кліку/дотику
+// Прив'язуємо до кожного кліку/дотику (не {once:true}!)
 document.addEventListener('click', unlockAudio, {passive:true});
 document.addEventListener('touchstart', unlockAudio, {passive:true});
 function openOnboarding(){
@@ -1608,21 +1612,34 @@ let _ttsAudio = null;
 
 function initVoices(){}
 
+// Визначаємо iOS один раз
+const _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
 function speak(text, lang){
   if(!text||!text.trim()||text==='—') return;
   const word = text.trim();
   const tl = lang==='uk' ? 'uk' : (C.voiceEn||'en-US').split('-')[0];
   const rate = parseFloat(C.ttsRate)||0.9;
-
-  if(_ttsAudio){try{_ttsAudio.pause();_ttsAudio.src='';}catch(e){}_ttsAudio=null;}
-  if(window.speechSynthesis) speechSynthesis.cancel();
-
   const url = 'https://translate.googleapis.com/translate_tts?ie=UTF-8'
     +'&q='+encodeURIComponent(word)
     +'&tl='+tl
     +'&ttsspeed='+rate
     +'&client=tw-ob';
 
+  if(_ttsAudio){try{_ttsAudio.pause();_ttsAudio.src='';}catch(e){}_ttsAudio=null;}
+  if(window.speechSynthesis) speechSynthesis.cancel();
+
+  if(_isIOS){
+    // iOS: Web Speech API — єдине що працює без user gesture trick
+    if(!window.speechSynthesis) return;
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = lang==='uk' ? 'uk-UA' : (C.voiceEn||'en-US');
+    u.rate = rate; u.pitch=1; u.volume=1;
+    speechSynthesis.speak(u);
+    return;
+  }
+
+  // Android / PC — Google TTS Audio напряму
   const a = new Audio(url);
   _ttsAudio = a;
   a.play().catch(()=>{
