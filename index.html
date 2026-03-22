@@ -833,9 +833,10 @@ select option{background:var(--card)}
           </div>
 
           <div class="srow">
-            <div class="sinfo"><strong>Голос UA (вимова)</strong><span>Єдиний Google-голос — однаковий на всіх пристроях</span></div>
+            <div class="sinfo"><strong>Голос UA (вимова)</strong><span>Мова для озвучення українських слів</span></div>
             <select id="stgUk" style="width:auto;min-width:140px" onchange="saveStg()">
               <option value="uk-UA">Українська</option>
+              <option value="ru-RU">Русский</option>
             </select>
           </div>
           <div class="srow">
@@ -873,7 +874,7 @@ select option{background:var(--card)}
         <div class="sset">
           <div class="sset-lbl">Про додаток</div>
           <div class="srow"><div class="sinfo"><strong>WordVault</strong><span>Розробник: Dmytro Shlapak</span></div></div>
-          <div class="srow"><div class="sinfo"><strong>Контакт</strong><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2c684845414d1b1519196c4b414d4540024f4341">[email&#160;protected]</a></span></div><button class="btn btn-ghost btn-sm" onclick="openOnboarding()">Інструкція</button></div>
+          <div class="srow"><div class="sinfo"><strong>Контакт</strong><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="296d4d4044481e101c1c694e44484045074a4644">[email&#160;protected]</a></span></div><button class="btn btn-ghost btn-sm" onclick="openOnboarding()">Інструкція</button></div>
           <div class="srow"><div class="sinfo"><strong>Інтерактивний тур</strong><span>Покроковий гід по програмі</span></div><button class="btn btn-ghost btn-sm" onclick="tutReset()">Почати тур</button></div>
         </div>
       </div>
@@ -1063,8 +1064,21 @@ function unlockAudio(){
     const buf=_ac.createBuffer(1,1,22050);
     const src=_ac.createBufferSource();
     src.buffer=buf;src.connect(_ac.destination);src.start(0);
+    // Якщо suspended — resume
+    if(_ac.state==='suspended')_ac.resume();
   }catch(e){}
+  // Розблоковуємо speechSynthesis на iOS/Safari
+  if(window.speechSynthesis){
+    try{
+      const u=new SpeechSynthesisUtterance('');
+      u.volume=0;u.rate=1;
+      speechSynthesis.speak(u);
+    }catch(e){}
+  }
 }
+// Прив'язуємо розблокування до будь-якого кліку/дотику
+document.addEventListener('click', unlockAudio, {passive:true});
+document.addEventListener('touchstart', unlockAudio, {passive:true});
 function openOnboarding(){
   const el=document.getElementById('onboardWrap');
   el.style.display='flex';
@@ -1387,6 +1401,8 @@ function load(){
   // Автоматично додаємо базові слова при першому запуску
   if(W.length===0)setTimeout(addDemo,400);
   updateFlashSetup();
+  // Ініціалізуємо голоси TTS при старті
+  initVoices();
 }
 const sW=()=>{
   // Ніколи не зберігаємо слова без перекладу
@@ -1587,133 +1603,40 @@ function notify(txt,type='ok'){const el=document.getElementById('notif');documen
 function modal(t,txt,onOk){document.getElementById('mTitle').textContent=t;document.getElementById('mText').textContent=txt;document.getElementById('mwrap').classList.add('open');document.getElementById('mOk').onclick=()=>{closeM();onOk();};}
 function closeM(){document.getElementById('mwrap').classList.remove('open');}
 
-/* TTS — Уніфікований голос на всіх пристроях (iOS, Android, PC)
- * Ланцюг джерел для УКРАЇНСЬКОГО:
- *   1. translate.googleapis.com/translate_tts  (Google TTS — найкращий)
- *   2. tts.voicerss.org (VoiceRSS — той самий на всіх пристроях)
- *   3. api.freeconvert.com mirror
- *   4. SpeechSynthesis з примусовим uk-UA голосом (крайній fallback)
- * Для АНГЛІЙСЬКОГО — той самий ланцюг з tl=en.
- * Системний SpeechSynthesis НЕ використовується для UK якщо є альтернатива,
- * бо на різних пристроях він дає різні голоси.
- */
-let _ttsAudio=null;
-let _ttsAbort=false; // прапорець для скасування ланцюга
+/* TTS — Google Translate */
+let _ttsAudio = null;
 
-function _stopTTS(){
-  _ttsAbort=true;
-  if(_ttsAudio){try{_ttsAudio.pause();_ttsAudio.src='';}catch(e){}_ttsAudio=null;}
-  if(window.speechSynthesis)speechSynthesis.cancel();
-}
-
-function _playUrl(url, crossOrigin){
-  return new Promise((resolve, reject)=>{
-    const a=new Audio();
-    if(crossOrigin)a.crossOrigin='anonymous';
-    a.src=url;
-    _ttsAudio=a;
-    const onErr=()=>{ _ttsAudio=null; reject(); };
-    a.addEventListener('error', onErr, {once:true});
-    a.addEventListener('canplaythrough',()=>{
-      a.removeEventListener('error', onErr);
-      a.play().then(resolve).catch(reject);
-    },{once:true});
-    // Таймаут 4с — якщо сервер не відповів
-    setTimeout(()=>{ if(_ttsAudio===a){ _ttsAudio=null; reject(); } }, 4000);
-  });
-}
-
-async function speak(text, lang){
-  if(!text||!text.trim()||text==='—') return;
+function speak(text, lang){
+  if(!text || !text.trim() || text === '—') return;
   const word = text.trim();
-  const isUK = lang==='uk';
-  const tl = isUK ? 'uk' : 'en';
-  const rate = parseFloat(C.ttsRate)||0.9;
-  const langCode = isUK ? 'uk-UA' : (C.voiceEn||'en-US');
+  const tl = lang === 'uk' ? 'uk' : (C.voiceEn || 'en-US').split('-')[0];
+  const rate = parseFloat(C.ttsRate) || 0.9;
 
-  _stopTTS();
-  _ttsAbort = false;
+  // Зупиняємо попереднє
+  if(_ttsAudio){ try{ _ttsAudio.pause(); _ttsAudio.src=''; }catch(e){} _ttsAudio=null; }
+  if(window.speechSynthesis) speechSynthesis.cancel();
 
-  // ── Джерело 1: Google Translate TTS ──────────────────────────────────────
-  const gtUrl = 'https://translate.googleapis.com/translate_tts?ie=UTF-8&q='
-    + encodeURIComponent(word) + '&tl=' + tl + '&client=tw-ob&ttsspeed=' + rate;
-  try {
-    if(_ttsAbort) return;
-    await _playUrl(gtUrl, true);
-    return; // успіх
-  } catch(e) {}
+  const url = 'https://translate.googleapis.com/translate_tts?ie=UTF-8'
+    + '&q=' + encodeURIComponent(word)
+    + '&tl=' + tl
+    + '&ttsspeed=' + rate
+    + '&client=tw-ob';
 
-  if(_ttsAbort) return;
-
-  // ── Джерело 2: Google TTS через інший endpoint (без CORS) ─────────────────
-  const gt2 = 'https://translate.google.com/translate_tts?ie=UTF-8&q='
-    + encodeURIComponent(word) + '&tl=' + tl + '&client=tw-ob';
-  try {
-    if(_ttsAbort) return;
-    await _playUrl(gt2, false);
-    return;
-  } catch(e) {}
-
-  if(_ttsAbort) return;
-
-  // ── Джерело 3: VoiceRSS (безкоштовний ключ, однаковий голос всюди) ────────
-  // VoiceRSS безкоштовний tier: 350 запитів/день — достатньо для навчання
-  const voiceRssKey = 'a1b2c3d4e5f6'; // demo ключ — замінити на свій з voicerss.org
-  const vrLang = isUK ? 'uk-ua' : (langCode.toLowerCase().replace('_','-'));
-  const vrUrl = 'https://api.voicerss.org/?key=' + voiceRssKey
-    + '&hl=' + vrLang + '&src=' + encodeURIComponent(word)
-    + '&r=' + Math.round((rate-1)*5) // -5..5
-    + '&c=MP3&f=16khz_16bit_stereo';
-  try {
-    if(_ttsAbort) return;
-    await _playUrl(vrUrl, false);
-    return;
-  } catch(e) {}
-
-  if(_ttsAbort) return;
-
-  // ── Джерело 4: SpeechSynthesis з примусовим uk-UA голосом ────────────────
-  // Для UK намагаємося знайти голос з uk/uk-UA в назві, а не брати перший-ліпший
-  if(!window.speechSynthesis) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(word);
-  u.rate = rate;
-  u.pitch = 1;
-
-  if(isUK){
-    // Шукаємо найкращий uk-UA голос на поточній системі
-    const voices = speechSynthesis.getVoices();
-    // Пріоритет: точний uk-UA → uk → будь-який з "ukrain" в назві
-    const ukVoice =
-      voices.find(v => v.lang.toLowerCase()==='uk-ua') ||
-      voices.find(v => v.lang.toLowerCase().startsWith('uk')) ||
-      voices.find(v => v.name.toLowerCase().includes('ukrain')) ||
-      null;
-    if(ukVoice){
-      u.voice = ukVoice;
-      u.lang = ukVoice.lang;
-    } else {
-      // Голосу немає на пристрої — тихо виходимо (не грати чужою мовою)
-      console.warn('WordVault TTS: uk-UA voice not found on this device. All network sources failed.');
-      return;
-    }
-  } else {
-    u.lang = langCode;
-    const voices = speechSynthesis.getVoices();
-    const enVoice = voices.find(v=>v.lang.toLowerCase().startsWith(langCode.toLowerCase().slice(0,2)))||null;
-    if(enVoice) u.voice = enVoice;
-  }
-
-  speechSynthesis.speak(u);
-}
-
-// Перезавантажуємо голоси після їх появи (потрібно для деяких браузерів)
-if(window.speechSynthesis){
-  speechSynthesis.addEventListener('voiceschanged', ()=>{
-    // Голоси готові — нічого не робимо, вони будуть використані при наступному speak()
+  const audio = new Audio(url);
+  _ttsAudio = audio;
+  audio.play().catch(() => {
+    // Fallback: Web Speech API
+    if(!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = lang === 'uk' ? 'uk-UA' : (C.voiceEn || 'en-US');
+    u.rate = rate;
+    u.pitch = 1;
+    speechSynthesis.speak(u);
   });
 }
 
+function initVoices(){} // залишаємо для сумісності
 /* TRANSLATE — Google Translate (двонаправлений) */
 let addDir = 'uk2en'; // 'uk2en' або 'en2uk'
 
@@ -2804,22 +2727,26 @@ function renderQQ(){
 function speakQW(){if(qCW){speak(qDir==='uk2en'?qCW.uk:qCW.en,qDir==='uk2en'?'uk':'en');}}
 function ansQ(btn,sel,cor,wid){
   if(qAns)return;qAns=true;const ok=sel===cor;
-  // Speak the chosen answer in English
-  const spkLang=qDir==='uk2en'?'en':'uk';
-  speak(sel,spkLang);
-  document.querySelectorAll('.opt').forEach(b=>{b.disabled=true;if(b===btn&&!ok)b.classList.add('wrong');if([...b.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent.trim()).join('')===cor)b.classList.add('ok');});
+  // 1) Звук ОДРАЗУ (Web Audio API, не конфліктує зі speak)
+  if(C.sound)beep(ok);
+  // 2) Підсвічуємо варіанти
+  document.querySelectorAll('.opt').forEach(b=>{
+    b.disabled=true;
+    if(b===btn&&!ok)b.classList.add('wrong');
+    if([...b.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent.trim()).join('')===cor)b.classList.add('ok');
+  });
+  // 3) SRS
   const w=W.find(x=>x.id===wid);
-  if(w){
-    scheduleAuto(w,ok); // scheduleAuto сам додає в repeatPool при помилці
-    sW();
-  }
-  trackAns(ok);if(C.sound)beep(ok);
+  if(w){scheduleAuto(w,ok);sW();}
+  trackAns(ok);
   if(!ok){
     qMiss.push({word:w,sel,cor});
-    // Вставляємо слово назад у сесію через ~3 позиції
-    injectRetry(qS, qI, w);
+    injectRetry(qS,qI,w);
   }
-  setTimeout(()=>{qI++;if(qI>=qS.length)showQR();else renderQQ();},1400);
+  // 4) Озвучуємо правильну відповідь через 350мс (після beep)
+  const spkLang=qDir==='uk2en'?'en':'uk';
+  setTimeout(()=>speak(cor,spkLang),350);
+  setTimeout(()=>{qI++;if(qI>=qS.length)showQR();else renderQQ();},1500);
 }
 function showQR(){
   sv('qSess',false);sv('qRes',true);sessActive.quiz=false;
@@ -3292,17 +3219,18 @@ function victorySound(){
   }catch(e){}
 }
 
-// UI звук кліку — легкий тик для будь-яких кнопок
+// UI звук кліку — приємний тік
 function clickSound(){
   if(!C.sound)return;
   try{
     const ac=getAC();if(!ac)return;
+    // Короткий тік: два осцилятори для об'єму
     const o=ac.createOscillator(),g=ac.createGain();
     o.connect(g);g.connect(ac.destination);
-    o.frequency.value=800;o.type='sine';
-    g.gain.setValueAtTime(0.06,ac.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.08);
-    o.start();o.stop(ac.currentTime+0.09);
+    o.type='sine';o.frequency.value=1200;
+    g.gain.setValueAtTime(0.07,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.055);
+    o.start();o.stop(ac.currentTime+0.06);
   }catch(e){}
 }
 
@@ -3318,43 +3246,71 @@ document.addEventListener('click',e=>{
 
 function beep(ok){
   if(!C.sound)return;
-  try{const ac=getAC();if(!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=ok?740:220;o.type=ok?'sine':'sawtooth';g.gain.setValueAtTime(0.12,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.22);o.start();o.stop(ac.currentTime+0.22);}catch(e){}
+  try{
+    const ac=getAC();if(!ac)return;
+    if(ok){
+      [[660,0],[880,0.12]].forEach(([freq,delay])=>{
+        const o=ac.createOscillator(),g=ac.createGain();
+        o.connect(g);g.connect(ac.destination);
+        o.type='sine';o.frequency.value=freq;
+        const t=ac.currentTime+delay;
+        g.gain.setValueAtTime(0,t);
+        g.gain.linearRampToValueAtTime(0.18,t+0.025);
+        g.gain.exponentialRampToValueAtTime(0.001,t+0.32);
+        o.start(t);o.stop(t+0.33);
+      });
+    }else{
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.connect(g);g.connect(ac.destination);
+      o.type='sawtooth';
+      o.frequency.setValueAtTime(240,ac.currentTime);
+      o.frequency.exponentialRampToValueAtTime(120,ac.currentTime+0.28);
+      g.gain.setValueAtTime(0.22,ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.32);
+      o.start();o.stop(ac.currentTime+0.33);
+    }
+  }catch(e){}
 }
 
-// Звуки для кнопок карток
+// Звуки оцінки карток — покращені
 function beepRating(rating){
   if(!C.sound)return;
   try{
     const ac=getAC();if(!ac)return;
     if(rating==='easy'){
-      // Легко — два висхідних тони (радісний акорд)
-      [[523,0],[659,0.1],[784,0.2]].forEach(([freq,delay])=>{
+      // ✅ Легко — три висхідних тони (радісний акорд C-E-G)
+      [[523,0],[659,0.09],[784,0.18]].forEach(([freq,delay])=>{
         const o=ac.createOscillator(),g=ac.createGain();
         o.connect(g);g.connect(ac.destination);
-        o.frequency.value=freq;o.type='sine';
+        o.type='sine';o.frequency.value=freq;
         const t=ac.currentTime+delay;
         g.gain.setValueAtTime(0,t);
-        g.gain.linearRampToValueAtTime(0.13,t+0.03);
-        g.gain.exponentialRampToValueAtTime(0.001,t+0.25);
-        o.start(t);o.stop(t+0.26);
+        g.gain.linearRampToValueAtTime(0.16,t+0.025);
+        g.gain.exponentialRampToValueAtTime(0.001,t+0.28);
+        o.start(t);o.stop(t+0.29);
       });
     }else if(rating==='ok'){
-      // Добре — один середній нейтральний тон
-      const o=ac.createOscillator(),g=ac.createGain();
-      o.connect(g);g.connect(ac.destination);
-      o.frequency.value=440;o.type='sine';
-      g.gain.setValueAtTime(0.11,ac.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.18);
-      o.start();o.stop(ac.currentTime+0.18);
+      // 🟡 Добре — два тони вгору (нейтрально-позитивно)
+      [[440,0],[554,0.11]].forEach(([freq,delay])=>{
+        const o=ac.createOscillator(),g=ac.createGain();
+        o.connect(g);g.connect(ac.destination);
+        o.type='sine';o.frequency.value=freq;
+        const t=ac.currentTime+delay;
+        g.gain.setValueAtTime(0,t);
+        g.gain.linearRampToValueAtTime(0.13,t+0.025);
+        g.gain.exponentialRampToValueAtTime(0.001,t+0.22);
+        o.start(t);o.stop(t+0.23);
+      });
     }else{
-      // Важко — низький спадний тон
+      // ❌ Важко — низький важкий бум вниз
       const o=ac.createOscillator(),g=ac.createGain();
       o.connect(g);g.connect(ac.destination);
-      o.frequency.value=280;o.type='sawtooth';
-      o.frequency.linearRampToValueAtTime(180,ac.currentTime+0.2);
-      g.gain.setValueAtTime(0.13,ac.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.25);
-      o.start();o.stop(ac.currentTime+0.26);
+      o.type='sawtooth';
+      o.frequency.setValueAtTime(260,ac.currentTime);
+      o.frequency.exponentialRampToValueAtTime(130,ac.currentTime+0.3);
+      g.gain.setValueAtTime(0.2,ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.35);
+      o.start();o.stop(ac.currentTime+0.36);
     }
   }catch(e){}
 }
@@ -3420,16 +3376,5 @@ window.addEventListener('beforeunload',e=>{
   </div>
 </div>
 
-<script>
-// Розблоковуємо AudioContext при першому кліку (потрібно для iOS/Safari)
-document.addEventListener('click', function handler(){
-  unlockAudio();
-  document.removeEventListener('click', handler);
-}, {once: true, passive: true});
-document.addEventListener('touchstart', function handler(){
-  unlockAudio();
-  document.removeEventListener('touchstart', handler);
-}, {once: true, passive: true});
-</script>
 </body>
 </html>
