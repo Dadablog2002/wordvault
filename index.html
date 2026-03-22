@@ -1606,13 +1606,23 @@ function closeM(){document.getElementById('mwrap').classList.remove('open');}
 /* TTS */
 let _ttsAudio = null;
 let _voices = [];
-let _useGoogleAudio = true; // чи працює Google TTS Audio — визначається один раз при старті
+
+// Визначаємо метод одразу по хосту — без жодних перевірок
+// localhost/file → Google Audio (миттєво, без затримки)
+// GitHub Pages / будь-який інший хост → Web Speech з Google голосом
+const _isLocal = location.protocol === 'file:'
+  || location.hostname === 'localhost'
+  || location.hostname === '127.0.0.1';
 
 function initVoices(){
   if(!window.speechSynthesis) return;
   const load = () => { const v=speechSynthesis.getVoices(); if(v.length)_voices=v; };
-  load(); speechSynthesis.onvoiceschanged = load;
+  load();
+  speechSynthesis.onvoiceschanged = load;
 }
+// Запускаємо ОДРАЗУ — Chrome завантажує голоси асинхронно,
+// чим раніше підпишемось на onvoiceschanged тим менша затримка
+initVoices();
 
 function _bestVoice(lang){
   if(!_voices.length && window.speechSynthesis) _voices=speechSynthesis.getVoices();
@@ -1633,57 +1643,33 @@ function _bestVoice(lang){
 }
 
 function _wss(word, lang, rate){
-  if(!window.speechSynthesis)return;
+  if(!window.speechSynthesis) return;
   speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(word);
-  u.lang=lang==='uk'?'uk-UA':(C.voiceEn||'en-US');
-  u.rate=rate; u.pitch=1; u.volume=1;
-  const v=_bestVoice(lang); if(v)u.voice=v;
+  const u = new SpeechSynthesisUtterance(word);
+  u.lang = lang==='uk' ? 'uk-UA' : (C.voiceEn||'en-US');
+  u.rate = rate; u.pitch = 1; u.volume = 1;
+  const v = _bestVoice(lang); if(v) u.voice=v;
   speechSynthesis.speak(u);
 }
 
-function _googleAudioUrl(word, lang, rate){
-  const tl=lang==='uk'?'uk':(C.voiceEn||'en-US').split('-')[0];
-  return 'https://translate.googleapis.com/translate_tts?ie=UTF-8&q='
-    +encodeURIComponent(word)+'&tl='+tl+'&ttsspeed='+rate+'&client=tw-ob';
-}
-
-// Перевіряємо один раз при першому кліку чи працює Google Audio
-let _googleChecked = false;
-function _checkGoogle(word, lang, rate){
-  const url = _googleAudioUrl(word, lang, rate);
-  const a = new Audio(url);
-  _ttsAudio = a;
-  a.play()
-    .then(()=>{
-      _useGoogleAudio = true;  // ✅ Google працює — запам'ятовуємо
-      _googleChecked = true;
-    })
-    .catch(()=>{
-      _useGoogleAudio = false; // ❌ Google не працює — переходимо на WSS назавжди
-      _googleChecked = true;
-      _wss(word, lang, rate);
-    });
-}
-
 function speak(text, lang){
-  if(!text||!text.trim()||text==='—')return;
-  const word=text.trim();
-  const rate=parseFloat(C.ttsRate)||0.9;
+  if(!text||!text.trim()||text==='—') return;
+  const word = text.trim();
+  const rate = parseFloat(C.ttsRate)||0.9;
+  const tl = lang==='uk' ? 'uk' : (C.voiceEn||'en-US').split('-')[0];
 
   if(_ttsAudio){try{_ttsAudio.pause();_ttsAudio.src='';}catch(e){}_ttsAudio=null;}
-  if(window.speechSynthesis)speechSynthesis.cancel();
+  if(window.speechSynthesis) speechSynthesis.cancel();
 
-  if(!_googleChecked){
-    // Перший виклик — перевіряємо Google і запам'ятовуємо результат
-    _checkGoogle(word, lang, rate);
-  } else if(_useGoogleAudio){
-    // Google працює — використовуємо без перевірки (миттєво)
-    const a=new Audio(_googleAudioUrl(word, lang, rate));
+  if(_isLocal){
+    // Локально — Google TTS Audio напряму (миттєво, без CORS)
+    const url='https://translate.googleapis.com/translate_tts?ie=UTF-8&q='
+      +encodeURIComponent(word)+'&tl='+tl+'&ttsspeed='+rate+'&client=tw-ob';
+    const a=new Audio(url);
     _ttsAudio=a;
-    a.play().catch(()=>{ _useGoogleAudio=false; _wss(word,lang,rate); });
+    a.play().catch(()=>_wss(word,lang,rate));
   } else {
-    // Google не працює (GitHub Pages) — одразу WSS без затримки
+    // GitHub Pages / онлайн — Web Speech з Google голосом (без затримки)
     _wss(word, lang, rate);
   }
 }
