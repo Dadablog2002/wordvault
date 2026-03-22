@@ -874,10 +874,8 @@ select option{background:var(--card)}
         <div class="sset">
           <div class="sset-lbl">Про додаток</div>
           <div class="srow"><div class="sinfo"><strong>WordVault</strong><span>Розробник: Dmytro Shlapak</span></div></div>
-          <div class="srow"><div class="sinfo"><strong>Контакт</strong><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="296d4d4044481e101c1c694e44484045074a4644">[email&#160;protected]</a></span></div><button class="btn btn-ghost btn-sm" onclick="openOnboarding()">Інструкція</button></div>
+          <div class="srow"><div class="sinfo"><strong>Контакт</strong><span>ddima7955@gmail.com</span></div><button class="btn btn-ghost btn-sm" onclick="openOnboarding()">Інструкція</button></div>
           <div class="srow"><div class="sinfo"><strong>Інтерактивний тур</strong><span>Покроковий гід по програмі</span></div><button class="btn btn-ghost btn-sm" onclick="tutReset()">Почати тур</button></div>
-          <div class="srow"><div class="sinfo"><strong>Діагностика голосів</strong><span>Показати доступні TTS голоси</span></div><button class="btn btn-ghost btn-sm" onclick="diagVoices()">Перевірити</button></div>
-          <div id="diagOut" style="font-size:0.72rem;color:var(--text2);padding:8px 0;display:none;word-break:break-all;line-height:1.7"></div>
         </div>
       </div>
     </div>
@@ -990,7 +988,7 @@ select option{background:var(--card)}
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 'use strict';
 // Фікс для мобільних браузерів: реальна висота viewport
 function setVH(){
@@ -1605,60 +1603,36 @@ function notify(txt,type='ok'){const el=document.getElementById('notif');documen
 function modal(t,txt,onOk){document.getElementById('mTitle').textContent=t;document.getElementById('mText').textContent=txt;document.getElementById('mwrap').classList.add('open');document.getElementById('mOk').onclick=()=>{closeM();onOk();};}
 function closeM(){document.getElementById('mwrap').classList.remove('open');}
 
-/* TTS — VoiceRSS (справжній UK голос, без CORS, працює скрізь) */
+/* TTS — Google Translate */
 let _ttsAudio = null;
-let _ttsCache = {}; // кеш blob URL — кожне слово завантажується лише раз
-const _VRSS_KEY = 'b16d097235bd4ca9b70b77eef7b21cf3';
 
-function initVoices(){} // не потрібен, залишаємо для сумісності
-
-function _vrssUrl(word, lang, rate){
-  const hl = lang === 'uk' ? 'uk-ua' : (C.voiceEn||'en-us').toLowerCase();
-  // VoiceRSS rate: -10..10 (0=normal, -2=slow, 2=fast)
-  const r = rate <= 0.7 ? -3 : rate >= 1.2 ? 3 : 0;
-  return 'https://api.voicerss.org/?key='+_VRSS_KEY
-    +'&hl='+hl+'&src='+encodeURIComponent(word)
-    +'&c=MP3&f=16khz_16bit_stereo&r='+r+'&b64=false';
-}
+function initVoices(){}
 
 function speak(text, lang){
   if(!text||!text.trim()||text==='—') return;
   const word = text.trim();
+  const tl = lang==='uk' ? 'uk' : (C.voiceEn||'en-US').split('-')[0];
   const rate = parseFloat(C.ttsRate)||0.9;
 
-  if(_ttsAudio){ try{_ttsAudio.pause();_ttsAudio.src='';}catch(e){} _ttsAudio=null; }
+  if(_ttsAudio){try{_ttsAudio.pause();_ttsAudio.src='';}catch(e){}_ttsAudio=null;}
+  if(window.speechSynthesis) speechSynthesis.cancel();
 
-  const cacheKey = lang+'|'+word+'|'+rate;
+  const url = 'https://translate.googleapis.com/translate_tts?ie=UTF-8'
+    +'&q='+encodeURIComponent(word)
+    +'&tl='+tl
+    +'&ttsspeed='+rate
+    +'&client=tw-ob';
 
-  const playUrl = (url) => {
-    const a = new Audio(url);
-    _ttsAudio = a;
-    a.play().catch(()=>{});
-  };
-
-  // Є в кеші — грає миттєво без запиту
-  if(_ttsCache[cacheKey]){
-    playUrl(_ttsCache[cacheKey]);
-    return;
-  }
-
-  // Завантажуємо і кешуємо
-  fetch(_vrssUrl(word, lang, rate))
-    .then(r=>{ if(!r.ok) throw new Error(r.status); return r.blob(); })
-    .then(blob=>{
-      const bu = URL.createObjectURL(blob);
-      _ttsCache[cacheKey] = bu; // зберігаємо в кеш
-      playUrl(bu);
-    })
-    .catch(()=>{
-      // Fallback: Web Speech
-      if(!window.speechSynthesis) return;
-      speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(word);
-      u.lang = lang==='uk' ? 'uk-UA' : (C.voiceEn||'en-US');
-      u.rate = rate; u.pitch=1;
-      setTimeout(()=>speechSynthesis.speak(u), 50);
-    });
+  const a = new Audio(url);
+  _ttsAudio = a;
+  a.play().catch(()=>{
+    if(!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = lang==='uk' ? 'uk-UA' : (C.voiceEn||'en-US');
+    u.rate = rate; u.pitch=1;
+    setTimeout(()=>speechSynthesis.speak(u), 50);
+  });
 }
 /* TRANSLATE — Google Translate (двонаправлений) */
 let addDir = 'uk2en'; // 'uk2en' або 'en2uk'
