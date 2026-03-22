@@ -1594,14 +1594,59 @@ function closeM(){document.getElementById('mwrap').classList.remove('open');}
 // Тепер і українська, і англійська звучать через один і той самий сервіс, а не через голоси ОС.
 let _ttsAudio=null;
 let _ttsToken=0;
+let _ttsBlobUrl='';
+let _ttsUnlocked=false;
+let _ttsUnlockInProgress=null;
+let _ttsUnlockHintShown=false;
+
+function cleanupTtsBlob(){
+  if(_ttsBlobUrl){
+    try{ URL.revokeObjectURL(_ttsBlobUrl); }catch(e){}
+    _ttsBlobUrl='';
+  }
+}
 
 function stopSpeak(){
   if(_ttsAudio){
     try{_ttsAudio.pause();}catch(e){}
     try{_ttsAudio.currentTime=0;}catch(e){}
+    _ttsAudio.onended=null;
+    _ttsAudio.onerror=null;
     _ttsAudio=null;
   }
+  cleanupTtsBlob();
 }
+
+async function unlockTts(){
+  if(_ttsUnlocked)return true;
+  if(_ttsUnlockInProgress)return _ttsUnlockInProgress;
+
+  _ttsUnlockInProgress=(async()=>{
+    try{
+      const a=new Audio();
+      a.playsInline=true;
+      a.muted=true;
+      a.preload='auto';
+      a.src='data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAACAAACcQCA' +
+            'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+      const p=a.play();
+      if(p && typeof p.then==='function') await p;
+      try{a.pause();}catch(e){}
+      _ttsUnlocked=true;
+      return true;
+    }catch(err){
+      return false;
+    }finally{
+      _ttsUnlockInProgress=null;
+    }
+  })();
+
+  return _ttsUnlockInProgress;
+}
+
+['pointerdown','touchstart','click','keydown'].forEach(evt=>{
+  document.addEventListener(evt, ()=>{ unlockTts(); }, {passive:true, once:true});
+});
 
 async function speak(text,lang){
   if(!text||!text.trim()||text==='—')return;
@@ -1611,30 +1656,55 @@ async function speak(text,lang){
   const rate=Math.max(0.24, Math.min(1, parseFloat(C.ttsRate)||0.9));
   const myToken=++_ttsToken;
 
+  const unlocked=await unlockTts();
+  if(!unlocked){
+    if(!_ttsUnlockHintShown){
+      _ttsUnlockHintShown=true;
+      notify('Браузер ще не дозволив аудіо. Натисни будь-де по сторінці і потім кнопку озвучення.','err');
+    }
+    return;
+  }
+
   stopSpeak();
 
   const url='https://translate.googleapis.com/translate_tts?ie=UTF-8&q='+
     encodeURIComponent(word)+'&tl='+tl+'&client=tw-ob&ttsspeed='+rate;
 
-  const audio=new Audio();
-  audio.preload='auto';
-  audio.playsInline=true;
-  audio.src=url;
-  _ttsAudio=audio;
-
-  audio.onended=()=>{ if(_ttsAudio===audio) _ttsAudio=null; };
-  audio.onerror=()=>{
-    if(myToken!==_ttsToken)return;
-    if(_ttsAudio===audio)_ttsAudio=null;
-    notify('Не вдалося озвучити. Перевір інтернет або доступ до Google TTS.','err');
-  };
-
   try{
+    const res=await fetch(url,{mode:'cors'});
+    if(!res.ok)throw new Error('tts_http_'+res.status);
+    const blob=await res.blob();
+    if(myToken!==_ttsToken)return;
+    const blobUrl=URL.createObjectURL(blob);
+    _ttsBlobUrl=blobUrl;
+
+    const audio=new Audio();
+    audio.preload='auto';
+    audio.playsInline=true;
+    audio.crossOrigin='anonymous';
+    audio.src=blobUrl;
+    _ttsAudio=audio;
+
+    audio.onended=()=>{
+      if(_ttsAudio===audio)_ttsAudio=null;
+      if(_ttsBlobUrl===blobUrl)cleanupTtsBlob();
+    };
+    audio.onerror=()=>{
+      if(myToken!==_ttsToken)return;
+      if(_ttsAudio===audio)_ttsAudio=null;
+      if(_ttsBlobUrl===blobUrl)cleanupTtsBlob();
+      notify('Не вдалося озвучити. Перевір інтернет або доступ до TTS.','err');
+    };
+
     await audio.play();
   }catch(err){
     if(myToken!==_ttsToken)return;
-    if(_ttsAudio===audio)_ttsAudio=null;
-    notify('Озвучення заблоковане браузером. Натисни кнопку ще раз після взаємодії зі сторінкою.','err');
+    if(_ttsAudio){
+      try{_ttsAudio.pause();}catch(e){}
+      _ttsAudio=null;
+    }
+    cleanupTtsBlob();
+    notify('Не вдалося відтворити озвучення. На деяких браузерах потрібен інтернет і дозвіл на медіа після першого дотику.','err');
   }
 }
 
