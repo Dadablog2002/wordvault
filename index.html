@@ -1605,61 +1605,87 @@ function closeM(){document.getElementById('mwrap').classList.remove('open');}
 
 /* TTS */
 let _ttsAudio = null;
-function initVoices(){}
+let _voices = [];
+let _useGoogleAudio = true; // чи працює Google TTS Audio — визначається один раз при старті
+
+function initVoices(){
+  if(!window.speechSynthesis) return;
+  const load = () => { const v=speechSynthesis.getVoices(); if(v.length)_voices=v; };
+  load(); speechSynthesis.onvoiceschanged = load;
+}
+
+function _bestVoice(lang){
+  if(!_voices.length && window.speechSynthesis) _voices=speechSynthesis.getVoices();
+  const isUk = lang==='uk';
+  if(isUk){
+    return _voices.find(v=>v.lang==='uk-UA'&&v.name.includes('Google'))
+      ||_voices.find(v=>v.lang==='uk-UA'&&!v.localService)
+      ||_voices.find(v=>v.lang==='uk-UA')
+      ||_voices.find(v=>v.lang.startsWith('uk'))||null;
+  }
+  const t=C.voiceEn||'en-US';
+  return _voices.find(v=>v.lang===t&&v.name.includes('Google'))
+    ||_voices.find(v=>v.lang===t&&!v.localService)
+    ||_voices.find(v=>v.lang===t)
+    ||_voices.find(v=>v.lang.startsWith('en')&&v.name.includes('Google'))
+    ||_voices.find(v=>v.lang.startsWith('en')&&!v.localService)
+    ||_voices.find(v=>v.lang.startsWith('en'))||null;
+}
+
+function _wss(word, lang, rate){
+  if(!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(word);
+  u.lang=lang==='uk'?'uk-UA':(C.voiceEn||'en-US');
+  u.rate=rate; u.pitch=1; u.volume=1;
+  const v=_bestVoice(lang); if(v)u.voice=v;
+  speechSynthesis.speak(u);
+}
+
+function _googleAudioUrl(word, lang, rate){
+  const tl=lang==='uk'?'uk':(C.voiceEn||'en-US').split('-')[0];
+  return 'https://translate.googleapis.com/translate_tts?ie=UTF-8&q='
+    +encodeURIComponent(word)+'&tl='+tl+'&ttsspeed='+rate+'&client=tw-ob';
+}
+
+// Перевіряємо один раз при першому кліку чи працює Google Audio
+let _googleChecked = false;
+function _checkGoogle(word, lang, rate){
+  const url = _googleAudioUrl(word, lang, rate);
+  const a = new Audio(url);
+  _ttsAudio = a;
+  a.play()
+    .then(()=>{
+      _useGoogleAudio = true;  // ✅ Google працює — запам'ятовуємо
+      _googleChecked = true;
+    })
+    .catch(()=>{
+      _useGoogleAudio = false; // ❌ Google не працює — переходимо на WSS назавжди
+      _googleChecked = true;
+      _wss(word, lang, rate);
+    });
+}
 
 function speak(text, lang){
   if(!text||!text.trim()||text==='—')return;
   const word=text.trim();
-  const tl=lang==='uk'?'uk':(C.voiceEn||'en-US').split('-')[0];
   const rate=parseFloat(C.ttsRate)||0.9;
 
   if(_ttsAudio){try{_ttsAudio.pause();_ttsAudio.src='';}catch(e){}_ttsAudio=null;}
   if(window.speechSynthesis)speechSynthesis.cancel();
 
-  const gtts='https://translate.googleapis.com/translate_tts?ie=UTF-8&q='
-    +encodeURIComponent(word)+'&tl='+tl+'&ttsspeed='+rate+'&client=tw-ob';
-
-  // Спроба 1: прямо (працює локально і на деяких хостах)
-  const a1=new Audio(gtts);
-  _ttsAudio=a1;
-  a1.play().then(()=>{}).catch(()=>{
-
-    // Спроба 2: через CORS proxy (працює на GitHub Pages)
-    const proxy='https://corsproxy.io/?'+encodeURIComponent(gtts);
-    fetch(proxy)
-      .then(r=>r.blob())
-      .then(blob=>{
-        const bu=URL.createObjectURL(blob);
-        const a2=new Audio(bu);
-        _ttsAudio=a2;
-        a2.onended=()=>URL.revokeObjectURL(bu);
-        a2.onerror=()=>URL.revokeObjectURL(bu);
-        return a2.play();
-      })
-      .catch(()=>{
-
-        // Спроба 3: інший proxy
-        const proxy2='https://api.allorigins.win/raw?url='+encodeURIComponent(gtts);
-        fetch(proxy2)
-          .then(r=>r.blob())
-          .then(blob=>{
-            const bu=URL.createObjectURL(blob);
-            const a3=new Audio(bu);
-            _ttsAudio=a3;
-            a3.onended=()=>URL.revokeObjectURL(bu);
-            return a3.play();
-          })
-          .catch(()=>{
-
-            // Fallback: Web Speech API
-            if(!window.speechSynthesis)return;
-            const u=new SpeechSynthesisUtterance(word);
-            u.lang=lang==='uk'?'uk-UA':(C.voiceEn||'en-US');
-            u.rate=rate;u.pitch=1;
-            setTimeout(()=>speechSynthesis.speak(u),50);
-          });
-      });
-  });
+  if(!_googleChecked){
+    // Перший виклик — перевіряємо Google і запам'ятовуємо результат
+    _checkGoogle(word, lang, rate);
+  } else if(_useGoogleAudio){
+    // Google працює — використовуємо без перевірки (миттєво)
+    const a=new Audio(_googleAudioUrl(word, lang, rate));
+    _ttsAudio=a;
+    a.play().catch(()=>{ _useGoogleAudio=false; _wss(word,lang,rate); });
+  } else {
+    // Google не працює (GitHub Pages) — одразу WSS без затримки
+    _wss(word, lang, rate);
+  }
 }
 /* TRANSLATE — Google Translate (двонаправлений) */
 let addDir = 'uk2en'; // 'uk2en' або 'en2uk'
