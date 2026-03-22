@@ -207,15 +207,15 @@ select option{background:var(--card)}
 .toggle::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .toggle.on{background:var(--accent)}
 .toggle.on::after{transform:translateX(22px)}
-.notif{position:fixed;bottom:20px;right:20px;background:var(--panel);border:2px solid var(--border2);border-radius:var(--rm);padding:12px 18px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;gap:10px;transform:translateY(70px);opacity:0;transition:all .26s ease;max-width:290px;font-size:0.85rem;font-weight:700}
-.notif.show{transform:translateY(0);opacity:1}
-.notif.ok{border-left:4px solid var(--accent)}
-.notif.err{border-left:4px solid var(--red)}
-.notif.info{border-left:4px solid var(--teal)}
+.notif{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel);border:2px solid var(--border2);border-radius:var(--r);padding:14px 24px;box-shadow:0 12px 40px rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;gap:12px;opacity:0;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .25s ease;min-width:200px;max-width:min(340px,90vw);font-size:0.92rem;font-weight:800;text-align:center;justify-content:center}
+.notif.show{transform:translateX(-50%) translateY(0);opacity:1}
+.notif.ok{border-bottom:3px solid var(--accent)}
+.notif.err{border-bottom:3px solid var(--red)}
+.notif.info{border-bottom:3px solid var(--teal)}
 .nd{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.notif.ok .nd{background:var(--accent)}
-.notif.err .nd{background:var(--red)}
-.notif.info .nd{background:var(--teal)}
+.notif.ok .nd{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.notif.err .nd{background:var(--red);box-shadow:0 0 8px var(--red)}
+.notif.info .nd{background:var(--teal);box-shadow:0 0 8px var(--teal)}
 .mwrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;align-items:center;justify-content:center;padding:20px}
 .mwrap.open{display:flex}
 /* Онбординг — власні анімації */
@@ -742,7 +742,7 @@ select option{background:var(--card)}
         <div style="margin-bottom:12px">
           <div style="font-size:0.6rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:8px;text-align:center">Твоя відповідь</div>
           <div style="display:flex;justify-content:center;width:100%">
-            <div id="spAnswer" style="min-height:54px;background:var(--card2);border:2.5px dashed var(--border2);border-radius:var(--rm);display:inline-flex;flex-wrap:nowrap;gap:4px;padding:8px 14px;align-items:center;justify-content:center;transition:all .3s ease;overflow:hidden;min-width:80px;max-width:100%;box-sizing:border-box"></div>
+            <div id="spAnswer" style="height:58px;background:var(--card2);border:2.5px dashed var(--border2);border-radius:var(--rm);display:inline-flex;flex-wrap:nowrap;gap:4px;padding:0 14px;align-items:center;justify-content:center;transition:width .3s ease,border-color .2s;overflow:hidden;min-width:80px;max-width:100%;box-sizing:border-box;flex-shrink:0"></div>
           </div>
         </div>
         <!-- Зона букв -->
@@ -1121,6 +1121,12 @@ const tutSteps=[
     pos:'top', page:'home', needSB:true
   },
   {
+    selector:'#dailyGoalBlock',
+    title:'Завдання дня',
+    text:'Щодня є 3 завдання: додай 5 слів, дай 10 відповідей, досягни 70% точності. При виконанні отримаєш сповіщення!',
+    pos:'top', page:'home', needSB:false
+  },
+  {
     selector:'.ni[onclick*="cfg"]',
     title:'Налаштування',
     text:'Кількість карток, швидкість озвучення, тема — все тут.',
@@ -1264,24 +1270,64 @@ function tutEnd(){
 function tutReset(){localStorage.removeItem('wv_tutor');tutIdx=0;tutStart();}
 
 /* DAILY GOAL */
+// Зберігаємо які завдання вже сповістили (щоб не спамити)
+let _dailyNotified={};
+
 function updateDailyGoal(){
   const el=document.getElementById('dailyGoalBlock');
   if(!el)return;
-  const todayCount=S.daily[today()]||0;
-  const goal=5; // ціль: 5 нових слів
-  // Рахуємо тільки слова додані вручну сьогодні (не дефолтні)
-  const newAdded=W.filter(w=>w.added&&w.added.startsWith(today())&&!w.isDefault).length;
-  const pct=Math.min(100,Math.round(newAdded/goal*100));
-  const done=newAdded>=goal;
+  const t=today();
+
+  // Завдання 1: Додай 5 нових слів
+  const newAdded=W.filter(w=>w.added&&w.added.startsWith(t)&&!w.isDefault).length;
+  // Завдання 2: Пройди 10 карток/відповідей сьогодні
+  const todayAns=S.daily[t]||0;
+  // Завдання 3: Досягни 70% точності сьогодні (мін 5 відповідей)
+  const todayCorrect=S.dailyCorrect?.[t]||0;
+  const todayAcc=todayAns>=5?Math.round(todayCorrect/todayAns*100):0;
+
+  const tasks=[
+    {label:'Додай 5 нових слів',      cur:newAdded,   goal:5,  key:'add5'},
+    {label:'Дай 10 відповідей',        cur:todayAns,   goal:10, key:'ans10'},
+    {label:'Точність 70%+ (мін. 5)',   cur:todayAcc,   goal:70, key:'acc70', suffix:'%', hideCur:todayAns<5},
+  ];
+
+  // Сповіщаємо про виконання (один раз на день)
+  const notifKey='wv_notif_'+t;
+  let notified={};
+  try{notified=JSON.parse(localStorage.getItem(notifKey)||'{}');}catch(e){}
+
+  tasks.forEach(task=>{
+    const done=task.cur>=task.goal;
+    if(done&&!notified[task.key]){
+      notified[task.key]=1;
+      localStorage.setItem(notifKey,JSON.stringify(notified));
+      setTimeout(()=>notify('Завдання виконано: '+task.label,'ok'),300);
+      if(C.sound)setTimeout(()=>{try{const ac=getAC();if(!ac)return;const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=880;o.type='sine';g.gain.setValueAtTime(0.1,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.3);o.start();o.stop(ac.currentTime+0.31);}catch(e){}},100);
+    }
+  });
+
   el.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <div style="font-size:0.65rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3)">Завдання дня</div>
-      <div style="font-size:0.72rem;font-weight:800;color:${done?'var(--accent)':'var(--text2)'}">${done?'Виконано!':newAdded+' / '+goal}</div>
-    </div>
-    <div style="font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:8px">Додай ${goal} нових слів</div>
-    <div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:${done?'var(--accent)':'linear-gradient(90deg,var(--teal),var(--accent))'}"></div></div>
-    ${done?'<div style="font-size:0.72rem;color:var(--accent);font-weight:700;margin-top:6px;text-align:center">Завдання виконано — так тримати!</div>':''}
-  `;
+    <div style="font-size:0.65rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:10px">Завдання дня</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${tasks.map(task=>{
+        const done=task.cur>=task.goal;
+        const pct=Math.min(100,task.hideCur?0:Math.round(task.cur/task.goal*100));
+        const curStr=task.hideCur?'—':(task.cur+(task.suffix||''));
+        const goalStr=task.goal+(task.suffix||'');
+        return `<div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:0.8rem;font-weight:700;color:${done?'var(--accent)':'var(--text)'}">
+              ${done?'<span style="color:var(--accent)">&#10003;</span> ':''} ${task.label}
+            </span>
+            <span style="font-size:0.72rem;font-weight:800;color:${done?'var(--accent)':'var(--text2)'}">
+              ${done?'Готово!':curStr+' / '+goalStr}
+            </span>
+          </div>
+          <div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:${done?'var(--accent)':'linear-gradient(90deg,var(--teal),var(--accent))'}"></div></div>
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 
 /* PERSIST */
@@ -1518,7 +1564,7 @@ function closeSB(){
 
 /* NOTIF */
 let ntT;
-function notify(txt,type='ok'){const el=document.getElementById('notif');document.getElementById('notifT').textContent=txt;el.className=`notif ${type} show`;clearTimeout(ntT);ntT=setTimeout(()=>el.classList.remove('show'),2700);}
+function notify(txt,type='ok'){const el=document.getElementById('notif');document.getElementById('notifT').textContent=txt;el.className=`notif ${type} show`;clearTimeout(ntT);ntT=setTimeout(()=>el.classList.remove('show'),3200);}
 
 /* MODAL */
 function modal(t,txt,onOk){document.getElementById('mTitle').textContent=t;document.getElementById('mText').textContent=txt;document.getElementById('mwrap').classList.add('open');document.getElementById('mOk').onclick=()=>{closeM();onOk();};}
@@ -1526,17 +1572,31 @@ function closeM(){document.getElementById('mwrap').classList.remove('open');}
 
 /* TTS */
 // Web Speech API — системний голос для кожної мови
-// TTS — тільки Web Speech API, тільки lang без вибору конкретного голосу
+// TTS — Google Translate Audio (однаковий голос на всіх пристроях)
+let _ttsAudio=null;
 function speak(text,lang){
   if(!text||!text.trim()||text==='—')return;
-  if(!window.speechSynthesis)return;
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text.trim());
-  u.lang=lang==='uk'?'uk-UA':'en-US';
-  u.rate=C.ttsRate||0.9;
-  u.pitch=1;
-  // НЕ встановлюємо u.voice — браузер сам обере системний голос для мови
-  speechSynthesis.speak(u);
+  const word=text.trim();
+  const tl=lang==='uk'?'uk':'en';
+  const rate=C.ttsRate||0.9;
+  // Зупиняємо попередній звук
+  if(_ttsAudio){_ttsAudio.pause();_ttsAudio.currentTime=0;_ttsAudio=null;}
+  if(window.speechSynthesis)speechSynthesis.cancel();
+  // Намагаємось через Google TTS (однаковий голос скрізь)
+  const url='https://translate.googleapis.com/translate_tts?ie=UTF-8&q='+
+    encodeURIComponent(word)+'&tl='+tl+'&client=tw-ob';
+  const audio=new Audio(url);
+  audio.playbackRate=rate;
+  _ttsAudio=audio;
+  audio.play().catch(()=>{
+    // Fallback: Web Speech API (різний голос але хоч щось)
+    if(!window.speechSynthesis)return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(word);
+    u.lang=tl==='uk'?'uk-UA':'en-US';
+    u.rate=rate;u.pitch=1;
+    speechSynthesis.speak(u);
+  });
 }
 
 /* TRANSLATE — Google Translate (двонаправлений) */
@@ -1945,7 +2005,15 @@ const due=()=>dueWords(); // використовуємо dueWords() яка вр
 
 /* TRACKING */
 function trackDay(){const t=today();if(!S.daily[t])S.daily[t]=0;S.daily[t]++;updateStreak();sS();}
-function trackAns(ok){S.tests++;S.total++;if(ok)S.correct++;trackDay();sS();}
+function trackAns(ok){
+  S.tests++;S.total++;if(ok)S.correct++;
+  // Зберігаємо правильні відповіді по днях для завдання точності
+  const t=today();
+  if(!S.dailyCorrect)S.dailyCorrect={};
+  if(!S.dailyCorrect[t])S.dailyCorrect[t]=0;
+  if(ok)S.dailyCorrect[t]++;
+  trackDay();sS();
+}
 function today(){return new Date().toLocaleDateString('sv');} // YYYY-MM-DD local time
 function updateStreak(){
   const t=today();
