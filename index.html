@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/png" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png" onerror="this.href='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%226%22 fill=%22%231cb0f6%22/><text x=%2216%22 y=%2223%22 text-anchor=%22middle%22 font-size=%2220%22 font-weight=%22900%22 font-family=%22Arial%22 fill=%22white%22>W</text></svg>'">
 <link rel="apple-touch-icon" href="icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1043,9 +1043,12 @@ function closeOnboarding(){
   },280);
   localStorage.setItem('wv_onboard','1');
 }
-// Єдиний глобальний AudioContext
+// Єдиний глобальний AudioContext — створюється тільки після кліку
 let _ac=null;
+let _acUnlocked=false;
 function getAC(){
+  // Не створюємо без user gesture
+  if(!_acUnlocked)return null;
   if(!_ac||_ac.state==='closed'){
     try{_ac=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}
   }
@@ -1053,13 +1056,14 @@ function getAC(){
   return _ac;
 }
 function unlockAudio(){
-  // Розблоковуємо при першій взаємодії
-  const ac=getAC();
-  if(!ac)return;
+  if(_acUnlocked)return;
+  _acUnlocked=true;
   try{
-    const buf=ac.createBuffer(1,1,22050);
-    const src=ac.createBufferSource();
-    src.buffer=buf;src.connect(ac.destination);src.start(0);
+    _ac=new(window.AudioContext||window.webkitAudioContext)();
+    // Тихий звук щоб розблокувати
+    const buf=_ac.createBuffer(1,1,22050);
+    const src=_ac.createBufferSource();
+    src.buffer=buf;src.connect(_ac.destination);src.start(0);
   }catch(e){}
 }
 function openOnboarding(){
@@ -1586,57 +1590,33 @@ function closeM(){document.getElementById('mwrap').classList.remove('open');}
 
 /* TTS */
 // Web Speech API — системний голос для кожної мови
-// TTS — soundoftext.com (Google голос, однаковий на всіх пристроях)
+// TTS — Google Translate TTS (однаковий Google голос на всіх пристроях)
 let _ttsAudio=null;
-let _ttsCache={};
 
-async function speak(text,lang){
+function speak(text,lang){
   if(!text||!text.trim()||text==='—')return;
   const word=text.trim();
-  const tl=lang==='uk'?'uk':'en-US';
-  const rate=C.ttsRate||0.9;
-  if(_ttsAudio){_ttsAudio.pause();_ttsAudio.currentTime=0;_ttsAudio=null;}
+  const tl=lang==='uk'?'uk':'en';
+  const rate=parseFloat(C.ttsRate)||0.9;
+  // Зупиняємо попередній
+  if(_ttsAudio){try{_ttsAudio.pause();}catch(e){}; _ttsAudio=null;}
   if(window.speechSynthesis)speechSynthesis.cancel();
-
-  // Кешуємо URL щоб не запитувати двічі
-  const cacheKey=tl+'|'+word;
-  let audioUrl=_ttsCache[cacheKey];
-
-  if(!audioUrl){
-    try{
-      // soundoftext API — повертає Google TTS MP3
-      const resp=await fetch('https://api.soundoftext.com/sounds',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({engine:'Google',data:{text:word,voice:tl}})
-      });
-      const json=await resp.json();
-      if(json.success&&json.id){
-        // Чекаємо поки файл буде готовий
-        await new Promise(r=>setTimeout(r,600));
-        audioUrl='https://files.soundoftext.com/'+json.id+'.mp3';
-        _ttsCache[cacheKey]=audioUrl;
-      }
-    }catch(e){}
-  }
-
-  if(audioUrl){
-    const audio=new Audio(audioUrl);
-    audio.playbackRate=rate;
-    _ttsAudio=audio;
-    audio.play().catch(()=>_speakFallback(word,lang,rate));
-  }else{
-    _speakFallback(word,lang,rate);
-  }
-}
-
-function _speakFallback(word,lang,rate){
-  if(!window.speechSynthesis)return;
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(word);
-  u.lang=lang==='uk'?'uk-UA':'en-US';
-  u.rate=rate||0.9;u.pitch=1;
-  speechSynthesis.speak(u);
+  // Google Translate TTS — той самий Google голос що в перекладачі
+  const url='https://translate.googleapis.com/translate_tts?ie=UTF-8&q='+
+    encodeURIComponent(word)+'&tl='+tl+'&client=tw-ob&ttsspeed='+rate;
+  const audio=new Audio();
+  audio.crossOrigin='anonymous';
+  audio.src=url;
+  _ttsAudio=audio;
+  audio.play().catch(()=>{
+    // Fallback якщо Google заблокований
+    if(!window.speechSynthesis)return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(word);
+    u.lang=tl==='uk'?'uk-UA':'en-US';
+    u.rate=rate;u.pitch=1;
+    speechSynthesis.speak(u);
+  });
 }
 
 /* TRANSLATE — Google Translate (двонаправлений) */
