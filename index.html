@@ -1589,34 +1589,53 @@ function modal(t,txt,onOk){document.getElementById('mTitle').textContent=t;docum
 function closeM(){document.getElementById('mwrap').classList.remove('open');}
 
 /* TTS */
-// Web Speech API — системний голос для кожної мови
-// TTS — Google Translate TTS (однаковий Google голос на всіх пристроях)
+// ЄДИНИЙ голос на всіх пристроях:
+// прибрали browser/system voices (speechSynthesis), залишили тільки один зовнішній TTS-джерело.
+// Тепер і українська, і англійська звучать через один і той самий сервіс, а не через голоси ОС.
 let _ttsAudio=null;
+let _ttsToken=0;
 
-function speak(text,lang){
+function stopSpeak(){
+  if(_ttsAudio){
+    try{_ttsAudio.pause();}catch(e){}
+    try{_ttsAudio.currentTime=0;}catch(e){}
+    _ttsAudio=null;
+  }
+}
+
+async function speak(text,lang){
   if(!text||!text.trim()||text==='—')return;
-  const word=text.trim();
+
+  const word=text.trim().replace(/\s+/g,' ');
   const tl=lang==='uk'?'uk':'en';
-  const rate=parseFloat(C.ttsRate)||0.9;
-  // Зупиняємо попередній
-  if(_ttsAudio){try{_ttsAudio.pause();}catch(e){}; _ttsAudio=null;}
-  if(window.speechSynthesis)speechSynthesis.cancel();
-  // Google Translate TTS — той самий Google голос що в перекладачі
+  const rate=Math.max(0.24, Math.min(1, parseFloat(C.ttsRate)||0.9));
+  const myToken=++_ttsToken;
+
+  stopSpeak();
+
   const url='https://translate.googleapis.com/translate_tts?ie=UTF-8&q='+
     encodeURIComponent(word)+'&tl='+tl+'&client=tw-ob&ttsspeed='+rate;
+
   const audio=new Audio();
-  audio.crossOrigin='anonymous';
+  audio.preload='auto';
+  audio.playsInline=true;
   audio.src=url;
   _ttsAudio=audio;
-  audio.play().catch(()=>{
-    // Fallback якщо Google заблокований
-    if(!window.speechSynthesis)return;
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(word);
-    u.lang=tl==='uk'?'uk-UA':'en-US';
-    u.rate=rate;u.pitch=1;
-    speechSynthesis.speak(u);
-  });
+
+  audio.onended=()=>{ if(_ttsAudio===audio) _ttsAudio=null; };
+  audio.onerror=()=>{
+    if(myToken!==_ttsToken)return;
+    if(_ttsAudio===audio)_ttsAudio=null;
+    notify('Не вдалося озвучити. Перевір інтернет або доступ до Google TTS.','err');
+  };
+
+  try{
+    await audio.play();
+  }catch(err){
+    if(myToken!==_ttsToken)return;
+    if(_ttsAudio===audio)_ttsAudio=null;
+    notify('Озвучення заблоковане браузером. Натисни кнопку ще раз після взаємодії зі сторінкою.','err');
+  }
 }
 
 /* TRANSLATE — Google Translate (двонаправлений) */
