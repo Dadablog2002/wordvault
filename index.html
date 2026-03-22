@@ -876,6 +876,8 @@ select option{background:var(--card)}
           <div class="srow"><div class="sinfo"><strong>WordVault</strong><span>Розробник: Dmytro Shlapak</span></div></div>
           <div class="srow"><div class="sinfo"><strong>Контакт</strong><span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="296d4d4044481e101c1c694e44484045074a4644">[email&#160;protected]</a></span></div><button class="btn btn-ghost btn-sm" onclick="openOnboarding()">Інструкція</button></div>
           <div class="srow"><div class="sinfo"><strong>Інтерактивний тур</strong><span>Покроковий гід по програмі</span></div><button class="btn btn-ghost btn-sm" onclick="tutReset()">Почати тур</button></div>
+          <div class="srow"><div class="sinfo"><strong>Діагностика голосів</strong><span>Показати доступні TTS голоси</span></div><button class="btn btn-ghost btn-sm" onclick="diagVoices()">Перевірити</button></div>
+          <div id="diagOut" style="font-size:0.72rem;color:var(--text2);padding:8px 0;display:none;word-break:break-all;line-height:1.7"></div>
         </div>
       </div>
     </div>
@@ -1613,6 +1615,27 @@ let _voices = [];
 const _isLocal = location.protocol === 'file:'
   || location.hostname === 'localhost'
   || location.hostname === '127.0.0.1';
+
+function diagVoices(){
+  const el = document.getElementById('diagOut');
+  if(!el) return;
+  el.style.display = 'block';
+  if(!window.speechSynthesis){ el.textContent='speechSynthesis недоступний'; return; }
+  const v = speechSynthesis.getVoices();
+  if(!v.length){ el.innerHTML='Голоси ще не завантажились. Зачекай 2с і спробуй ще раз.'; return; }
+  const ukVoices = v.filter(x=>x.lang.startsWith('uk'));
+  const enVoices = v.filter(x=>x.lang.startsWith('en')).slice(0,5);
+  const picked = _bestVoice('uk');
+  el.innerHTML = 
+    '<b>Хост:</b> '+location.hostname+'<br>'+
+    '<b>Метод:</b> '+(_isLocal?'Google Audio (local)':'Web Speech')+'<br>'+
+    '<b>UK голоси ('+ukVoices.length+'):</b><br>'+
+      (ukVoices.length ? ukVoices.map(x=>'• '+x.name+' ['+x.lang+'] '+(x.localService?'local':'ONLINE')).join('<br>') : 'НЕМАЄ uk голосів!')+
+    '<br><b>Обраний для UA:</b> '+(picked?picked.name+' '+picked.lang:'нічого не знайдено')+
+    '<br><b>EN (перші 5):</b><br>'+enVoices.map(x=>'• '+x.name+' ['+x.lang+']').join('<br>');
+  // Тест озвучення
+  speak('яблуко', 'uk');
+}
 
 function initVoices(){
   if(!window.speechSynthesis) return;
