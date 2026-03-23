@@ -16,7 +16,6 @@
   --gold:#f59e0b; --gold2:#d97706; --golddim:rgba(245,158,11,.15);
   --accent:#58cc02; --accent2:#46a302; --accentdim:rgba(88,204,2,.15);
   --blue:#5b8dee; --bluedim:rgba(91,141,238,.13);
-  --green:#58cc02; --greendim:rgba(88,204,2,.13);
   --teal:#1cb0f6; --tealdim:rgba(28,176,246,.13);
   --red:#ff4b4b; --reddim:rgba(255,75,75,.13);
   --text:#f8fafc; --text2:#94a3b8; --text3:#64748b;
@@ -103,7 +102,7 @@ select option{background:var(--card)}
 .pbar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:6px;transition:width .4s ease}
 /* WORD ROW */
 .wrow{background:var(--card);border:2px solid var(--border);border-radius:var(--rm);margin-bottom:7px;transition:border-color .12s;display:flex;align-items:center;gap:0;padding:0;overflow:hidden}
-.wrow:hover{border-color:var(--border2)}
+@media(hover:hover){.wrow:hover{border-color:var(--border2)}}
 .wrow-main{flex:1;min-width:0;padding:10px 13px;display:flex;align-items:center;gap:10px}
 .wuk{font-weight:800;font-size:0.9rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;max-width:38%}
 .wsep{width:1px;height:13px;background:var(--border2);flex-shrink:0;opacity:.6}
@@ -114,17 +113,9 @@ select option{background:var(--card)}
 .lknown{background:var(--accentdim);color:var(--accent)}
 .wrow-actions{display:flex;align-items:center;gap:3px;padding:0 8px;flex-shrink:0;border-left:2px solid var(--border)}
 .wact{width:30px;height:44px;border:none;background:transparent;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:800;font-family:var(--fm);transition:color .1s,background .1s;border-radius:6px}
-.wact:hover{color:var(--text);background:var(--card2)}
-.wact.wact-del:hover{color:var(--red);background:var(--reddim)}
-.wact.wact-spk:hover{color:var(--teal);background:var(--tealdim)}
+@media(hover:hover){.wact:hover{color:var(--text);background:var(--card2)}.wact.wact-del:hover{color:var(--red);background:var(--reddim)}.wact.wact-spk:hover{color:var(--teal);background:var(--tealdim)}}
 .spk{width:30px;height:30px;border-radius:8px;border:2px solid var(--border);background:var(--card2);color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:800;font-family:var(--fm);transition:all .12s;flex-shrink:0}
-.spk:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
-.voice-panel{background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:24px;text-align:center;margin-bottom:14px}
-.mic-btn{width:72px;height:72px;border-radius:50%;border:3px solid var(--border2);background:var(--card2);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--fm);font-size:0.85rem;font-weight:700;transition:all .2s;margin:0 auto 14px}
-.mic-btn.on{background:var(--red);border-color:var(--red);color:#fff;animation:micropulse 1s ease-in-out infinite}
-@keyframes micropulse{0%{box-shadow:0 0 0 0 rgba(255,75,75,.5)}70%{box-shadow:0 0 0 16px rgba(255,75,75,0)}100%{box-shadow:0 0 0 0 rgba(255,75,75,0)}}
-.mic-hint{font-size:0.82rem;color:var(--text2);font-weight:600;margin-bottom:6px}
-.mic-heard{font-family:var(--fm);font-size:1rem;color:var(--teal);min-height:22px;font-weight:500}
+@media(hover:hover){.spk:hover{background:var(--teal);color:#fff;border-color:var(--teal)}}
 /* FLASH PAGE */
 #fSetup{overflow-y:auto;flex:1;padding:18px}
 #fSess{display:flex;flex-direction:column;height:100%;padding:12px 14px;gap:8px;overflow:hidden}
@@ -155,9 +146,8 @@ select option{background:var(--card)}
 /* 3 BUTTONS — always on screen */
 .fc-actions{flex-shrink:0;display:flex;gap:8px}
 .fc-actions .btn{flex:1;padding:13px 8px;font-size:0.88rem;border-radius:var(--rm)}
-.fc-end{flex-shrink:0;text-align:center}
 .flash-mode-btn{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--card);border:2px solid var(--border);border-radius:var(--rm);cursor:pointer;font-family:var(--f);transition:all .15s;text-align:left;box-shadow:0 3px 0 var(--border2)}
-.flash-mode-btn:hover{border-color:var(--blue);transform:translateY(-1px);box-shadow:0 4px 0 rgba(91,141,238,.3)}
+@media(hover:hover){.flash-mode-btn:hover{border-color:var(--blue);transform:translateY(-1px);box-shadow:0 4px 0 rgba(91,141,238,.3)}}
 .flash-mode-left{flex:1;min-width:0}
 .flash-mode-title{font-size:0.92rem;font-weight:800;color:var(--text);margin-bottom:2px}
 .flash-mode-desc{font-size:0.72rem;color:var(--text3);font-weight:600}
@@ -243,9 +233,9 @@ select option{background:var(--card)}
 .srow:last-child{border-bottom:none}
 .sinfo strong{display:block;font-size:0.88rem;font-weight:800;margin-bottom:2px}
 .sinfo span{font-size:0.75rem;color:var(--text2);font-weight:600}
-.mb6{margin-bottom:6px}.mb8{margin-bottom:8px}.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}.mb14{margin-bottom:14px}.mb16{margin-bottom:16px}.mt8{margin-top:8px}.mt12{margin-top:12px}
+.mb6{margin-bottom:6px}.mb8{margin-bottom:8px}.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}.mt8{margin-top:8px}.mt12{margin-top:12px}
 .flex{display:flex}.fca{display:flex;align-items:center}.fsb{display:flex;align-items:center;justify-content:space-between}
-.gap8{gap:8px}.gap10{gap:10px}.gap12{gap:12px}
+.gap8{gap:8px}.gap10{gap:10px}
 .tc{text-align:center}
 .mute{color:var(--text2);font-size:0.82rem;font-weight:600}
 .empty{text-align:center;padding:40px 16px;color:var(--text2)}
@@ -266,7 +256,6 @@ select option{background:var(--card)}
 .tut-box-text{font-size:0.82rem;color:var(--text2);line-height:1.5;margin-bottom:12px}
 .tut-box-btns{display:flex;gap:8px;align-items:center}
 .tut-step{font-size:0.68rem;color:var(--text3);font-weight:700;flex:1}
-.tut-arrow{position:absolute;width:0;height:0}
 /* SPELL GAME */
 .sp-letter{
   width:44px;height:44px;border-radius:var(--rs);background:var(--card);border:2.5px solid var(--border2);
@@ -276,7 +265,7 @@ select option{background:var(--card)}
   user-select:none;-webkit-user-select:none;touch-action:manipulation;
   box-shadow:0 3px 0 var(--border2);
 }
-.sp-letter:hover{border-color:var(--teal);background:var(--tealdim);transform:translateY(-2px);}
+@media(hover:hover){.sp-letter:hover{border-color:var(--teal);background:var(--tealdim);transform:translateY(-2px);}}
 .sp-letter.in-answer{background:var(--bluedim);border-color:var(--blue);color:var(--teal);}
 .sp-letter.sp-correct{background:var(--accentdim);border-color:var(--accent);color:var(--accent);animation:optBounce .35s ease;}
 .sp-letter.sp-wrong{background:var(--reddim);border-color:var(--red);color:var(--red);animation:miShake .35s ease;}
@@ -467,7 +456,6 @@ select option{background:var(--card)}
       </div>
       <div class="fsb mb8">
         <span id="dictCnt" class="mute"></span>
-
 
       </div>
       <div id="dictList"></div>
@@ -834,32 +822,15 @@ select option{background:var(--card)}
             <div class="sinfo"><strong>Автоозвучення карток</strong><span>Автоматично читати слово при показі картки</span></div>
             <button class="toggle on" id="tgAutoSpeak" onclick="this.classList.toggle('on');setTimeout(saveStg,0)"></button>
           </div>
-
           <div class="srow">
-            <div class="sinfo"><strong>Голос UA (вимова)</strong><span>Мова для озвучення українських слів</span></div>
-            <select id="stgUk" style="width:auto;min-width:140px" onchange="saveStg()">
-              <option value="uk-UA">Українська</option>
-              <option value="ru-RU">Русский</option>
-            </select>
+            <div class="sinfo"><strong>Нагадування</strong><span>Щоденне повідомлення "Час вчити слова!"</span></div>
+            <button class="toggle" id="tgNotif" onclick="toggleNotif()"></button>
           </div>
-          <div class="srow">
-            <div class="sinfo"><strong>Голос EN (вимова)</strong><span>Акцент для англійських слів</span></div>
-            <select id="stgEn" style="width:auto;min-width:140px" onchange="saveStg()">
-              <option value="en-US">English US</option>
-              <option value="en-GB">English UK</option>
-              <option value="en-AU">English AU</option>
-            </select>
+          <div class="srow" id="notifTimeRow" style="display:none">
+            <div class="sinfo"><strong>Час нагадування</strong><span>Коли надсилати повідомлення</span></div>
+            <input type="time" id="notifTime" value="09:00" onchange="saveNotifTime()" style="width:auto;min-width:100px;padding:8px 10px;font-size:0.88rem">
           </div>
-          <div class="srow">
-            <div class="sinfo"><strong>Темп озвучення</strong><span>Швидкість голосового читання слів</span></div>
-            <select id="stgRate" style="width:auto;min-width:130px" onchange="saveStg()">
-              <option value="0.6">Повільно</option>
-              <option value="0.9">Нормально</option>
-              <option value="1.3">Швидко</option>
-            </select>
-          </div>
-        </div>
-        <div class="sset">
+          <div class="sset">
           <div class="sset-lbl">Дані</div>
           <div class="srow">
             <div class="sinfo"><strong>Скинути статистику</strong><span>Очистити прогрес і результати тестів</span></div>
@@ -1002,7 +973,7 @@ setVH();
 window.addEventListener('resize',setVH);
 window.addEventListener('orientationchange',()=>setTimeout(setVH,100));
 
-let W=[],S={tests:0,correct:0,total:0,daily:{},streak:0,lastDay:''},C={cards:20,sound:true,autoT:true,autoSpeak:true,voiceUk:'uk-UA',voiceEn:'en-US',ttsRate:0.9};
+let W=[],S={tests:0,correct:0,total:0,daily:{},streak:0,lastDay:''},C={cards:20,sound:true,autoSpeak:true,voiceEn:'en-US',ttsRate:0.9,notif:false,notifTime:'09:00'};
 let theme='dark';
 
 /* ONBOARDING */
@@ -1113,7 +1084,6 @@ function checkOnboarding(){
     setTimeout(tutStart, 800);
   }
 }
-
 
 /* TUTORIAL — інтерактивний покроковий гід */
 let tutIdx=0;
@@ -1402,7 +1372,6 @@ function load(){
     .filter(w=>w.uk.length>0&&w.en.length>0&&w.en!=='—'&&w.en!=='???');
   if(W.length<before){
     sW();
-    console.warn('Видалено '+(before-W.length)+' слів без перекладу при завантаженні');
   }
   applyTheme();applyStg();updateStreak();updateHome();renderDict();renderChart('homeChart','chartDays');
   loadShufflePosition();
@@ -1413,8 +1382,6 @@ function load(){
   // Автоматично додаємо базові слова при першому запуску
   if(W.length===0)setTimeout(addDemo,400);
   updateFlashSetup();
-  // Ініціалізуємо голоси TTS при старті
-  initVoices();
 }
 const sW=()=>{
   // Ніколи не зберігаємо слова без перекладу
@@ -1472,19 +1439,12 @@ function saveStg(){
   const elC=g('stgC'); if(elC&&elC.value)C.cards=parseInt(elC.value)||20;
   const elSnd=g('tgSnd'); if(elSnd)C.sound=elSnd.classList.contains('on');
   const elAS=g('tgAutoSpeak'); if(elAS)C.autoSpeak=elAS.classList.contains('on');
-  const elAT=g('tgAT'); if(elAT)C.autoT=elAT.classList.contains('on');
-  const elUk=g('stgUk'); if(elUk&&elUk.value)C.voiceUk=elUk.value;
   const elEn=g('stgEn'); if(elEn&&elEn.value)C.voiceEn=elEn.value;
   const elRate=g('stgRate'); if(elRate&&elRate.value)C.ttsRate=parseFloat(elRate.value)||0.9;
   sC();
   // Додаткова перевірка — логуємо для діагностики
-  // console.log('Saved C:', JSON.stringify(C));
 }
 // Зберігати окремий параметр без читання всього DOM
-function saveProp(key, val){
-  C[key]=val;
-  sC();
-}
 function applyStg(){
   const g=id=>document.getElementById(id);
   // Встановлюємо значення select через перебір options — найнадійніший спосіб
@@ -1496,12 +1456,11 @@ function applyStg(){
     }
   }
   setSelect(g('stgC'), C.cards);
-  setSelect(g('stgUk'), C.voiceUk);
   setSelect(g('stgEn'), C.voiceEn);
   setSelect(g('stgRate'), C.ttsRate||0.9);
   if(g('tgSnd'))g('tgSnd').classList.toggle('on',C.sound!==false);
-  if(g('tgAT'))g('tgAT').classList.toggle('on',C.autoT!==false);
   if(g('tgAutoSpeak'))g('tgAutoSpeak').classList.toggle('on',C.autoSpeak!==false);
+  applyNotifStg();
 }
 
 /* NAV */
@@ -1618,8 +1577,6 @@ function closeM(){document.getElementById('mwrap').classList.remove('open');}
 /* TTS — Google Translate */
 let _ttsAudio = null;
 
-function initVoices(){}
-
 // iOS/Android detection
 const _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const _PROXY = 'https://solitary-salad-6403.ddima7955.workers.dev/?url=';
@@ -1634,8 +1591,6 @@ if(_isIOS){
     a.play().catch(()=>{});
   }, {passive:true});
 }
-
-function initVoices(){}
 
 function speak(text, lang){
   if(!text||!text.trim()||text==='—') return;
@@ -2327,8 +2282,6 @@ function resetAllKnown(){
     sW();renderKnown();updateHome();notify('Скинуто');
   });
 }
-
-
 
 /* EXPORT/IMPORT */
 function exportW(){const a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify({words:W,saved:new Date().toISOString()},null,2));a.download='wordvault.json';a.click();notify('Збережено');}
@@ -3187,7 +3140,6 @@ function renderTopWords(){
 
 /* CLEAR */
 
-
 function clearSt(){modal('Скинути статистику?','Весь прогрес і результати тестів будуть видалені.',()=>{S={tests:0,correct:0,total:0,daily:{},streak:0,lastDay:''};sS();updateHome();updateStreak();notify('Статистику скинуто','info');});}
 function clearWd(){modal('Видалити всі слова?','ВСІ слова словника будуть видалені назавжди!',()=>{W=[];sW();renderDict();updateHome();notify('Слова видалено','info');});}
 function clearAll(){
@@ -3197,7 +3149,7 @@ function clearAll(){
     ()=>{
       W=[];
       S={tests:0,correct:0,total:0,daily:{},streak:0,lastDay:''};
-      C={cards:20,sound:true,autoT:true,autoSpeak:true,voiceUk:'uk-UA',voiceEn:'en-US',ttsRate:0.9};
+      C={cards:20,sound:true,autoSpeak:true,voiceEn:'en-US',ttsRate:0.9,notif:false,notifTime:'09:00'};
       theme='dark';
       // Очищаємо все — включно з онбордингом і туторіалом
       localStorage.clear();
@@ -3382,6 +3334,116 @@ function sv(id,v){
   // fSess uses flex, handle specially
   if(id==='fSess'){el.style.display=v?'flex':'none';return;}
   el.style.display=v?'block':'none';
+}
+
+/* NOTIFICATIONS */
+function toggleNotif(){
+  const btn = document.getElementById('tgNotif');
+  const isOn = btn.classList.contains('on');
+  if(isOn){
+    // Вимкнути
+    btn.classList.remove('on');
+    C.notif = false; sC();
+    document.getElementById('notifTimeRow').style.display = 'none';
+    notify('Нагадування вимкнено','info');
+  } else {
+    // Увімкнути — запитати дозвіл
+    if(!('Notification' in window)){
+      notify('Браузер не підтримує повідомлення','err'); return;
+    }
+    Notification.requestPermission().then(perm => {
+      if(perm === 'granted'){
+        btn.classList.add('on');
+        C.notif = true; sC();
+        document.getElementById('notifTimeRow').style.display = 'flex';
+        scheduleNotif();
+        notify('Нагадування увімкнено ✓');
+      } else {
+        notify('Дозвіл не надано. Дозволь повідомлення в налаштуваннях браузера','err');
+      }
+    });
+  }
+}
+
+function saveNotifTime(){
+  const t = document.getElementById('notifTime').value;
+  C.notifTime = t; sC();
+  scheduleNotif();
+  notify('Час нагадування: '+t);
+}
+
+function scheduleNotif(){
+  if(!C.notif || Notification.permission !== 'granted') return;
+  // Зберігаємо час наступного повідомлення
+  const timeStr = C.notifTime || '09:00';
+  const [h, m] = timeStr.split(':').map(Number);
+  const now = new Date();
+  const next = new Date();
+  next.setHours(h, m, 0, 0);
+  // Якщо час вже пройшов сьогодні — ставимо на завтра
+  if(next <= now) next.setDate(next.getDate() + 1);
+  const msUntil = next - now;
+  // Скидаємо старий таймер
+  if(window._notifTimer) clearTimeout(window._notifTimer);
+  window._notifTimer = setTimeout(()=>{
+    fireNotif();
+    // Повторюємо кожні 24 години
+    window._notifInterval = setInterval(fireNotif, 24*60*60*1000);
+  }, msUntil);
+}
+
+function fireNotif(){
+  if(!C.notif || Notification.permission !== 'granted') return;
+  const due = dueWords().length;
+  const body = due > 0
+    ? due + ' слів чекають на повторення. Не пропусти!'
+    : 'Не забувай займатись щодня!';
+  try{
+    new Notification('WordVault 📚', {
+      body: body,
+      icon: 'icon.png',
+      badge: 'icon.png',
+      tag: 'wordvault-daily',
+      renotify: true,
+    });
+  }catch(e){}
+}
+
+function applyNotifStg(){
+  const btn = document.getElementById('tgNotif');
+  const row = document.getElementById('notifTimeRow');
+  if(!btn || !row) return;
+  const on = C.notif && Notification.permission === 'granted';
+  btn.classList.toggle('on', !!on);
+  row.style.display = on ? 'flex' : 'none';
+  const ti = document.getElementById('notifTime');
+  if(ti) ti.value = C.notifTime || '09:00';
+  if(on) scheduleNotif();
+}
+
+/* TEST NOTIFICATION — видалити після тесту */
+function testNotif(seconds){
+  if(!('Notification' in window)){
+    alert('Браузер не підтримує повідомлення');
+    return;
+  }
+  if(Notification.permission !== 'granted'){
+    Notification.requestPermission().then(p=>{
+      if(p==='granted') testNotif(seconds);
+      else alert('Дозвіл не надано!');
+    });
+    return;
+  }
+  console.log('Повідомлення прийде через '+seconds+' секунд...');
+  setTimeout(()=>{
+    new Notification('WordVault 📚', {
+      body: 'Час вчити слова! Тест через '+seconds+'с ✓',
+      icon: 'icon.png',
+      tag: 'wv-test',
+    });
+    console.log('Повідомлення надіслано!');
+  }, seconds * 1000);
+  console.log('Чекай '+seconds+' секунд...');
 }
 
 /* INIT */
