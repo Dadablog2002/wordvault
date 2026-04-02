@@ -11,24 +11,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0f172a; --panel:#1e293b; --card:#1e293b; --card2:#293548; --card3:#334155;
-  --border:#2d3f55; --border2:#3d5068;
-  --gold:#f59e0b; --gold2:#d97706; --golddim:rgba(245,158,11,.15);
-  --accent:#58cc02; --accent2:#46a302; --accentdim:rgba(88,204,2,.15);
-  --blue:#5b8dee; --bluedim:rgba(91,141,238,.13);
-  --teal:#1cb0f6; --tealdim:rgba(28,176,246,.13);
-  --red:#ff4b4b; --reddim:rgba(255,75,75,.13);
-  --text:#f8fafc; --text2:#94a3b8; --text3:#64748b;
+  --bg:#0f0a1e; --panel:#1a1130; --card:#1a1130; --card2:#231840; --card3:#2e2050;
+  --border:#3a2560; --border2:#4e3480;
+  --gold:#f59e0b; --gold2:#b56b00; --golddim:rgba(245,158,11,.15);
+  --accent:#c026d3; --accent2:#7e0792; --accentdim:rgba(192,38,211,.18);
+  --blue:#a855f7; --bluedim:rgba(168,85,247,.15);
+  --teal:#e879f9; --teal2:#a21caf; --tealdim:rgba(232,121,249,.15);
+  --red:#ff4b4b; --red2:#b80000; --reddim:rgba(255,75,75,.13);
+  --text:#f8fafc; --text2:#c4b5d8; --text3:#8b7aa8;
   --r:16px; --rm:12px; --rs:8px;
   --f:'Nunito',sans-serif; --fm:'JetBrains Mono',monospace;
   --nav:240px; --topbar:58px;
-  --shadow:0 4px 0;
+  --shadow:0 5px 0;
 }
 [data-theme="light"]{
-  --bg:#f0f4ff; --panel:#ffffff; --card:#ffffff; --card2:#f1f5f9; --card3:#e2e8f0;
-  --border:#e2e8f0; --border2:#cbd5e1;
-  --text:#1e293b; --text2:#64748b; --text3:#94a3b8;
-  --shadow:0 4px 0;
+  --bg:#fdf4ff; --panel:#ffffff; --card:#ffffff; --card2:#f5eeff; --card3:#ede0ff;
+  --border:#ddc8f5; --border2:#c9a8ee;
+  --gold2:#c47b00; --accent2:#8b05a0; --teal2:#9c01b8; --red2:#c30000;
+  --text:#1e0a2e; --text2:#7c5a9e; --text3:#a87ec8;
+  --shadow:0 5px 0;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 /* Прибираємо focus outline на кнопках після тапу/кліку мишею, лишаємо тільки для клавіатури */
@@ -38,19 +39,25 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;font-family:var(-
 .app{display:flex;width:100vw;height:100vh;height:100dvh;overflow:hidden}
 .card{background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:18px}
 .sidebar{width:var(--nav);height:100vh;height:100dvh;background:var(--panel);border-right:2px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;z-index:50;transition:transform .25s ease}
-.logo{padding:20px 18px 14px;border-bottom:2px solid var(--border)}
-.logo-t{font-size:1.5rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.5px}
-.logo-s{font-size:0.68rem;color:var(--text3);margin-top:2px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.logo{padding:16px 14px 14px;border-bottom:2px solid var(--border)}
+.logo-inner{display:flex;align-items:center;gap:10px}
+.logo-icon{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#c026d3,#a855f7);display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:900;color:#fff;flex-shrink:0;box-shadow:0 3px 0 #7e0792,0 6px 16px rgba(192,38,211,.35);position:relative;overflow:hidden}
+.logo-icon::after{content:'';position:absolute;top:0;left:0;right:0;height:50%;background:rgba(255,255,255,.15);border-radius:12px 12px 0 0}
+.logo-text-wrap{min-width:0}
+.logo-t{font-size:1.22rem;font-weight:900;background:linear-gradient(135deg,#e879f9,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.3px;line-height:1}
+.logo-s{font-size:0.6rem;color:var(--text3);margin-top:3px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px}
+[data-theme="light"] .logo-icon{box-shadow:0 3px 0 var(--accent2),0 6px 16px rgba(192,38,211,.25)}
 .nav{flex:1;min-height:0;padding:10px 10px;overflow-y:auto;scrollbar-width:none}
 .nav::-webkit-scrollbar{display:none}
 .nav-sec{font-size:0.6rem;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:2px;padding:12px 8px 5px}
 .ni{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;border:2px solid transparent;background:transparent;color:var(--text2);cursor:pointer;border-radius:var(--rm);font-family:var(--f);font-size:0.88rem;font-weight:700;transition:all .15s;text-align:left;margin-bottom:3px}
 @media(hover:hover){.ni:hover{background:var(--card2);color:var(--text);border-color:var(--border)}}
-.ni.on{background:var(--accentdim);color:var(--accent);border-color:rgba(88,204,2,.3)}
+.ni.on{background:var(--accentdim);color:var(--teal);border-color:rgba(232,121,249,.35)}
 .ni-ic{width:34px;height:34px;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;transition:all .15s}
 .ni.on .ni-ic{background:var(--accentdim);}
 .sidebar-footer{padding:12px 10px;border-top:2px solid var(--border);flex-shrink:0}
-.streak-box{background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(245,158,11,.05));border:2px solid rgba(245,158,11,.3);border-radius:var(--rm);padding:12px 14px;display:flex;align-items:center;gap:12px}
+.streak-box{background:linear-gradient(135deg,rgba(245,158,11,.2),rgba(245,158,11,.08));border:2px solid rgba(245,158,11,.4);border-radius:var(--rm);padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 4px 0 rgba(181,107,0,.5);position:relative;transition:transform .1s,box-shadow .1s;cursor:default}
+.streak-box:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(181,107,0,.5)}
 .streak-n{font-size:2.2rem;font-weight:900;color:var(--gold);line-height:1}
 .streak-t{font-size:0.72rem;color:var(--text2);font-weight:600}
 .streak-t strong{display:block;color:var(--text);font-size:0.78rem;font-weight:800}
@@ -62,31 +69,38 @@ html,body{width:100%;height:100%;height:100dvh;overflow:hidden;font-family:var(-
 .page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding:18px 18px 100px;display:none;scrollbar-width:thin;scrollbar-color:var(--card2) transparent;-webkit-overflow-scrolling:touch}
 .page::-webkit-scrollbar{width:3px}
 .page::-webkit-scrollbar-thumb{background:var(--card2);border-radius:2px}
-.page.on{display:block;animation:fadeup .22s ease}
+.page.on{display:block;animation:slideIn .25s cubic-bezier(.4,0,.2,1)}
 #p-flash{overflow:hidden;padding:0}
 #p-flash.on{display:flex;flex-direction:column}
 @keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .block{background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:20px}
 .block-title{font-size:0.65rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:14px}
-.stile{background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:4px}
-.sval{font-size:2rem;font-weight:900;color:var(--accent);line-height:1;margin-bottom:2px}
-.slbl{font-size:0.72rem;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border:none;border-radius:var(--rm);font-family:var(--f);font-size:0.92rem;font-weight:800;cursor:pointer;transition:all .12s;white-space:nowrap;letter-spacing:.2px;position:relative}
-.btn:active{transform:translateY(2px)!important;box-shadow:none!important}
+.stile{background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:18px 16px;display:flex;flex-direction:column;gap:4px;position:relative;overflow:hidden;transition:transform .15s,border-color .15s}
+.stile::after{content:'';position:absolute;top:0;right:0;width:60px;height:60px;border-radius:50%;opacity:.06;transform:translate(20px,-20px)}
+.stile:nth-child(1)::after{background:var(--teal);opacity:.15}
+.stile:nth-child(2)::after{background:var(--accent);opacity:.15}
+.stile:nth-child(3)::after{background:var(--gold);opacity:.15}
+.stile:nth-child(4)::after{background:var(--blue);opacity:.15}
+@media(hover:hover){.stile:hover{transform:translateY(-2px);border-color:var(--border2)}}
+.sval{font-size:2.2rem;font-weight:900;color:var(--accent);line-height:1;margin-bottom:2px}
+.slbl{font-size:0.68rem;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border:none;border-radius:var(--rm);font-family:var(--f);font-size:0.92rem;font-weight:800;cursor:pointer;transition:transform .1s,box-shadow .1s,filter .1s;white-space:nowrap;letter-spacing:.2px;position:relative}
+.btn:active{transform:translateY(4px)!important;box-shadow:0 1px 0 transparent!important}
 .btn:disabled{opacity:.38;cursor:not-allowed;transform:none!important;filter:none!important;box-shadow:none!important}
 .btn-gold{background:var(--gold);color:#1a0a00;box-shadow:var(--shadow) var(--gold2)}
-@media(hover:hover){.btn-gold:hover:not(:disabled){filter:brightness(1.07);transform:translateY(-1px)}}
-.btn-green{background:var(--accent);color:#fff;box-shadow:var(--shadow) var(--accent2)}
-@media(hover:hover){.btn-green:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-1px)}}
+@media(hover:hover){.btn-gold:hover:not(:disabled){filter:brightness(1.07);transform:translateY(-2px);box-shadow:0 7px 0 var(--gold2)}}
+.btn-green{background:linear-gradient(135deg,#c026d3,#a855f7);color:#fff;box-shadow:var(--shadow) var(--accent2)}
+@media(hover:hover){.btn-green:hover:not(:disabled){filter:brightness(1.12);transform:translateY(-2px);box-shadow:0 7px 0 var(--accent2)}}
 .btn-ghost{background:var(--card2);color:var(--text);border:2px solid var(--border2);box-shadow:var(--shadow) var(--border2)}
-@media(hover:hover){.btn-ghost:hover:not(:disabled){background:var(--card3);transform:translateY(-1px)}}
-.btn-red{background:var(--reddim);color:var(--red);border:2px solid rgba(255,75,75,.3);box-shadow:var(--shadow) rgba(255,75,75,.4)}
-@media(hover:hover){.btn-red:hover:not(:disabled){background:var(--red);color:#fff;border-color:var(--red)}}
-.btn-blue{background:var(--teal);color:#fff;box-shadow:var(--shadow) #1490c8}
-@media(hover:hover){.btn-blue:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-1px)}}
+@media(hover:hover){.btn-ghost:hover:not(:disabled){background:var(--card3);transform:translateY(-2px);box-shadow:0 7px 0 var(--border2)}}
+.btn-red{background:var(--reddim);color:var(--red);border:2px solid rgba(255,75,75,.3);box-shadow:var(--shadow) var(--red2)}
+@media(hover:hover){.btn-red:hover:not(:disabled){background:var(--red);color:#fff;border-color:var(--red);box-shadow:var(--shadow) var(--red2)}}
+.btn-blue{background:linear-gradient(135deg,#e879f9,#a855f7);color:#fff;box-shadow:var(--shadow) var(--teal2)}
+@media(hover:hover){.btn-blue:hover:not(:disabled){filter:brightness(1.12);transform:translateY(-2px);box-shadow:0 7px 0 var(--teal2)}}
 .btn-lg{padding:16px 32px;font-size:1rem;border-radius:var(--r)}
 .btn-sm{padding:8px 14px;font-size:0.78rem;font-weight:700;border-radius:var(--rs)}
 .btn-xs{padding:4px 10px;font-size:0.72rem;font-weight:700;border-radius:6px;border:none}
@@ -99,7 +113,7 @@ input:focus,select:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--tea
 input::placeholder{color:var(--text3);font-weight:400}
 select option{background:var(--card)}
 .pbar{height:10px;background:var(--card2);border-radius:6px;overflow:hidden}
-.pbar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:6px;transition:width .4s ease}
+.pbar-fill{height:100%;background:linear-gradient(90deg,#a855f7,#e879f9);border-radius:6px;transition:width .4s ease}
 /* WORD ROW */
 .wrow{background:var(--card);border:2px solid var(--border);border-radius:var(--rm);margin-bottom:7px;transition:border-color .12s;display:flex;align-items:center;gap:0;padding:0;overflow:hidden}
 @media(hover:hover){.wrow:hover{border-color:var(--border2)}}
@@ -108,9 +122,9 @@ select option{background:var(--card)}
 .wsep{width:1px;height:13px;background:var(--border2);flex-shrink:0;opacity:.6}
 .wen{font-family:var(--fm);color:var(--teal);font-size:0.83rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
 .wlvl{font-size:0.57rem;font-weight:900;padding:2px 7px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
-.lnew{background:var(--tealdim);color:var(--teal)}
-.llearn{background:var(--golddim);color:var(--gold)}
-.lknown{background:var(--accentdim);color:var(--accent)}
+.lnew{background:linear-gradient(135deg,rgba(28,176,246,.25),rgba(28,176,246,.1));color:var(--teal);border:1px solid rgba(28,176,246,.3)}
+.llearn{background:linear-gradient(135deg,rgba(245,158,11,.3),rgba(245,158,11,.1));color:var(--gold);border:1px solid rgba(245,158,11,.35)}
+.lknown{background:linear-gradient(135deg,rgba(88,204,2,.3),rgba(88,204,2,.1));color:var(--accent);border:1px solid rgba(88,204,2,.35)}
 .wrow-actions{display:flex;align-items:center;gap:3px;padding:0 8px;flex-shrink:0;border-left:2px solid var(--border)}
 .wact{width:30px;height:44px;border:none;background:transparent;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:800;font-family:var(--fm);transition:color .1s,background .1s;border-radius:6px}
 @media(hover:hover){.wact:hover{color:var(--text);background:var(--card2)}.wact.wact-del:hover{color:var(--red);background:var(--reddim)}.wact.wact-spk:hover{color:var(--teal);background:var(--tealdim)}}
@@ -126,17 +140,17 @@ select option{background:var(--card)}
 .dot.now{background:var(--gold);width:16px;border-radius:3px}
 .dots-text{text-align:center;font-size:0.68rem;font-weight:800;color:var(--text3);letter-spacing:1px;font-family:var(--fm)}
 .dots-text span{color:var(--gold)}
-/* CARD — strict fixed height, never grows beyond this */
-.fc-wrap{flex:0 0 auto;height:220px;perspective:1200px}
+/* CARD — responsive height */
+.fc-wrap{flex:0 0 auto;height:clamp(200px,28vh,300px);perspective:1200px}
 .fc{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1);cursor:pointer}
 .fc.flipped{transform:rotateY(180deg)}
 .fc.slide-out-left{animation:fcSlideOut .3s ease forwards}
 .fc.slide-in-right{animation:fcSlideIn .28s ease forwards}
 @keyframes fcSlideOut{0%{opacity:1;transform:translateX(0) scale(1)}100%{opacity:0;transform:translateX(-40px) scale(0.96)}}
 @keyframes fcSlideIn{0%{opacity:0;transform:translateX(30px) scale(0.97)}100%{opacity:1;transform:translateX(0) scale(1)}}
-.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 16px;border:2px solid var(--border);gap:2px}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 16px;border:2px solid var(--border);gap:2px;transition:background .4s ease}
 .fc-front{background:var(--card)}
-.fc-back{background:linear-gradient(135deg,#0f2548,#1e293b);border-color:var(--blue);transform:rotateY(180deg)}
+.fc-back{background:linear-gradient(135deg,#1a0a2e,#1a1130);border-color:var(--blue);transform:rotateY(180deg)}
 .fc-lang{font-size:0.55rem;font-weight:900;text-transform:uppercase;letter-spacing:3px;color:var(--text3)}
 .fc-word{font-size:1.75rem;font-weight:900;text-align:center;line-height:1.1}
 .fc-hint{font-size:0.65rem;color:var(--text3);font-weight:600}
@@ -162,7 +176,8 @@ select option{background:var(--card)}
 .qsub{font-size:0.82rem;color:var(--text2);font-weight:600}
 .qaudio{display:flex;justify-content:center;gap:8px;margin-top:10px}
 .opts{display:grid;gap:10px;margin-top:4px}
-.opt{padding:14px 18px;border:2.5px solid var(--border);border-radius:var(--rm);background:var(--card);color:var(--text);font-size:0.92rem;font-weight:700;cursor:pointer;text-align:left;font-family:var(--f);transition:all .12s;display:flex;align-items:center;gap:12px;box-shadow:0 3px 0 var(--border)}
+.opt{padding:14px 18px;border:2.5px solid var(--border);border-radius:var(--rm);background:var(--card);color:var(--text);font-size:0.92rem;font-weight:700;cursor:pointer;text-align:left;font-family:var(--f);transition:transform .1s,box-shadow .1s,background .1s,border-color .1s;display:flex;align-items:center;gap:12px;box-shadow:0 4px 0 var(--border)}
+.opt:active:not(:disabled){transform:translateY(3px)!important;box-shadow:0 1px 0 var(--border)!important}
 .opt-letter{width:30px;height:30px;border-radius:8px;background:var(--card2);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:800;font-family:var(--fm);color:var(--text2);flex-shrink:0;transition:all .12s}
 @media(hover:hover){.opt:hover:not(:disabled){border-color:var(--teal);background:var(--tealdim);transform:translateY(-1px);box-shadow:0 4px 0 rgba(28,176,246,.3)}}
 @media(hover:hover){.opt:hover:not(:disabled) .opt-letter{background:var(--teal);border-color:var(--teal);color:#fff}}
@@ -233,7 +248,7 @@ select option{background:var(--card)}
 .srow:last-child{border-bottom:none}
 .sinfo strong{display:block;font-size:0.88rem;font-weight:800;margin-bottom:2px}
 .sinfo span{font-size:0.75rem;color:var(--text2);font-weight:600}
-.mb6{margin-bottom:6px}.mb8{margin-bottom:8px}.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}.mt8{margin-top:8px}.mt12{margin-top:12px}
+.mb6{margin-bottom:6px}.mb8{margin-bottom:8px}.mb10{margin-bottom:10px}.mb12{margin-bottom:12px}.mt6{margin-top:6px}.mt8{margin-top:8px}.mt12{margin-top:12px}
 .flex{display:flex}.fca{display:flex;align-items:center}.fsb{display:flex;align-items:center;justify-content:space-between}
 .gap8{gap:8px}.gap10{gap:10px}
 .tc{text-align:center}
@@ -247,7 +262,12 @@ select option{background:var(--card)}
 .ld{display:flex;align-items:center;gap:8px;color:var(--text2);font-size:0.82rem;justify-content:center;font-weight:600}
 .spin{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:sp .75s linear infinite;flex-shrink:0}
 @keyframes sp{to{transform:rotate(360deg)}}
-.mob-menu{display:none}
+.mob-menu{display:none;flex-direction:column;justify-content:center;align-items:center;width:40px;height:40px;border-radius:var(--rm);background:var(--card2);border:2px solid var(--border2);box-shadow:0 3px 0 var(--border2);cursor:pointer;gap:5px;padding:0;transition:transform .1s,box-shadow .1s}
+.mob-menu:active{transform:translateY(3px);box-shadow:0 0 0 var(--border2)}
+.hb-line{width:18px;height:2.5px;background:var(--text);border-radius:2px;transition:all .25s cubic-bezier(.4,0,.2,1);transform-origin:center}
+.mob-menu.open .hb-line:nth-child(1){transform:translateY(7.5px) rotate(45deg)}
+.mob-menu.open .hb-line:nth-child(2){opacity:0;transform:scaleX(0)}
+.mob-menu.open .hb-line:nth-child(3){transform:translateY(-7.5px) rotate(-45deg)}
 /* TUTORIAL */
 .tut-overlay{position:fixed;inset:0;z-index:500;pointer-events:none}
 .tut-hole{position:absolute;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.72);transition:all .35s cubic-bezier(.4,0,.2,1);pointer-events:none}
@@ -274,7 +294,56 @@ select option{background:var(--card)}
 /* Overlay — blocks ALL clicks behind sidebar/modals on any screen size */
 .sov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:199;cursor:pointer;pointer-events:none}
 .sov.open{display:block;pointer-events:all}
-@media(max-width:700px){
+/* LIVES SYSTEM */
+.lives-bar{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.heart{font-size:1.3rem;line-height:1;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s}
+.heart.lost{opacity:.22;transform:scale(.75);filter:grayscale(1)}
+@keyframes heartShake{0%,100%{transform:scale(1)}20%{transform:scale(1.4) rotate(-10deg)}40%{transform:scale(0.8)}60%{transform:scale(1.1)}80%{transform:scale(0.95)}}
+.heart.losing{animation:heartShake .45s ease}
+/* STREAK FIRE OVERLAY */
+.streak-fire-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.85);flex-direction:column;gap:18px;pointer-events:all;animation:fadeIn .35s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.streak-fire-emoji{font-size:5rem;animation:firePulse 1s infinite alternate ease-in-out}
+@keyframes firePulse{from{transform:scale(1) rotate(-3deg)}to{transform:scale(1.15) rotate(3deg)}}
+.streak-fire-text{font-size:2rem;font-weight:900;color:var(--gold);text-align:center}
+.streak-fire-sub{font-size:1rem;color:var(--text2);font-weight:700;text-align:center}
+/* GAME OVER OVERLAY */
+.gameover-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.88);flex-direction:column;gap:16px;animation:fadeIn .3s ease}
+.gameover-emoji{font-size:4rem;animation:gameover-bounce .6s ease}
+@keyframes gameover-bounce{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+/* COURSE/PROGRESS PAGE */
+.course-header{padding:0 0 16px;margin-bottom:4px}
+.course-level{border:2.5px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden;transition:border-color .2s,opacity .2s;position:relative}
+.course-level.active-level{border-color:var(--teal);box-shadow:0 0 0 3px var(--tealdim),0 4px 20px rgba(232,121,249,.2)}
+.course-level.completed{border-color:var(--border2);opacity:.72}
+.course-level.completed .clevel-head{background:var(--card2)}
+.course-level.locked{opacity:.38;pointer-events:none}
+.clevel-head{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card);transition:background .15s;flex-wrap:wrap}
+.clevel-num{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:900;flex-shrink:0}
+.clevel-info{flex:1;min-width:0}
+.clevel-title{font-size:0.95rem;font-weight:900;color:var(--text);margin-bottom:2px}
+.clevel-sub{font-size:0.72rem;color:var(--text2);font-weight:600}
+.clevel-badge{font-size:0.62rem;font-weight:900;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.8px;flex-shrink:0}
+.clevel-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.clevel-start-btn{padding:10px 18px;font-size:0.83rem;font-weight:800;border-radius:var(--rm);border:none;cursor:pointer;font-family:var(--f);transition:transform .1s,box-shadow .1s,filter .1s;white-space:nowrap;background:linear-gradient(135deg,#c026d3,#a855f7);color:#fff;box-shadow:0 4px 0 var(--accent2)}
+.clevel-start-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--accent2)}
+@media(hover:hover){.clevel-start-btn:hover{filter:brightness(1.12);transform:translateY(-2px);box-shadow:0 6px 0 var(--accent2)}}
+.clevel-repeat-btn{padding:9px 14px;font-size:0.8rem;font-weight:700;border-radius:var(--rm);border:2px solid var(--border2);cursor:pointer;font-family:var(--f);background:var(--card2);color:var(--text2);box-shadow:0 3px 0 var(--border2);transition:all .1s;white-space:nowrap}
+@media(hover:hover){.clevel-repeat-btn:hover{border-color:var(--teal);color:var(--teal);background:var(--tealdim)}}
+.clevel-repeat-btn:active{transform:translateY(2px)}
+.cword-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.cword-row:last-child{border-bottom:none}
+/* STAT CARDS bigger on home */
+#p-home .stile{padding:20px 16px}
+#p-home .sval{font-size:2.5rem}
+/* FLASHCARD gradient by level */
+.fc-face.fc-front.level-new{background:linear-gradient(135deg,#1a0a2e,#1a1130)}
+.fc-face.fc-front.level-learning{background:linear-gradient(135deg,#1a0a00,#1a1130)}
+.fc-face.fc-front.level-known{background:linear-gradient(135deg,#150030,#1a1130)}
+[data-theme="light"] .fc-face.fc-front.level-new{background:linear-gradient(135deg,#f5e8ff,#fdf4ff)}
+[data-theme="light"] .fc-face.fc-front.level-learning{background:linear-gradient(135deg,#fef3c7,#fffdf5)}
+[data-theme="light"] .fc-face.fc-front.level-known{background:linear-gradient(135deg,#f9e0ff,#fdf4ff)}
+
   :root{--nav:0px}
   .mob-menu{display:flex}
   .sidebar{position:fixed;left:0;top:0;bottom:0;height:100vh;height:100dvh;width:240px;transform:translateX(-100%);z-index:200;transition:transform .25s ease}
@@ -297,8 +366,13 @@ select option{background:var(--card)}
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <div class="logo">
-    <div class="logo-t">WordVault</div>
-    <div class="logo-s">Вивчення англійської</div>
+    <div class="logo-inner">
+      <div class="logo-icon">W</div>
+      <div class="logo-text-wrap">
+        <div class="logo-t">WordVault</div>
+        <div class="logo-s">Вивчення англійської</div>
+      </div>
+    </div>
   </div>
   <nav class="nav">
     <div class="nav-sec">Огляд</div>
@@ -306,6 +380,7 @@ select option{background:var(--card)}
     <button class="ni" onclick="go('add',this)"><div class="ni-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>Додати слово</button>
     <button class="ni" onclick="go('dict',this)"><div class="ni-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>Словник</button>
     <div class="nav-sec" style="margin-top:6px">Тренування</div>
+    <button class="ni" onclick="go('course',this)"><div class="ni-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>Поступове навчання</button>
     <button class="ni" onclick="go('flash',this)"><div class="ni-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg></div>Картки</button>
     <button class="ni" onclick="go('quiz',this)"><div class="ni-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>Тест: вибір</button>
     <button class="ni" onclick="go('match',this)"><div class="ni-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>Гра в пари</button>
@@ -329,7 +404,11 @@ select option{background:var(--card)}
 <div class="main">
   <div class="topbar">
     <div class="fca gap10">
-      <button class="btn btn-ghost btn-sq mob-menu" onclick="openSB()">&#9776;</button>
+      <button class="btn-sq mob-menu" id="mobMenuBtn" onclick="toggleSB()" aria-label="Меню">
+        <div class="hb-line"></div>
+        <div class="hb-line"></div>
+        <div class="hb-line"></div>
+      </button>
       <div class="topbar-title" id="ptitle">Дашборд</div>
     </div>
     <div class="topbar-r">
@@ -345,10 +424,10 @@ select option{background:var(--card)}
     <!-- HOME -->
     <div id="p-home" class="page on">
       <div class="g4 mb10">
-        <div class="stile"><div class="sval" id="sTotal">0</div><div class="slbl">Всього слів</div></div>
-        <div class="stile"><div class="sval" id="sKnown">0</div><div class="slbl">Вивчено</div></div>
-        <div class="stile"><div class="sval" id="sLearn">0</div><div class="slbl">Вивчається</div></div>
-        <div class="stile"><div class="sval" id="sToday">0</div><div class="slbl">Сьогодні</div></div>
+        <div class="stile"><div class="sval" id="sTotal" style="color:var(--teal)">0</div><div class="slbl">Всього слів</div></div>
+        <div class="stile"><div class="sval" id="sKnown" style="color:var(--accent)">0</div><div class="slbl">Вивчено</div></div>
+        <div class="stile"><div class="sval" id="sLearn" style="color:var(--gold)">0</div><div class="slbl">Вивчається</div></div>
+        <div class="stile"><div class="sval" id="sToday" style="color:var(--blue)">0</div><div class="slbl">Сьогодні</div></div>
       </div>
       <div class="g2 mb10">
         <div class="block">
@@ -597,6 +676,7 @@ select option{background:var(--card)}
         <div class="sess-header">
           <button class="btn btn-ghost btn-exit" onclick="exitSession('quiz')">&#8592; Вийти</button>
           <div class="sess-ctr" id="qCtr">1 / 20</div>
+          <div class="lives-bar" id="qLives"></div>
         </div>
         <div class="pbar" style="height:7px;margin-bottom:12px"><div class="pbar-fill" id="qPbar" style="width:0%"></div></div>
         <div class="quiz-q">
@@ -776,12 +856,12 @@ select option{background:var(--card)}
     <!-- STATS -->
     <div id="p-stats" class="page">
       <div class="g3 mb10">
-        <div class="stile"><div class="sval" id="stT">0</div><div class="slbl">Всього слів</div></div>
-        <div class="stile"><div class="sval" id="stK">0</div><div class="slbl">Вивчено</div></div>
-        <div class="stile"><div class="sval" id="stL">0</div><div class="slbl">Вивчається</div></div>
-        <div class="stile"><div class="sval" id="stN">0</div><div class="slbl">Нові</div></div>
-        <div class="stile"><div class="sval" id="stTests">0</div><div class="slbl">Тестів</div></div>
-        <div class="stile"><div class="sval" id="stAcc">—</div><div class="slbl">Точність</div></div>
+        <div class="stile"><div class="sval" id="stT" style="color:var(--teal)">0</div><div class="slbl">Всього слів</div></div>
+        <div class="stile"><div class="sval" id="stK" style="color:var(--accent)">0</div><div class="slbl">Вивчено</div></div>
+        <div class="stile"><div class="sval" id="stL" style="color:var(--gold)">0</div><div class="slbl">Вивчається</div></div>
+        <div class="stile"><div class="sval" id="stN" style="color:var(--blue)">0</div><div class="slbl">Нові</div></div>
+        <div class="stile"><div class="sval" id="stTests" style="color:var(--teal)">0</div><div class="slbl">Тестів</div></div>
+        <div class="stile"><div class="sval" id="stAcc" style="color:var(--accent)">—</div><div class="slbl">Точність</div></div>
       </div>
       <div class="block mb10">
         <div class="block-title">Активність (7 днів)</div>
@@ -796,6 +876,11 @@ select option{background:var(--card)}
         <div class="block-title">Топ легких слів</div>
         <div id="stEasy"><div class="mute">Ще немає даних</div></div>
       </div>
+    </div>
+
+    <!-- COURSE -->
+    <div id="p-course" class="page">
+      <div id="courseList"></div>
     </div>
 
     <!-- SETTINGS -->
@@ -822,6 +907,8 @@ select option{background:var(--card)}
             <div class="sinfo"><strong>Автоозвучення карток</strong><span>Автоматично читати слово при показі картки</span></div>
             <button class="toggle on" id="tgAutoSpeak" onclick="this.classList.toggle('on');setTimeout(saveStg,0)"></button>
           </div>
+        <div class="sset">
+          <div class="sset-lbl">Нагадування</div>
           <div class="srow">
             <div class="sinfo"><strong>Нагадування</strong><span>Щоденне повідомлення "Час вчити слова!"</span></div>
             <button class="toggle" id="tgNotif" onclick="toggleNotif()"></button>
@@ -830,6 +917,7 @@ select option{background:var(--card)}
             <div class="sinfo"><strong>Час нагадування</strong><span>Коли надсилати повідомлення</span></div>
             <input type="time" id="notifTime" value="09:00" onchange="saveNotifTime()" style="width:auto;min-width:100px;padding:8px 10px;font-size:0.88rem">
           </div>
+        </div>
           <div class="sset">
           <div class="sset-lbl">Дані</div>
           <div class="srow">
@@ -848,8 +936,7 @@ select option{background:var(--card)}
         <div class="sset">
           <div class="sset-lbl">Про додаток</div>
           <div class="srow"><div class="sinfo"><strong>WordVault</strong><span>Розробник: Dmytro Shlapak</span></div></div>
-          <div class="srow"><div class="sinfo"><strong>Контакт</strong><span>ddima7955@gmail.com</span></div><button class="btn btn-ghost btn-sm" onclick="openOnboarding()">Інструкція</button></div>
-          <div class="srow"><div class="sinfo"><strong>Інтерактивний тур</strong><span>Покроковий гід по програмі</span></div><button class="btn btn-ghost btn-sm" onclick="tutReset()">Почати тур</button></div>
+          <div class="srow"><div class="sinfo"><strong>Версія</strong><span>2.0 — Оновлений інтерфейс</span></div></div>
         </div>
       </div>
     </div>
@@ -962,7 +1049,7 @@ select option{background:var(--card)}
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 'use strict';
 // Фікс для мобільних браузерів: реальна висота viewport
 function setVH(){
@@ -1139,9 +1226,8 @@ const tutSteps=[
 ];
 
 function tutStart(){
-  if(localStorage.getItem('wv_tutor'))return;
-  tutIdx=0;
-  setTimeout(()=>tutShowStep(),600);
+  // Tutorial disabled — auto-mark as seen
+  localStorage.setItem('wv_tutor','1');
 }
 
 function tutShowStep(){
@@ -1382,6 +1468,8 @@ function load(){
   // Автоматично додаємо базові слова при першому запуску
   if(W.length===0)setTimeout(addDemo,400);
   updateFlashSetup();
+  // Показуємо анімацію стріку якщо є стрік
+  if((S.streak||0)>=2)setTimeout(maybeShowStreakFire,1200);
 }
 const sW=()=>{
   // Ніколи не зберігаємо слова без перекладу
@@ -1464,7 +1552,7 @@ function applyStg(){
 }
 
 /* NAV */
-const titles={home:'Дашборд',add:'Додати слово',dict:'Словник',flash:'Картки',quiz:'Тест: вибір',match:'Гра в пари',type:'Написання',spell:'Склади слово',known:'Вивчені слова',stats:'Статистика',cfg:'Налаштування'};
+const titles={home:'Дашборд',add:'Додати слово',dict:'Словник',course:'Поступове навчання',flash:'Картки',quiz:'Тест: вибір',match:'Гра в пари',type:'Написання',spell:'Склади слово',known:'Вивчені слова',stats:'Статистика',cfg:'Налаштування'};
 // Прапорці активних сесій — скидаються при завершенні або виході
 let sessActive={quiz:false,match:false,type:false,flash:false,spell:false};
 function activeSession(){
@@ -1533,6 +1621,7 @@ function goForce(id,btn){
   if(id==='home')updateHome();
   if(id==='dict')renderDict();
   if(id==='cfg')applyStg();
+  if(id==='course')renderCourse();
 }
 function go(id,btn){
   const sess=activeSession();
@@ -1553,17 +1642,25 @@ function go(id,btn){
     goForce(id,btn);
   }
 }
+function toggleSB(){
+  const sb=document.getElementById('sidebar');
+  if(sb.classList.contains('open'))closeSB();else openSB();
+}
 function openSB(){
   document.getElementById('sidebar').classList.add('open');
   const ov=document.getElementById('sov');
   ov.classList.add('open');
   ov.style.display='block';
+  const btn=document.getElementById('mobMenuBtn');
+  if(btn)btn.classList.add('open');
 }
 function closeSB(){
   document.getElementById('sidebar').classList.remove('open');
   const ov=document.getElementById('sov');
   ov.classList.remove('open');
   ov.style.display='none';
+  const btn=document.getElementById('mobMenuBtn');
+  if(btn)btn.classList.remove('open');
 }
 
 /* NOTIF */
@@ -2526,6 +2623,9 @@ function renderFC(){
   document.getElementById('fc2').textContent=enSafe;
   document.getElementById('fcTr').textContent=w.transcription||'';
   document.getElementById('fcEx').textContent=w.example||'';
+  // Update card front gradient based on word level
+  const fcFront=document.querySelector('.fc-front');
+  if(fcFront){fcFront.className='fc-face fc-front level-'+(w.level||'new');}
   document.getElementById('fcCard').classList.remove('flipped');
   document.getElementById('fcCard').style.pointerEvents='';
   fFl=false;
@@ -2688,6 +2788,7 @@ function startQuiz(){
   if(pool.length<4)pool=[...W];
   qS=pool.sort(()=>Math.random()-0.5).slice(0,Math.min(cnt,pool.length));
   qI=0;qMiss=[];
+  initLives();
   sv('qSetup',false);sv('qRes',false);
   document.getElementById('qSess').style.display='block';
   sessActive.quiz=true;
@@ -2726,6 +2827,8 @@ function ansQ(btn,sel,cor,wid){
   if(!ok){
     qMiss.push({word:w,sel,cor});
     injectRetry(qS,qI,w);
+    // Lose a life
+    if(loseLife())return; // game over triggered
   }
   // 4) Озвучуємо правильну відповідь через 350мс (після beep)
   const spkLang=qDir==='uk2en'?'en':'uk';
@@ -3128,10 +3231,10 @@ function renderTopWords(){
   const easy=withAcc.filter(w=>w.reviewCount>=3).sort((a,b)=>b.acc-a.acc).slice(0,8);
 
   const rowHtml=w=>`
-    <div class="wrow" style="cursor:pointer" onclick="showWordStats(${w.id})">
-      <div class="wuk" style="flex:1">${w.uk}</div>
-      <div class="wen" style="flex:1">${w.en}</div>
-      <span style="font-size:0.72rem;font-weight:900;color:${w.acc>=70?'var(--accent)':w.acc>=40?'var(--gold)':'var(--red)'};min-width:36px;text-align:right">${w.acc}%</span>
+    <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--card2);border:1.5px solid var(--border);border-radius:var(--rm);margin-bottom:6px;cursor:pointer;transition:border-color .15s" onclick="showWordStats(${w.id})">
+      <span style="font-weight:800;font-size:0.88rem;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${w.uk}</span>
+      <span style="font-family:var(--fm);font-size:0.8rem;color:var(--teal);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${w.en}</span>
+      <span style="font-size:0.78rem;font-weight:900;color:${w.acc>=70?'var(--accent)':w.acc>=40?'var(--gold)':'var(--red)'};flex-shrink:0;min-width:38px;text-align:right;background:${w.acc>=70?'var(--accentdim)':w.acc>=40?'var(--golddim)':'var(--reddim)'};padding:2px 7px;border-radius:20px">${w.acc}%</span>
     </div>`;
 
   document.getElementById('stHard').innerHTML=hard.length?hard.map(rowHtml).join(''):'<div class="mute">Недостатньо даних</div>';
@@ -3446,6 +3549,438 @@ function testNotif(seconds){
   console.log('Чекай '+seconds+' секунд...');
 }
 
+/* LIVES SYSTEM */
+let sessionLives=3;
+let sessionHasLives=false; // активується в іграх quiz/match/type/spell
+
+function initLives(){
+  sessionLives=3;
+  sessionHasLives=true;
+  renderLivesBar();
+}
+
+function loseLife(){
+  if(!sessionHasLives)return false;
+  sessionLives=Math.max(0,sessionLives-1);
+  renderLivesBar();
+  // Анімація втрати серця
+  const hearts=document.querySelectorAll('.heart');
+  if(hearts[sessionLives]){
+    hearts[sessionLives].classList.add('losing');
+    setTimeout(()=>hearts[sessionLives].classList.remove('losing'),500);
+  }
+  if(sessionLives<=0){
+    setTimeout(showGameOver,600);
+    return true; // game over
+  }
+  return false;
+}
+
+function renderLivesBar(){
+  document.querySelectorAll('.lives-bar').forEach(bar=>{
+    bar.innerHTML='';
+    for(let i=0;i<3;i++){
+      const h=document.createElement('span');
+      h.className='heart'+(i>=sessionLives?' lost':'');
+      h.textContent='❤️';
+      bar.appendChild(h);
+    }
+  });
+}
+
+function showGameOver(){
+  sessionHasLives=false;
+  // Force exit from any session
+  sessActive={quiz:false,match:false,type:false,flash:false,spell:false};
+  clearInterval(mTi);
+  const overlay=document.createElement('div');
+  overlay.className='gameover-overlay';
+  overlay.id='gameOverlay';
+  overlay.innerHTML=`
+    <div class="gameover-emoji">💔</div>
+    <div style="font-size:1.8rem;font-weight:900;color:var(--red);text-align:center">Життя закінчились!</div>
+    <div style="font-size:1rem;color:var(--text2);font-weight:700;text-align:center;max-width:260px">Ти зробив 3 помилки. Перезавантаж сесію і спробуй знову!</div>
+    <button class="btn btn-green btn-lg" onclick="closeGameOver()" style="margin-top:8px">Спробувати ще раз</button>
+    <button class="btn btn-ghost" onclick="closeGameOver();goForce('home',null)">На головну</button>`;
+  document.body.appendChild(overlay);
+}
+
+function closeGameOver(){
+  const o=document.getElementById('gameOverlay');
+  if(o)o.remove();
+  // Reset all sessions UI
+  goForce('home',null);
+}
+
+/* STREAK FIRE ANIMATION */
+function maybeShowStreakFire(){
+  const streak=S.streak||0;
+  if(streak<2)return; // показуємо тільки якщо є стрік від 2 днів
+  const key='wv_fire_shown_'+today();
+  if(localStorage.getItem(key))return; // вже показали сьогодні
+  localStorage.setItem(key,'1');
+  const overlay=document.createElement('div');
+  overlay.className='streak-fire-overlay';
+  overlay.id='streakFireOverlay';
+  overlay.innerHTML=`
+    <div class="streak-fire-emoji">🔥</div>
+    <div class="streak-fire-text">${streak} ${streak===1?'день':'днів'} поспіль!</div>
+    <div class="streak-fire-sub">Так тримати! Пройди всі завдання дня<br>щоб продовжити стрік.</div>
+    <button class="btn btn-gold btn-lg" onclick="closeStreakFire()" style="margin-top:8px">Погнали!</button>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e=>{if(e.target===overlay)closeStreakFire();});
+}
+
+function closeStreakFire(){
+  const o=document.getElementById('streakFireOverlay');
+  if(o){o.style.animation='none';o.style.opacity='0';o.style.transition='opacity .3s';setTimeout(()=>o.remove(),300);}
+}
+
+/* COURSE — ПОСТУПОВЕ НАВЧАННЯ */
+const COURSE_LEVELS=[
+  {id:1,emoji:'🌱',title:'Рівень 1 — Перші кроки',sub:'Займенники, частки, базові слова',color:'#e879f9',words:[
+    {uk:'я',en:'I'},{uk:'ти',en:'you'},{uk:'він',en:'he'},{uk:'вона',en:'she'},{uk:'воно',en:'it'},
+    {uk:'ми',en:'we'},{uk:'вони',en:'they'},{uk:'і',en:'and'},{uk:'але',en:'but'},{uk:'або',en:'or'},
+    {uk:'так',en:'yes'},{uk:'ні',en:'no'},{uk:'хто',en:'who'},{uk:'що',en:'what'},{uk:'де',en:'where'},
+    {uk:'коли',en:'when'},{uk:'як',en:'how'},{uk:'чому',en:'why'},{uk:'дуже',en:'very'},{uk:'тому що',en:'because'},
+  ]},
+  {id:2,emoji:'⚡',title:'Рівень 2 — Базові дієслова',sub:'Найважливіші дії',color:'#f59e0b',words:[
+    {uk:'бути',en:'be'},{uk:'мати',en:'have'},{uk:'робити',en:'do'},{uk:'йти',en:'go'},{uk:'прийти',en:'come'},
+    {uk:'знати',en:'know'},{uk:'думати',en:'think'},{uk:'бачити',en:'see'},{uk:'хотіти',en:'want'},{uk:'казати',en:'say'},
+    {uk:'отримати',en:'get'},{uk:'дати',en:'give'},{uk:'взяти',en:'take'},{uk:'зробити',en:'make'},{uk:'знайти',en:'find'},
+    {uk:'залишитися',en:'stay'},{uk:'повернутися',en:'return'},{uk:'почати',en:'start'},{uk:'зупинитися',en:'stop'},{uk:'допомогти',en:'help'},
+    {uk:'чекати',en:'wait'},{uk:'потребувати',en:'need'},{uk:'любити',en:'love'},{uk:'жити',en:'live'},{uk:'стати',en:'become'},
+  ]},
+  {id:3,emoji:'🎨',title:'Рівень 3 — Прикметники',sub:'Описи і характеристики',color:'#a855f7',words:[
+    {uk:'великий',en:'big'},{uk:'маленький',en:'small'},{uk:'хороший',en:'good'},{uk:'поганий',en:'bad'},{uk:'новий',en:'new'},
+    {uk:'старий',en:'old'},{uk:'швидкий',en:'fast'},{uk:'повільний',en:'slow'},{uk:'красивий',en:'beautiful'},{uk:'гарний',en:'nice'},
+    {uk:'важкий',en:'difficult'},{uk:'легкий',en:'easy'},{uk:'довгий',en:'long'},{uk:'короткий',en:'short'},{uk:'правильний',en:'correct'},
+    {uk:'неправильний',en:'wrong'},{uk:'важливий',en:'important'},{uk:'цікавий',en:'interesting'},{uk:'різний',en:'different'},{uk:'однаковий',en:'same'},
+    {uk:'перший',en:'first'},{uk:'останній',en:'last'},{uk:'наступний',en:'next'},{uk:'сильний',en:'strong'},{uk:'слабкий',en:'weak'},
+    {uk:'молодий',en:'young'},{uk:'щасливий',en:'happy'},{uk:'сумний',en:'sad'},{uk:'веселий',en:'funny'},{uk:'серйозний',en:'serious'},
+  ]},
+  {id:4,emoji:'🏠',title:'Рівень 4 — Побут і дім',sub:'Речі навколо нас',color:'#3b82f6',words:[
+    {uk:'будинок',en:'house'},{uk:'кімната',en:'room'},{uk:'стіл',en:'table'},{uk:'стілець',en:'chair'},{uk:'вікно',en:'window'},
+    {uk:'двері',en:'door'},{uk:'ліжко',en:'bed'},{uk:'книга',en:'book'},{uk:'телефон',en:'phone'},{uk:'ключ',en:'key'},
+    {uk:'хліб',en:'bread'},{uk:'молоко',en:'milk'},{uk:'кава',en:'coffee'},{uk:'чай',en:'tea'},{uk:'яблуко',en:'apple'},
+    {uk:'м'ясо',en:'meat'},{uk:'сіль',en:'salt'},{uk:'цукор',en:'sugar'},{uk:'гроші',en:'money'},{uk:'сумка',en:'bag'},
+    {uk:'одяг',en:'clothes'},{uk:'взуття',en:'shoes'},{uk:'годинник',en:'clock'},{uk:'комп'ютер',en:'computer'},{uk:'лампа',en:'lamp'},
+    {uk:'холодильник',en:'fridge'},{uk:'плита',en:'stove'},{uk:'душ',en:'shower'},{uk:'рушник',en:'towel'},{uk:'мило',en:'soap'},
+  ]},
+  {id:5,emoji:'🌍',title:'Рівень 5 — Люди і суспільство',sub:'Стосунки, робота, місця',color:'#10b981',words:[
+    {uk:'людина',en:'person'},{uk:'друг',en:'friend'},{uk:'сім'я',en:'family'},{uk:'батько',en:'father'},{uk:'мати',en:'mother'},
+    {uk:'дитина',en:'child'},{uk:'вчитель',en:'teacher'},{uk:'лікар',en:'doctor'},{uk:'робота',en:'work'},{uk:'місто',en:'city'},
+    {uk:'країна',en:'country'},{uk:'мова',en:'language'},{uk:'слово',en:'word'},{uk:'питання',en:'question'},{uk:'відповідь',en:'answer'},
+    {uk:'проблема',en:'problem'},{uk:'рішення',en:'solution'},{uk:'ідея',en:'idea'},{uk:'план',en:'plan'},{uk:'час',en:'time'},
+    {uk:'день',en:'day'},{uk:'тиждень',en:'week'},{uk:'місяць',en:'month'},{uk:'рік',en:'year'},{uk:'брат',en:'brother'},
+    {uk:'сестра',en:'sister'},{uk:'чоловік',en:'husband'},{uk:'дружина',en:'wife'},{uk:'сусід',en:'neighbor'},{uk:'колега',en:'colleague'},
+  ]},
+  {id:6,emoji:'🚀',title:'Рівень 6 — Активні дієслова',sub:'Розширений набір дій',color:'#f97316',words:[
+    {uk:'читати',en:'read'},{uk:'писати',en:'write'},{uk:'слухати',en:'listen'},{uk:'говорити',en:'speak'},{uk:'вчити',en:'learn'},
+    {uk:'розуміти',en:'understand'},{uk:'пам'ятати',en:'remember'},{uk:'забути',en:'forget'},{uk:'купити',en:'buy'},{uk:'продати',en:'sell'},
+    {uk:'відкрити',en:'open'},{uk:'закрити',en:'close'},{uk:'сидіти',en:'sit'},{uk:'стояти',en:'stand'},{uk:'бігти',en:'run'},
+    {uk:'летіти',en:'fly'},{uk:'плисти',en:'swim'},{uk:'грати',en:'play'},{uk:'співати',en:'sing'},{uk:'малювати',en:'draw'},
+    {uk:'готувати',en:'cook'},{uk:'їсти',en:'eat'},{uk:'пити',en:'drink'},{uk:'спати',en:'sleep'},{uk:'прокинутися',en:'wake up'},
+    {uk:'чекати',en:'wait'},{uk:'перевірити',en:'check'},{uk:'вибрати',en:'choose'},{uk:'показати',en:'show'},{uk:'спробувати',en:'try'},
+    {uk:'вирішити',en:'decide'},{uk:'змінити',en:'change'},{uk:'підготуватися',en:'prepare'},{uk:'порівняти',en:'compare'},{uk:'пояснити',en:'explain'},
+  ]},
+  {id:7,emoji:'💡',title:'Рівень 7 — Числа і час',sub:'Кількості, порядок, дні тижня',color:'#ec4899',words:[
+    {uk:'один',en:'one'},{uk:'два',en:'two'},{uk:'три',en:'three'},{uk:'чотири',en:'four'},{uk:'п'ять',en:'five'},
+    {uk:'шість',en:'six'},{uk:'сім',en:'seven'},{uk:'вісім',en:'eight'},{uk:'дев'ять',en:'nine'},{uk:'десять',en:'ten'},
+    {uk:'двадцять',en:'twenty'},{uk:'п'ятдесят',en:'fifty'},{uk:'сто',en:'hundred'},{uk:'тисяча',en:'thousand'},{uk:'мільйон',en:'million'},
+    {uk:'перший',en:'first'},{uk:'другий',en:'second'},{uk:'третій',en:'third'},{uk:'половина',en:'half'},{uk:'чверть',en:'quarter'},
+    {uk:'ранок',en:'morning'},{uk:'вечір',en:'evening'},{uk:'ніч',en:'night'},{uk:'сьогодні',en:'today'},{uk:'вчора',en:'yesterday'},
+    {uk:'завтра',en:'tomorrow'},{uk:'понеділок',en:'Monday'},{uk:'вівторок',en:'Tuesday'},{uk:'середа',en:'Wednesday'},{uk:'четвер',en:'Thursday'},
+    {uk:'п'ятниця',en:'Friday'},{uk:'субота',en:'Saturday'},{uk:'неділя',en:'Sunday'},{uk:'опівночі',en:'midnight'},{uk:'зараз',en:'now'},
+  ]},
+  {id:8,emoji:'🌿',title:'Рівень 8 — Природа і світ',sub:'Навколишнє середовище',color:'#22c55e',words:[
+    {uk:'сонце',en:'sun'},{uk:'місяць',en:'moon'},{uk:'зірка',en:'star'},{uk:'небо',en:'sky'},{uk:'земля',en:'earth'},
+    {uk:'ліс',en:'forest'},{uk:'гора',en:'mountain'},{uk:'річка',en:'river'},{uk:'озеро',en:'lake'},{uk:'море',en:'sea'},
+    {uk:'дерево',en:'tree'},{uk:'квітка',en:'flower'},{uk:'трава',en:'grass'},{uk:'камінь',en:'stone'},{uk:'пісок',en:'sand'},
+    {uk:'вітер',en:'wind'},{uk:'дощ',en:'rain'},{uk:'сніг',en:'snow'},{uk:'хмара',en:'cloud'},{uk:'буря',en:'storm'},
+    {uk:'кіт',en:'cat'},{uk:'собака',en:'dog'},{uk:'риба',en:'fish'},{uk:'кінь',en:'horse'},{uk:'пташка',en:'bird'},
+    {uk:'лев',en:'lion'},{uk:'ведмідь',en:'bear'},{uk:'вовк',en:'wolf'},{uk:'лисиця',en:'fox'},{uk:'орел',en:'eagle'},
+    {uk:'весна',en:'spring'},{uk:'літо',en:'summer'},{uk:'осінь',en:'autumn'},{uk:'зима',en:'winter'},{uk:'клімат',en:'climate'},
+  ]},
+  {id:9,emoji:'🏙️',title:'Рівень 9 — Місто і транспорт',sub:'Переміщення і інфраструктура',color:'#6366f1',words:[
+    {uk:'вулиця',en:'street'},{uk:'дорога',en:'road'},{uk:'міст',en:'bridge'},{uk:'площа',en:'square'},{uk:'парк',en:'park'},
+    {uk:'магазин',en:'shop'},{uk:'ресторан',en:'restaurant'},{uk:'школа',en:'school'},{uk:'лікарня',en:'hospital'},{uk:'аеропорт',en:'airport'},
+    {uk:'автобус',en:'bus'},{uk:'поїзд',en:'train'},{uk:'літак',en:'plane'},{uk:'машина',en:'car'},{uk:'велосипед',en:'bicycle'},
+    {uk:'таксі',en:'taxi'},{uk:'метро',en:'metro'},{uk:'зупинка',en:'stop'},{uk:'квиток',en:'ticket'},{uk:'карта',en:'map'},
+    {uk:'північ',en:'north'},{uk:'південь',en:'south'},{uk:'схід',en:'east'},{uk:'захід',en:'west'},{uk:'прямо',en:'straight'},
+    {uk:'ліворуч',en:'left'},{uk:'праворуч',en:'right'},{uk:'близько',en:'near'},{uk:'далеко',en:'far'},{uk:'готель',en:'hotel'},
+    {uk:'банк',en:'bank'},{uk:'пошта',en:'post office'},{uk:'музей',en:'museum'},{uk:'театр',en:'theatre'},{uk:'бібліотека',en:'library'},
+  ]},
+  {id:10,emoji:'💼',title:'Рівень 10 — Бізнес і технології',sub:'Сучасне життя і робота',color:'#0ea5e9',words:[
+    {uk:'проект',en:'project'},{uk:'зустріч',en:'meeting'},{uk:'команда',en:'team'},{uk:'менеджер',en:'manager'},{uk:'клієнт',en:'client'},
+    {uk:'бюджет',en:'budget'},{uk:'звіт',en:'report'},{uk:'дедлайн',en:'deadline'},{uk:'презентація',en:'presentation'},{uk:'контракт',en:'contract'},
+    {uk:'інтернет',en:'internet'},{uk:'сайт',en:'website'},{uk:'додаток',en:'application'},{uk:'програма',en:'software'},{uk:'пароль',en:'password'},
+    {uk:'повідомлення',en:'message'},{uk:'електронна пошта',en:'email'},{uk:'файл',en:'file'},{uk:'папка',en:'folder'},{uk:'завантажити',en:'download'},
+    {uk:'надіслати',en:'send'},{uk:'видалити',en:'delete'},{uk:'зберегти',en:'save'},{uk:'оновлення',en:'update'},{uk:'помилка',en:'error'},
+    {uk:'підключення',en:'connection'},{uk:'безпека',en:'security'},{uk:'стартап',en:'startup'},{uk:'інвестиція',en:'investment'},{uk:'прибуток',en:'profit'},
+    {uk:'витрати',en:'expenses'},{uk:'стратегія',en:'strategy'},{uk:'аналіз',en:'analysis'},{uk:'ринок',en:'market'},{uk:'продукт',en:'product'},
+    {uk:'послуга',en:'service'},{uk:'конкурент',en:'competitor'},{uk:'реклама',en:'advertisement'},{uk:'партнер',en:'partner'},{uk:'угода',en:'deal'},
+  ]},
+  {id:11,emoji:'🎭',title:'Рівень 11 — Емоції і характер',sub:'Почуття, особистість, стосунки',color:'#f43f5e',words:[
+    {uk:'радість',en:'joy'},{uk:'щастя',en:'happiness'},{uk:'сум',en:'sadness'},{uk:'злість',en:'anger'},{uk:'страх',en:'fear'},
+    {uk:'здивування',en:'surprise'},{uk:'відраза',en:'disgust'},{uk:'сором',en:'shame'},{uk:'гордість',en:'pride'},{uk:'заздрість',en:'envy'},
+    {uk:'любов',en:'love'},{uk:'ненависть',en:'hate'},{uk:'довіра',en:'trust'},{uk:'надія',en:'hope'},{uk:'розпач',en:'despair'},
+    {uk:'спокійний',en:'calm'},{uk:'нервовий',en:'nervous'},{uk:'впевнений',en:'confident'},{uk:'сором'язливий',en:'shy'},{uk:'добрий',en:'kind'},
+    {uk:'жорстокий',en:'cruel'},{uk:'чесний',en:'honest'},{uk:'терплячий',en:'patient'},{uk:'сміливий',en:'brave'},{uk:'щедрий',en:'generous'},
+    {uk:'жадібний',en:'greedy'},{uk:'скромний',en:'humble'},{uk:'амбітний',en:'ambitious'},{uk:'творчий',en:'creative'},{uk:'допитливий',en:'curious'},
+    {uk:'організований',en:'organized'},{uk:'відповідальний',en:'responsible'},{uk:'образитися',en:'be offended'},{uk:'вибачити',en:'forgive'},{uk:'підтримати',en:'support'},
+    {uk:'розчаруватися',en:'be disappointed'},{uk:'надихнутися',en:'be inspired'},{uk:'захопитися',en:'be fascinated'},{uk:'тривожитися',en:'be anxious'},{uk:'пишатися',en:'be proud'},
+  ]},
+  {id:12,emoji:'🎓',title:'Рівень 12 — Майстерність',sub:'Складні поняття, академічна лексика',color:'#8b5cf6',words:[
+    {uk:'розвиток',en:'development'},{uk:'можливість',en:'opportunity'},{uk:'відповідальність',en:'responsibility'},{uk:'результат',en:'result'},{uk:'досвід',en:'experience'},
+    {uk:'успіх',en:'success'},{uk:'невдача',en:'failure'},{uk:'прогрес',en:'progress'},{uk:'якість',en:'quality'},{uk:'кількість',en:'quantity'},
+    {uk:'цінність',en:'value'},{uk:'зміна',en:'change'},{uk:'ризик',en:'risk'},{uk:'шанс',en:'chance'},{uk:'творчість',en:'creativity'},
+    {uk:'уява',en:'imagination'},{uk:'знання',en:'knowledge'},{uk:'навичка',en:'skill'},{uk:'здібність',en:'ability'},{uk:'впевненість',en:'confidence'},
+    {uk:'наважитися',en:'dare'},{uk:'досягти',en:'achieve'},{uk:'перевершити',en:'exceed'},{uk:'співпрацювати',en:'collaborate'},{uk:'оцінювати',en:'evaluate'},
+    {uk:'реалізувати',en:'implement'},{uk:'аналізувати',en:'analyze'},{uk:'узагальнити',en:'summarize'},{uk:'гіпотеза',en:'hypothesis'},{uk:'доказ',en:'evidence'},
+    {uk:'аргумент',en:'argument'},{uk:'висновок',en:'conclusion'},{uk:'дослідження',en:'research'},{uk:'принцип',en:'principle'},{uk:'концепція',en:'concept'},
+    {uk:'інновація',en:'innovation'},{uk:'трансформація',en:'transformation'},{uk:'інтеграція',en:'integration'},{uk:'оптимізація',en:'optimization'},{uk:'масштабування',en:'scaling'},
+  ]},
+];
+
+function getCourseProgress(){
+  try{return JSON.parse(localStorage.getItem('wv_course')||'{}');}catch(e){return {};}
+}
+function saveCourseProgress(data){localStorage.setItem('wv_course',JSON.stringify(data));}
+
+function getLevelStatus(lvl,progress){
+  const p=progress[lvl.id]||{};
+  if(p.completed)return 'completed';
+  if(lvl.id===1)return 'active';
+  const prev=progress[lvl.id-1]||{};
+  if(prev.completed)return 'active';
+  return 'locked';
+}
+
+function getLevelWordCount(lvl){
+  const done=lvl.words.filter(cw=>W.find(w=>w.uk===cw.uk&&w.en===cw.en&&w.level==='known')).length;
+  return{done,total:lvl.words.length};
+}
+
+function renderCourse(){
+  const progress=getCourseProgress();
+  const el=document.getElementById('courseList');
+  if(!el)return;
+  const totalCompleted=COURSE_LEVELS.filter(l=>(progress[l.id]||{}).completed).length;
+  const headerHtml=`<div class="course-header">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+      <div>
+        <div style="font-size:1.1rem;font-weight:900;color:var(--text)">Поступове навчання</div>
+        <div style="font-size:0.78rem;color:var(--text2);font-weight:600;margin-top:2px">Пройдено ${totalCompleted} з ${COURSE_LEVELS.length} рівнів</div>
+      </div>
+      <div style="background:var(--accentdim);border:2px solid rgba(232,121,249,.3);border-radius:var(--rm);padding:8px 16px;text-align:center">
+        <div style="font-size:1.4rem;font-weight:900;color:var(--teal)">${totalCompleted}/${COURSE_LEVELS.length}</div>
+        <div style="font-size:0.6rem;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:1px">Рівнів</div>
+      </div>
+    </div>
+    <div class="pbar" style="height:8px"><div class="pbar-fill" style="width:${Math.round(totalCompleted/COURSE_LEVELS.length*100)}%"></div></div>
+  </div>`;
+  el.innerHTML=headerHtml+COURSE_LEVELS.map(lvl=>{
+    const status=getLevelStatus(lvl,progress);
+    const {done,total}=getLevelWordCount(lvl);
+    const pct=Math.round(done/total*100);
+    const isActive=status==='active';
+    const isCompleted=status==='completed';
+    const isLocked=status==='locked';
+    let badgeHtml='';
+    if(isCompleted)badgeHtml=`<span class="clevel-badge" style="background:rgba(192,38,211,.2);color:var(--teal);border:1px solid rgba(232,121,249,.35)">✓ Пройдено</span>`;
+    else if(isLocked)badgeHtml=`<span class="clevel-badge" style="background:var(--card2);color:var(--text3)">🔒</span>`;
+    else badgeHtml=`<span class="clevel-badge" style="background:var(--accentdim);color:var(--teal);border:1px solid rgba(232,121,249,.3)">${total} слів</span>`;
+    const numBg=isLocked?'var(--card2)':`rgba(${hexToRgbStr(lvl.color)},0.18)`;
+    const numColor=isLocked?'var(--text3)':lvl.color;
+    let actionsHtml='';
+    if(isActive)actionsHtml=`<button class="clevel-start-btn" onclick="startCourseLevel(${lvl.id})">Почати рівень</button>`;
+    else if(isCompleted)actionsHtml=`<button class="clevel-repeat-btn" onclick="startCourseLevel(${lvl.id})">Повторити</button>`;
+    const progressBar=(isActive&&done>0)||isCompleted
+      ?`<div class="pbar mt6" style="height:5px"><div class="pbar-fill" style="width:${pct}%;background:${lvl.color}"></div></div>`:'';
+    return`<div class="course-level ${isActive?'active-level':''} ${isCompleted?'completed':''} ${isLocked?'locked':''}" id="clvl-${lvl.id}">
+      <div class="clevel-head">
+        <div class="clevel-num" style="background:${numBg};color:${numColor}">${lvl.emoji}</div>
+        <div class="clevel-info">
+          <div class="clevel-title" style="${isCompleted?'color:var(--text2)':''}">${lvl.title}</div>
+          <div class="clevel-sub">${lvl.sub}</div>
+          ${progressBar}
+        </div>
+        ${badgeHtml}
+        ${actionsHtml?`<div class="clevel-actions">${actionsHtml}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function hexToRgb(c){return hexToRgbStr(c);}
+
+function toggleCourseLevel(id){}
+
+function addLevelWords(id){
+  const lvl=COURSE_LEVELS.find(l=>l.id===id);
+  if(!lvl)return;
+  let added=0;
+  lvl.words.forEach(cw=>{
+    if(!W.find(w=>w.uk===cw.uk&&w.en===cw.en)){
+      W.unshift({id:Date.now()+Math.random()*999|0,uk:cw.uk,en:cw.en,cat:'course-'+id,level:'new',
+        added:new Date().toISOString(),nextReview:new Date().toISOString(),
+        reviewCount:0,correctCount:0,interval:1,easeFactor:2.5,correctStreak:0});
+      added++;
+    }
+  });
+  sW();updateHome();renderCourse();
+  notify(added?`Додано ${added} слів рівня ${id}`:'Всі слова вже в словнику','info');
+}
+
+function addSingleCourseWord(uk,en,lvlId){
+  if(W.find(w=>w.uk===uk&&w.en===en)){notify('Слово вже є','info');return;}
+  W.unshift({id:Date.now()+Math.random()*999|0,uk,en,cat:'course-'+lvlId,level:'new',
+    added:new Date().toISOString(),nextReview:new Date().toISOString(),
+    reviewCount:0,correctCount:0,interval:1,easeFactor:2.5,correctStreak:0});
+  sW();updateHome();renderCourse();
+  notify(`"${uk}" = "${en}" додано`);
+}
+
+function completeCourseLevel(id){
+  const progress=getCourseProgress();
+  progress[id]={completed:true,completedAt:new Date().toISOString()};
+  saveCourseProgress(progress);
+  renderCourse();
+  notify(`Рівень ${id} завершено! 🎓 Рівень ${id+1} відкрито!`);
+  showCelebration();
+}
+
+/* Course Quiz */
+let cqLvlId=null,cqWords=[],cqIdx=0,cqMisses=[],cqAns=false,cqLives=3,cqCW=null,cqIsRepeat=false;
+
+function startCourseLevel(lvlId){
+  const lvl=COURSE_LEVELS.find(l=>l.id===lvlId);
+  if(!lvl)return;
+  cqIsRepeat=false;
+  lvl.words.forEach(cw=>{
+    if(!W.find(w=>w.uk===cw.uk&&w.en===cw.en)){
+      W.unshift({id:Date.now()+Math.random()*999|0,uk:cw.uk,en:cw.en,cat:'course-'+lvlId,level:'new',
+        added:new Date().toISOString(),nextReview:new Date().toISOString(),
+        reviewCount:0,correctCount:0,interval:1,easeFactor:2.5,correctStreak:0});
+    }
+  });
+  sW();
+  const pool=[...lvl.words].sort(()=>Math.random()-0.5).slice(0,Math.min(15,lvl.words.length));
+  launchCourseQuiz(lvl,pool,false);
+}
+
+function launchCourseQuiz(lvl,pool,isRepeat){
+  cqLvlId=lvl.id;
+  cqWords=[...pool];
+  cqIdx=0;cqMisses=[];cqAns=false;cqLives=3;cqIsRepeat=isRepeat;
+  document.getElementById('cqLevelName').textContent=lvl.title;
+  document.getElementById('cqSessInner').style.display='block';
+  document.getElementById('cqResInner').style.display='none';
+  renderCQLives();
+  renderCQ();
+  document.getElementById('courseQuizOverlay').style.display='flex';
+}
+
+function renderCQLives(){
+  const el=document.getElementById('cqLives');
+  if(!el)return;
+  let h='';
+  for(let i=0;i<3;i++)h+=`<span class="heart${i>=cqLives?' lost':''}">❤️</span>`;
+  el.innerHTML=h;
+}
+
+function renderCQ(){
+  if(cqIdx>=cqWords.length){showCQResult();return;}
+  const w=cqWords[cqIdx];cqCW=w;cqAns=false;
+  const n=cqWords.length;
+  document.getElementById('cqCtr').textContent=`${cqIdx+1} / ${n}`;
+  document.getElementById('cqPbar').style.width=`${cqIdx/n*100}%`;
+  document.getElementById('cqWord').textContent=w.uk;
+  document.getElementById('cqSub').textContent='перекладіть англійською';
+  const cor=w.en;
+  const allWords=COURSE_LEVELS.flatMap(l=>l.words);
+  const dist=allWords.filter(x=>x.en!==cor).sort(()=>Math.random()-0.5).slice(0,3).map(x=>x.en);
+  const opts=[cor,...dist].sort(()=>Math.random()-0.5);
+  const ls=['A','B','C','D'];
+  document.getElementById('cqOpts').innerHTML=opts.map((o,i)=>`<button class="opt" onclick="ansCQ(this,'${esc(o)}','${esc(cor)}')"
+    ><span class="opt-letter">${ls[i]}</span>${o}</button>`).join('');
+  if(C.autoSpeak!==false)setTimeout(()=>speak(w.uk,'uk'),300);
+}
+
+function speakCQW(){if(cqCW)speak(cqCW.uk,'uk');}
+
+function ansCQ(btn,sel,cor){
+  if(cqAns)return;cqAns=true;
+  const ok=sel===cor;
+  if(C.sound)beep(ok);
+  document.querySelectorAll('#cqOpts .opt').forEach(b=>{
+    b.disabled=true;
+    const txt=[...b.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent.trim()).join('');
+    if(txt===cor)b.classList.add('ok');
+    if(b===btn&&!ok)b.classList.add('wrong');
+  });
+  const dictW=W.find(w=>w.uk===cqCW.uk&&w.en===cqCW.en);
+  if(dictW){scheduleAuto(dictW,ok);sW();}
+  trackAns(ok);
+  if(!ok){
+    cqMisses.push({...cqCW});
+    cqLives--;
+    renderCQLives();
+    if(cqLives<=0){
+      for(let i=cqIdx+1;i<cqWords.length;i++)cqMisses.push({...cqWords[i]});
+      setTimeout(showCQResult,1200);return;
+    }
+  }
+  setTimeout(()=>{cqIdx++;renderCQ();},ok?1200:1800);
+}
+
+function showCQResult(){
+  document.getElementById('cqSessInner').style.display='none';
+  document.getElementById('cqResInner').style.display='block';
+  const total=cqWords.length;
+  const ok=total-cqMisses.length;
+  const pct=Math.round(ok/total*100);
+  document.getElementById('cqScore').textContent=pct+'%';
+  document.getElementById('cqScore').style.color=pct>=70?'var(--teal)':pct>=40?'var(--gold)':'var(--red)';
+  document.getElementById('cqGrade').textContent=pct>=90?'Відмінно! 🌟':pct>=70?'Добре! 👍':pct>=50?'Непогано':'Повтори ще раз!';
+  const missEl=document.getElementById('cqMissBlock');
+  if(cqMisses.length){
+    missEl.innerHTML=`<div class="mute mb8">Помилки (${cqMisses.length}):</div>`+
+      cqMisses.map(m=>`<div style="display:flex;gap:8px;align-items:center;padding:7px 10px;background:var(--card2);border:1.5px solid var(--border);border-radius:var(--rm);margin-bottom:5px">
+        <span style="font-weight:800;color:var(--text);flex:1">${m.uk}</span>
+        <span style="font-family:var(--fm);color:var(--teal);font-size:0.85rem">→ ${m.en}</span>
+      </div>`).join('');
+  }else{
+    missEl.innerHTML='<div style="text-align:center;color:var(--teal);font-size:1.1rem;font-weight:800;padding:10px 0">Без помилок! 🎉</div>';
+  }
+  document.getElementById('cqRepeatBtn').style.display=cqMisses.length?'inline-flex':'none';
+  if(pct>=70&&!cqIsRepeat){
+    const progress=getCourseProgress();
+    if(!(progress[cqLvlId]||{}).completed){
+      progress[cqLvlId]={completed:true,completedAt:new Date().toISOString(),score:pct};
+      saveCourseProgress(progress);
+      setTimeout(()=>notify(`Рівень ${cqLvlId} пройдено! 🎓 Рівень ${cqLvlId+1} відкрито!`,'ok'),600);
+      showCelebration();
+    }
+  }
+  updateHome();
+}
+
+function repeatCourseQuizMistakes(){
+  if(!cqMisses.length)return;
+  const lvl=COURSE_LEVELS.find(l=>l.id===cqLvlId);
+  if(!lvl)return;
+  launchCourseQuiz(lvl,[...cqMisses],true);
+}
+
+function exitCourseQuiz(){
+  document.getElementById('courseQuizOverlay').style.display='none';
+  renderCourse();
+}
+
+function startCourseQuiz(id){startCourseLevel(id);}
+
 /* INIT */
 document.addEventListener('DOMContentLoaded',load);
 
@@ -3461,6 +3996,41 @@ function _onLeave(e){
 window.addEventListener('beforeunload', _onLeave);
 window.addEventListener('pagehide', _onLeave);
 </script>
+<!-- COURSE QUIZ OVERLAY -->
+<div id="courseQuizOverlay" style="position:fixed;inset:0;z-index:600;background:var(--bg);display:none;flex-direction:column">
+  <div style="flex-shrink:0;padding:12px 16px;border-bottom:2px solid var(--border);background:var(--panel)">
+    <div class="sess-header" style="margin:0">
+      <button class="btn btn-ghost btn-exit" onclick="exitCourseQuiz()">&#8592; Вийти</button>
+      <div class="sess-ctr" id="cqCtr">1 / 10</div>
+      <div class="lives-bar" id="cqLives"></div>
+    </div>
+    <div style="margin-top:8px">
+      <div style="font-size:0.68rem;font-weight:900;color:var(--teal);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px" id="cqLevelName"></div>
+      <div class="pbar" style="height:7px"><div class="pbar-fill" id="cqPbar" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:16px">
+    <div id="cqSessInner">
+      <div class="quiz-q">
+        <div class="qword" id="cqWord">—</div>
+        <div class="qsub" id="cqSub">перекладіть</div>
+        <div class="qaudio"><button class="btn btn-ghost btn-sm" onclick="speakCQW()">Прослухати</button></div>
+      </div>
+      <div class="opts" id="cqOpts"></div>
+    </div>
+    <div id="cqResInner" style="display:none">
+      <div class="result">
+        <div class="rpct" id="cqScore">0%</div>
+        <div class="rlbl" id="cqGrade"></div>
+        <div id="cqMissBlock" style="text-align:left;margin:14px 0"></div>
+        <div class="flex gap10" style="justify-content:center;flex-wrap:wrap;margin-top:16px">
+          <button class="btn btn-gold btn-lg" id="cqRepeatBtn" onclick="repeatCourseQuizMistakes()" style="display:none">Повторити помилки</button>
+          <button class="btn btn-ghost btn-lg" onclick="exitCourseQuiz()">Закрити</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- TUTORIAL -->
 <div id="tutOverlay" class="tut-overlay" style="display:none">
   <div id="tutHole" class="tut-hole"></div>
@@ -3469,11 +4039,10 @@ window.addEventListener('pagehide', _onLeave);
   <div class="tut-box-title" id="tutTitle"></div>
   <div class="tut-box-text" id="tutText"></div>
   <div class="tut-box-btns">
-    <span class="tut-step" id="tutStep"></span>
-    <button class="btn btn-ghost btn-sm" onclick="tutSkip()">Пропустити</button>
-    <button class="btn btn-green btn-sm" onclick="tutNext()" id="tutNextBtn">Далі</button>
+    <span class="tut-step" id="tutStep">1 / 8</span>
+    <button class="btn btn-ghost btn-sm" id="tutSkipBtn" onclick="tutSkip()">Пропустити</button>
+    <button class="btn btn-blue btn-sm" id="tutNextBtn" onclick="tutNext()">Далі</button>
   </div>
 </div>
-
 </body>
 </html>
