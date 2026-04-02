@@ -270,12 +270,12 @@ select option{background:var(--card)}
 .mob-menu.open .hb-line:nth-child(3){transform:translateY(-7.5px) rotate(-45deg)}
 /* TUTORIAL */
 .tut-overlay{position:fixed;inset:0;z-index:500;pointer-events:none}
-.tut-hole{position:absolute;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.72);transition:all .35s cubic-bezier(.4,0,.2,1);pointer-events:none}
-.tut-box{position:fixed;z-index:501;background:var(--panel);border:2px solid var(--teal);border-radius:var(--r);padding:16px 18px;max-width:280px;box-shadow:0 8px 32px rgba(0,0,0,.6);animation:fadeup .3s ease}
-.tut-box-title{font-size:0.82rem;font-weight:900;color:var(--teal);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px}
-.tut-box-text{font-size:0.82rem;color:var(--text2);line-height:1.5;margin-bottom:12px}
+.tut-hole{position:absolute;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.72);transition:left .3s ease,top .3s ease,width .3s ease,height .3s ease,opacity .3s ease;pointer-events:none}
+.tut-box{position:fixed;z-index:502;background:var(--panel);border:2px solid var(--teal);border-radius:var(--r);padding:18px 20px 16px;width:320px;max-width:calc(100vw - 24px);box-shadow:0 10px 40px rgba(0,0,0,.65)}
+.tut-box-title{font-size:0.95rem;font-weight:900;color:var(--teal);margin-bottom:8px;line-height:1.3}
+.tut-box-text{font-size:0.84rem;color:var(--text2);line-height:1.55;margin-bottom:14px}
 .tut-box-btns{display:flex;gap:8px;align-items:center}
-.tut-step{font-size:0.68rem;color:var(--text3);font-weight:700;flex:1}
+.tut-step{font-size:0.7rem;color:var(--text3);font-weight:700;flex:1}
 /* SPELL GAME */
 .sp-letter{
   width:44px;height:44px;border-radius:var(--rs);background:var(--card);border:2.5px solid var(--border2);
@@ -344,6 +344,7 @@ select option{background:var(--card)}
 [data-theme="light"] .fc-face.fc-front.level-learning{background:linear-gradient(135deg,#fef3c7,#fffdf5)}
 [data-theme="light"] .fc-face.fc-front.level-known{background:linear-gradient(135deg,#f9e0ff,#fdf4ff)}
 
+@media(max-width:700px){
   :root{--nav:0px}
   .mob-menu{display:flex}
   .sidebar{position:fixed;left:0;top:0;bottom:0;height:100vh;height:100dvh;width:240px;transform:translateX(-100%);z-index:200;transition:transform .25s ease}
@@ -907,19 +908,24 @@ select option{background:var(--card)}
             <div class="sinfo"><strong>Автоозвучення карток</strong><span>Автоматично читати слово при показі картки</span></div>
             <button class="toggle on" id="tgAutoSpeak" onclick="this.classList.toggle('on');setTimeout(saveStg,0)"></button>
           </div>
-        <div class="sset">
-          <div class="sset-lbl">Нагадування</div>
+
+          <div class="sset">
+          <div class="sset-lbl">Навчання</div>
           <div class="srow">
-            <div class="sinfo"><strong>Нагадування</strong><span>Щоденне повідомлення "Час вчити слова!"</span></div>
-            <button class="toggle" id="tgNotif" onclick="toggleNotif()"></button>
+            <div class="sinfo"><strong>Навчальний тур</strong><span>Покроковий гід по всіх функціях додатку</span></div>
+            <button class="btn btn-blue btn-sm" onclick="tutReset()">Запустити тур</button>
           </div>
-          <div class="srow" id="notifTimeRow" style="display:none">
-            <div class="sinfo"><strong>Час нагадування</strong><span>Коли надсилати повідомлення</span></div>
-            <input type="time" id="notifTime" value="09:00" onchange="saveNotifTime()" style="width:auto;min-width:100px;padding:8px 10px;font-size:0.88rem">
+          <div class="srow">
+            <div class="sinfo"><strong>Інструкція</strong><span>Показати вступний екран з поясненням</span></div>
+            <button class="btn btn-ghost btn-sm" onclick="openOnboarding()">Відкрити</button>
           </div>
         </div>
-          <div class="sset">
+        <div class="sset">
           <div class="sset-lbl">Дані</div>
+          <div class="srow">
+            <div class="sinfo"><strong>Скинути Поступове навчання</strong><span>Очистити прогрес всіх рівнів курсу</span></div>
+            <button class="btn btn-red btn-sm" onclick="resetCourseProgress()">Скинути</button>
+          </div>
           <div class="srow">
             <div class="sinfo"><strong>Скинути статистику</strong><span>Очистити прогрес і результати тестів</span></div>
             <button class="btn btn-red btn-sm" onclick="clearSt()">Скинути</button>
@@ -1049,7 +1055,7 @@ select option{background:var(--card)}
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<!-- email-decode removed --><script>
 'use strict';
 // Фікс для мобільних браузерів: реальна висота viewport
 function setVH(){
@@ -1080,7 +1086,7 @@ function onboardSound(open){
         o.start(t);o.stop(t+0.23);
       });
     } else {
-      // Закриття — один м'який спадний тон
+      // Закриття — один м\'який спадний тон
       const o=ac.createOscillator(),g=ac.createGain();
       o.connect(g);g.connect(ac.destination);
       o.frequency.value=523;o.type='sine';
@@ -1141,7 +1147,7 @@ function unlockAudio(){
     }catch(e){}
   }
 }
-// Прив'язуємо до кожного кліку/дотику (не {once:true}!)
+// Прив\'язуємо до кожного кліку/дотику (не {once:true}!)
 document.addEventListener('click', unlockAudio, {passive:true});
 document.addEventListener('touchstart', unlockAudio, {passive:true});
 // Знімаємо focus після тапу — прибирає підсвічування на iOS
@@ -1174,182 +1180,324 @@ function checkOnboarding(){
 
 /* TUTORIAL — інтерактивний покроковий гід */
 let tutIdx=0;
+
+// Кожен крок:
+//   selector  — CSS-селектор цільового елементу
+//   title/text — текст підказки
+//   pos       — preferred position: 'bottom'|'top'|'right'|'left'|'center'
+//   page      — яку сторінку активувати перед показом
+//   needSB    — true=відкрити sidebar, false=закрити, undefined=не чіпати
+//   last      — кнопка "Завершити" замість "Далі"
+//   noHole    — не підсвічувати елемент (просто центрований popup)
 const tutSteps=[
+  // 1. Вітання — затемнення без вирізу, центрований popup
+  {
+    selector:'#p-home',
+    title:'Ласкаво просимо до WordVault!',
+    text:'Це короткий тур по додатку. Ти побачиш всі головні функції — бічна панель, режими навчання, статистику і налаштування. Натисни "Далі" щоб почати.',
+    pos:'center', page:'home', needSB:false, noHole:true
+  },
+  // 2. Статистика (головна)
   {
     selector:'#p-home .g4',
     title:'Твоя статистика',
-    text:'Тут видно скільки слів у словнику, скільки вивчено і скільки пройдено сьогодні.',
+    text:'Чотири плитки: скільки слів у словнику, скільки вивчено, скільки вивчається і скільки відповідей дав сьогодні.',
     pos:'bottom', page:'home', needSB:false
   },
-  {
-    selector:'.ni[onclick*="add"]',
-    title:'Додати слово',
-    text:'Натисни сюди щоб додати нове слово. Вводиш слово — програма перекладає автоматично.',
-    pos:'right', page:'home', needSB:true
-  },
-  {
-    selector:'.ni[onclick*="flash"]',
-    title:'Картки',
-    text:'Головний режим. Програма показує слово — ти оцінюєш: Легко, Добре або Важко.',
-    pos:'right', page:'home', needSB:true
-  },
-  {
-    selector:'.ni[onclick*="quiz"]',
-    title:'Тест',
-    text:'Вибираєш правильний переклад з 4 варіантів. Швидко і ефективно.',
-    pos:'right', page:'home', needSB:true
-  },
-  {
-    selector:'.ni[onclick*="match"]',
-    title:'Гра в пари',
-    text:'Знаходь пари слів якнайшвидше. Є таймер!',
-    pos:'right', page:'home', needSB:true
-  },
-  {
-    selector:'.streak-box',
-    title:'Дні поспіль',
-    text:'Займайся щодня — цей лічильник росте. Показує скільки днів поспіль ти вчишся.',
-    pos:'top', page:'home', needSB:true
-  },
+  // 3. Завдання дня
   {
     selector:'#dailyGoalBlock',
     title:'Завдання дня',
-    text:'Щодня є 3 завдання: додай 5 слів, дай 10 відповідей, досягни 70% точності. При виконанні отримаєш сповіщення!',
-    pos:'top', page:'home', needSB:false
+    text:'Щодня три завдання: додай 5 нових слів, дай 10 відповідей, набери 7 правильних. Виконуй їх — і прогрес росте швидко!',
+    pos:'top', page:'home', needSB:false, scrollPage:true
   },
+  // 4. Додати слово (sidebar)
   {
-    selector:'.ni[onclick*="cfg"]',
+    selector:'.ni[onclick="go(\'add\',this)"]',
+    title:'Додати слово',
+    text:'Тут додаєш нові слова до словника. Введи слово — програма автоматично перекладає. Можна додавати кілька слів одразу.',
+    pos:'right', page:'home', needSB:true
+  },
+  // 5. Словник
+  {
+    selector:'.ni[onclick="go(\'dict\',this)"]',
+    title:'Словник',
+    text:'Всі твої слова. Можна шукати, сортувати, редагувати або видаляти. Кожне слово має рівень: Нове — Вивчається — Вивчено.',
+    pos:'right', page:'home', needSB:true
+  },
+  // 6. Поступове навчання
+  {
+    selector:'.ni[onclick="go(\'course\',this)"]',
+    title:'Поступове навчання',
+    text:'12 рівнів від базових займенників до ділової лексики. Проходь рівні по черзі — наступний відкривається після попереднього.',
+    pos:'right', page:'home', needSB:true
+  },
+  // 7. Картки
+  {
+    selector:'.ni[onclick="go(\'flash\',this)"]',
+    title:'Картки',
+    text:'Головний режим. Програма показує слово — оцінюєш: Легко, Добре або Важко. Важкі слова показуються частіше.',
+    pos:'right', page:'home', needSB:true
+  },
+  // 8. Тест
+  {
+    selector:'.ni[onclick="go(\'quiz\',this)"]',
+    title:'Тест: вибір варіанту',
+    text:'Бачиш слово — вибираєш правильний переклад з 4 варіантів. 3 помилки — гра закінчена.',
+    pos:'right', page:'home', needSB:true
+  },
+  // 9. Гра в пари
+  {
+    selector:'.ni[onclick="go(\'match\',this)"]',
+    title:'Гра в пари',
+    text:'З\'єднуй українські слова з англійськими перекладами. Є таймер — намагайся якнайшвидше і без помилок.',
+    pos:'right', page:'home', needSB:true
+  },
+  // 10. Написання
+  {
+    selector:'.ni[onclick="go(\'type\',this)"]',
+    title:'Написання слів',
+    text:'Бачиш українське слово — пишеш переклад по-англійськи. Найкращий спосіб вивчити правопис.',
+    pos:'right', page:'home', needSB:true
+  },
+  // 11. Склади слово
+  {
+    selector:'.ni[onclick="go(\'spell\',this)"]',
+    title:'Склади слово',
+    text:'Переміщуй букви у правильному порядку щоб скласти англійське слово. Без підказок — тільки ти і букви.',
+    pos:'right', page:'home', needSB:true
+  },
+  // 12. Вивчені
+  {
+    selector:'.ni[onclick="go(\'known\',this)"]',
+    title:'Вивчені слова',
+    text:'Слово стає вивченим коли ти відповів правильно 8 разів поспіль з точністю 80% протягом 5 днів.',
+    pos:'right', page:'home', needSB:true
+  },
+  // 13. Статистика
+  {
+    selector:'.ni[onclick="go(\'stats\',this)"]',
+    title:'Статистика',
+    text:'Графік активності за 7 днів, топ важких і легких слів. Допомагає розуміти де варто попрацювати більше.',
+    pos:'right', page:'home', needSB:true
+  },
+  // 14. Стрік
+  {
+    selector:'.streak-box',
+    title:'Дні поспіль',
+    text:'Займайся щодня — цей лічильник росте. Пропустив день — стрік скидається. Мотивує не пропускати заняття.',
+    pos:'top', page:'home', needSB:true
+  },
+  // 15. Налаштування
+  {
+    selector:'.ni[onclick="go(\'cfg\',this)"]',
     title:'Налаштування',
-    text:'Кількість карток, швидкість озвучення, тема — все тут.',
+    text:'Кількість карток за сесію, звуки, автоозвучення, тема і можливість запустити цей тур знову — все тут.',
     pos:'right', page:'home', needSB:true, last:true
   },
 ];
 
 function tutStart(){
-  // Tutorial disabled — auto-mark as seen
-  localStorage.setItem('wv_tutor','1');
+  if(localStorage.getItem('wv_tutor'))return;
+  tutIdx=0;
+  _tutGo();
 }
 
-function tutShowStep(){
+function tutReset(){
+  localStorage.removeItem('wv_tutor');
+  tutIdx=0;
+  _tutGo();
+}
+
+// Приховує hole та box під час переходу між кроками
+function _tutHide(){
+  const hole=document.getElementById('tutHole');
+  const box=document.getElementById('tutBox');
+  const overlay=document.getElementById('tutOverlay');
+  if(hole){hole.style.width='0';hole.style.height='0';hole.style.opacity='0';}
+  if(box)box.style.display='none';
+  if(overlay)overlay.style.background='';
+}
+
+// Головна функція переходу між кроками
+function _tutGo(){
   const step=tutSteps[tutIdx];
   if(!step){tutEnd();return;}
 
-  // Переходимо на сторінку тільки якщо ми не на ній вже
+  _tutHide();
+
+  // Переходимо на потрібну сторінку
   if(step.page){
-    const currentPage=document.querySelector('.page.on');
-    const targetId='p-'+step.page;
-    if(!currentPage||currentPage.id!==targetId){
-      // Перехід без closeSB — щоб sidebar не закрився
-      document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
-      const pg=document.getElementById(targetId);
-      if(pg){pg.classList.add('on');pg.scrollTop=0;}
-      document.querySelectorAll('.ni').forEach(b=>b.classList.remove('on'));
-      document.querySelectorAll('.ni').forEach(b=>{
-        if((b.getAttribute('onclick')||'').includes("'"+step.page+"'"))b.classList.add('on');
-      });
-      document.getElementById('ptitle').textContent=titles[step.page]||'';
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+    const pg=document.getElementById('p-'+step.page);
+    if(pg){pg.classList.add('on');pg.scrollTop=0;}
+    document.querySelectorAll('.ni').forEach(b=>{
+      b.classList.toggle('on',(b.getAttribute('onclick')||'').includes("'"+step.page+"'"));
+    });
+    const ptEl=document.getElementById('ptitle');
+    if(ptEl&&typeof titles!=='undefined')ptEl.textContent=titles[step.page]||'';
+  }
+
+  const isMob=window.innerWidth<=700;
+  // Час очікування: якщо треба анімація sidebar — 320мс, інакше 100мс
+  let delay=100;
+  if(isMob){
+    if(step.needSB===true){ openSB(); delay=340; }
+    else if(step.needSB===false){ closeSB(); delay=340; }
+  }
+
+  setTimeout(()=>_tutRender(step), delay);
+}
+
+function _tutScrollIntoSidebar(el){
+  // Скролить .nav контейнер sidebar щоб елемент був видний
+  const nav=document.querySelector('.nav');
+  if(!nav||!el)return;
+  const navRect=nav.getBoundingClientRect();
+  const elRect=el.getBoundingClientRect();
+  // Якщо елемент вище видимої зони nav — скролимо вгору
+  if(elRect.top<navRect.top){
+    nav.scrollTop-=(navRect.top-elRect.top+8);
+  }
+  // Якщо нижче — скролимо вниз
+  else if(elRect.bottom>navRect.bottom){
+    nav.scrollTop+=(elRect.bottom-navRect.bottom+8);
+  }
+}
+
+function _tutRender(step){
+  const overlay=document.getElementById('tutOverlay');
+  const hole=document.getElementById('tutHole');
+  const box=document.getElementById('tutBox');
+  if(!overlay||!hole||!box)return;
+
+  // Знаходимо ціль
+  const target=step.selector ? document.querySelector(step.selector) : null;
+
+  // Якщо потрібен елемент але не знайдений — пропускаємо
+  if(step.selector && !step.noHole && !target){
+    tutIdx++;
+    _tutGo();
+    return;
+  }
+
+  // Скролимо sidebar якщо елемент там
+  if(target) _tutScrollIntoSidebar(target);
+
+  // Скролимо сторінку (для елементів внизу головної сторінки)
+  if(step.scrollPage && target){
+    const pg=document.getElementById('p-'+step.page);
+    if(pg){
+      // Скролимо сторінку так щоб елемент був видний
+      const pgRect=pg.getBoundingClientRect();
+      const elOffsetTop=target.offsetTop;
+      pg.scrollTop=Math.max(0, elOffsetTop - pg.clientHeight/2 + target.offsetHeight/2);
     }
   }
 
-  // Sidebar на мобільному
-  const isMob=window.innerWidth<=700;
-  if(step.needSB&&isMob) openSB();
-  else if(!step.needSB&&isMob) closeSB();
-
-  setTimeout(()=>tutRender(step),300);
-}
-
-function tutRender(step){
-  const target=document.querySelector(step.selector);
-  if(!target){tutIdx++;tutShowStep();return;}
-
-  // Скролимо до елементу
-  target.scrollIntoView({behavior:'smooth',block:'center'});
-
+  // Чекаємо завершення будь-яких скролів перед вимірюванням
   setTimeout(()=>{
-    const overlay=document.getElementById('tutOverlay');
-    const hole=document.getElementById('tutHole');
-    const box=document.getElementById('tutBox');
-
     overlay.style.display='block';
     box.style.display='block';
 
-    // Блокуємо фон
+    // Блокуємо взаємодію з фоном (але не box)
     const app=document.querySelector('.app');
     if(app)app.style.pointerEvents='none';
-    // Але дозволяємо взаємодію з tutorial box
+    const sb=document.getElementById('sidebar');
+    if(sb)sb.style.pointerEvents='none';
     box.style.pointerEvents='all';
     overlay.style.pointerEvents='all';
 
-    const rect=target.getBoundingClientRect();
-    const pad=10;
-    hole.style.left=(rect.left-pad)+'px';
-    hole.style.top=(rect.top-pad)+'px';
-    hole.style.width=(rect.width+pad*2)+'px';
-    hole.style.height=(rect.height+pad*2)+'px';
+    const vw=window.innerWidth, vh=window.innerHeight;
 
+    // Розраховуємо hole
+    let holeRect=null;
+    if(target && !step.noHole){
+      const r=target.getBoundingClientRect();
+      if(r.width>0 && r.height>0 && r.top<vh && r.bottom>0 && r.left<vw && r.right>0){
+        holeRect=r;
+      }
+    }
+
+    const pad=8;
+    if(holeRect){
+      // Є ціль — вирізаємо дірку, фон прозорий (затемнення через box-shadow дірки)
+      overlay.style.background='transparent';
+      hole.style.opacity='1';
+      hole.style.left=Math.max(0,holeRect.left-pad)+'px';
+      hole.style.top=Math.max(0,holeRect.top-pad)+'px';
+      hole.style.width=(holeRect.width+pad*2)+'px';
+      hole.style.height=(holeRect.height+pad*2)+'px';
+    } else {
+      // noHole або ціль не видна — затемнюємо фон самого overlay, дірку ховаємо
+      overlay.style.background='rgba(0,0,0,0.72)';
+      hole.style.opacity='0';
+      hole.style.left='-9999px';
+      hole.style.top='-9999px';
+      hole.style.width='0';
+      hole.style.height='0';
+    }
+
+    // Заповнюємо текст
     document.getElementById('tutTitle').textContent=step.title;
     document.getElementById('tutText').textContent=step.text;
     document.getElementById('tutStep').textContent=(tutIdx+1)+' / '+tutSteps.length;
-    document.getElementById('tutNextBtn').textContent=step.last?'Готово':'Далі';
+    document.getElementById('tutNextBtn').textContent=step.last?'Завершити тур':'Далі';
 
-    // Позиціонуємо підказку — ніколи не перекриває hole
-    const bw=Math.min(276,window.innerWidth-24);
-    const vw=window.innerWidth,vh=window.innerHeight;
-    // Виміряємо реальну висоту box після render
-    box.style.left='-9999px';box.style.top='-9999px';box.style.width=bw+'px';
-    const bh=box.offsetHeight||160;
+    // Позиціонуємо box
+    box.style.left='-9999px'; box.style.top='-9999px'; box.style.width='320px';
+    const bw=Math.min(320, vw-24);
+    box.style.width=bw+'px';
+    const bh=box.offsetHeight||180;
 
-    const holeCx=rect.left+rect.width/2;
-    const holeCy=rect.top+rect.height/2;
-    const gap=14;
-
-    // Визначаємо найкращу позицію: знизу, зверху, справа, зліва
-    const candidates=[
-      {side:'bottom',left:Math.max(8,Math.min(holeCx-bw/2,vw-bw-8)),top:rect.bottom+gap},
-      {side:'top',   left:Math.max(8,Math.min(holeCx-bw/2,vw-bw-8)),top:rect.top-bh-gap},
-      {side:'right', left:rect.right+gap,                             top:Math.max(8,Math.min(holeCy-bh/2,vh-bh-8))},
-      {side:'left',  left:rect.left-bw-gap,                          top:Math.max(8,Math.min(holeCy-bh/2,vh-bh-8))},
-    ];
-    // Перевага: preferred pos з кроку, потім перший що вміщується
-    const preferred=step.pos||'bottom';
-    const fits=c=>c.left>=4&&c.top>=4&&c.left+bw<=vw-4&&c.top+bh<=vh-4;
-    let chosen=candidates.find(c=>c.side===preferred&&fits(c))
-      ||candidates.find(c=>fits(c))
-      ||candidates[0];
-    // Не виходить за краї
+    let chosen;
+    if(step.pos==='center' || !holeRect){
+      // Центруємо по екрану
+      chosen={left:Math.max(8,(vw-bw)/2), top:Math.max(8,(vh-bh)/2)};
+    } else {
+      const cx=holeRect.left+holeRect.width/2;
+      const cy=holeRect.top+holeRect.height/2;
+      const g=14;
+      const candidates=[
+        {side:'right',  left:holeRect.right+g,                       top:Math.max(8,Math.min(cy-bh/2,vh-bh-8))},
+        {side:'bottom', left:Math.max(8,Math.min(cx-bw/2,vw-bw-8)), top:holeRect.bottom+g},
+        {side:'top',    left:Math.max(8,Math.min(cx-bw/2,vw-bw-8)), top:holeRect.top-bh-g},
+        {side:'left',   left:holeRect.left-bw-g,                     top:Math.max(8,Math.min(cy-bh/2,vh-bh-8))},
+      ];
+      const fits=c=>c.left>=4&&c.top>=4&&c.left+bw<=vw-4&&c.top+bh<=vh-4;
+      const preferred=step.pos||'right';
+      chosen=candidates.find(c=>c.side===preferred&&fits(c))
+        ||candidates.find(c=>fits(c))
+        ||{left:Math.max(8,(vw-bw)/2), top:Math.max(8,(vh-bh)/2)};
+    }
     chosen.left=Math.max(8,Math.min(chosen.left,vw-bw-8));
-    chosen.top =Math.max(8,Math.min(chosen.top, vh-bh-8));
-
+    chosen.top=Math.max(8,Math.min(chosen.top,vh-bh-8));
     box.style.left=chosen.left+'px';
     box.style.top=chosen.top+'px';
-    box.style.width=bw+'px';
-  },300);
+  }, 80);
 }
 
 function tutNext(){
   tutIdx++;
   if(tutIdx>=tutSteps.length){tutEnd();return;}
-  // Ховаємо hole під час переходу
-  document.getElementById('tutHole').style.width='0';
-  document.getElementById('tutHole').style.height='0';
-  tutShowStep();
+  _tutGo();
 }
 
 function tutSkip(){tutEnd();}
 
 function tutEnd(){
-  // Розблоковуємо фон
+  _tutHide();
+  const overlay=document.getElementById('tutOverlay');
+  if(overlay){overlay.style.display='none';overlay.style.background='';}
+  // Розблоковуємо
   const app=document.querySelector('.app');
   if(app)app.style.pointerEvents='';
-  document.getElementById('tutOverlay').style.display='none';
-  document.getElementById('tutBox').style.display='none';
+  const sb=document.getElementById('sidebar');
+  if(sb)sb.style.pointerEvents='';
   // Закриваємо sidebar на мобільному
-  closeSB();
-  // Переходимо на головну
+  if(window.innerWidth<=700)closeSB();
   goForce('home',null);
   localStorage.setItem('wv_tutor','1');
-  // Звук завершення
   try{
     const ac=getAC();if(!ac)return;
     [[523,0],[659,0.12],[784,0.24],[1047,0.36]].forEach(([freq,delay])=>{
@@ -1365,9 +1513,6 @@ function tutEnd(){
   }catch(e){}
   setTimeout(()=>notify('Тур завершено! Вдачі у навчанні.'),500);
 }
-
-// Команди для консолі
-function tutReset(){localStorage.removeItem('wv_tutor');tutIdx=0;tutStart();}
 
 /* DAILY GOAL */
 // Зберігаємо які завдання вже сповістили (щоб не спамити)
@@ -1554,7 +1699,7 @@ function applyStg(){
 /* NAV */
 const titles={home:'Дашборд',add:'Додати слово',dict:'Словник',course:'Поступове навчання',flash:'Картки',quiz:'Тест: вибір',match:'Гра в пари',type:'Написання',spell:'Склади слово',known:'Вивчені слова',stats:'Статистика',cfg:'Налаштування'};
 // Прапорці активних сесій — скидаються при завершенні або виході
-let sessActive={quiz:false,match:false,type:false,flash:false,spell:false};
+let sessActive={quiz:false,match:false,type:false,flash:false,spell:false,course:false};
 function activeSession(){
   // Додаткова перевірка: якщо екран результатів видимий — сесія завершена
   if(sessActive.quiz && document.getElementById('qRes')?.style.display!=='block')return'quiz';
@@ -1566,7 +1711,7 @@ function activeSession(){
 }
 function goForce(id,btn){
   // Скидаємо всі прапорці при примусовому переході
-  sessActive={quiz:false,match:false,type:false,flash:false};
+  sessActive={quiz:false,match:false,type:false,flash:false,spell:false,course:false};
   clearInterval(mTi);
   document.querySelectorAll('.page').forEach(p=>{p.classList.remove('on');p.scrollTop=0;});
   const pg=document.getElementById('p-'+id);
@@ -1669,7 +1814,7 @@ function notify(txt,type='ok'){const el=document.getElementById('notif');documen
 
 /* MODAL */
 function modal(t,txt,onOk){document.getElementById('mTitle').textContent=t;document.getElementById('mText').textContent=txt;document.getElementById('mwrap').classList.add('open');document.getElementById('mOk').onclick=()=>{closeM();onOk();};}
-function closeM(){document.getElementById('mwrap').classList.remove('open');}
+function closeM(){const el=document.getElementById('mwrap');el.classList.remove('open');el.style.zIndex='';}
 
 /* TTS — Google Translate */
 let _ttsAudio = null;
@@ -2267,7 +2412,7 @@ function closeEditW(){document.getElementById('editWrap').classList.remove('open
 function saveEditW(){
   const uk=document.getElementById('editUk').value.trim();
   const en=document.getElementById('editEn').value.trim();
-  if(!uk||!en){notify("Обидва поля обов'язкові",'err');return;}
+  if(!uk||!en){notify("Обидва поля обов\'язкові",'err');return;}
   const w=W.find(x=>x.id===editWId);
   if(!w){closeEditW();return;}
   // Перевірка на дублікат — шукаємо інше слово з такими ж uk+en
@@ -2348,7 +2493,7 @@ function renderKnown(){
   document.getElementById('knownCnt').textContent=(q?known.length+' з '+total:total)+' вивчених слів';
   const el=document.getElementById('knownList');
   if(!W.filter(w=>w.level==='known').length){
-    el.innerHTML="<div class='empty'><div style='font-size:2rem;margin-bottom:10px;color:var(--text3)'>—</div><h3>Ще немає вивчених слів</h3><p>Слова з'являться тут коли позначиш їх як Знаю</p></div>";
+    el.innerHTML="<div class='empty'><div style='font-size:2rem;margin-bottom:10px;color:var(--text3)'>—</div><h3>Ще немає вивчених слів</h3><p>Слова з\'являться тут коли позначиш їх як Знаю</p></div>";
     return;
   }
   el.innerHTML=known.map(w=>`
@@ -2486,7 +2631,7 @@ function dueWords(){
 }
 // Нові слова: ті що ще ніколи не проходили або тільки додані
 function newWords(){return validWords().filter(w=>w.level==='new');}
-// Слова для "розумного" режиму: due + нові (нові з'являються частіше — кожна сесія по 5)
+// Слова для "розумного" режиму: due + нові (нові з\'являються частіше — кожна сесія по 5)
 function smartPool(){
   const d=dueWords().sort((a,b)=>new Date(a.nextReview)-new Date(b.nextReview));
   // Нові слова: беремо до 5, пріоритет — нещодавно додані
@@ -2893,7 +3038,7 @@ function selM(btn){
   if(btn.classList.contains('ok'))return;
   if(!mSel){
     mSel=btn;
-    mFirstSel=btn; // запам'ятовуємо перший вибір
+    mFirstSel=btn; // запам\'ятовуємо перший вибір
     btn.classList.add('sel');
     // Озвучуємо вибране слово
     const w=mP.find(x=>x.id==btn.dataset.id);
@@ -3310,7 +3455,7 @@ function clickSound(){
   if(!C.sound)return;
   try{
     const ac=getAC();if(!ac)return;
-    // Короткий тік: два осцилятори для об'єму
+    // Короткий тік: два осцилятори для об\'єму
     const o=ac.createOscillator(),g=ac.createGain();
     o.connect(g);g.connect(ac.destination);
     o.type='sine';o.frequency.value=1200;
@@ -3591,7 +3736,7 @@ function renderLivesBar(){
 function showGameOver(){
   sessionHasLives=false;
   // Force exit from any session
-  sessActive={quiz:false,match:false,type:false,flash:false,spell:false};
+  sessActive={quiz:false,match:false,type:false,flash:false,spell:false,course:false};
   clearInterval(mTi);
   const overlay=document.createElement('div');
   overlay.className='gameover-overlay';
@@ -3663,12 +3808,12 @@ const COURSE_LEVELS=[
     {uk:'будинок',en:'house'},{uk:'кімната',en:'room'},{uk:'стіл',en:'table'},{uk:'стілець',en:'chair'},{uk:'вікно',en:'window'},
     {uk:'двері',en:'door'},{uk:'ліжко',en:'bed'},{uk:'книга',en:'book'},{uk:'телефон',en:'phone'},{uk:'ключ',en:'key'},
     {uk:'хліб',en:'bread'},{uk:'молоко',en:'milk'},{uk:'кава',en:'coffee'},{uk:'чай',en:'tea'},{uk:'яблуко',en:'apple'},
-    {uk:'м'ясо',en:'meat'},{uk:'сіль',en:'salt'},{uk:'цукор',en:'sugar'},{uk:'гроші',en:'money'},{uk:'сумка',en:'bag'},
-    {uk:'одяг',en:'clothes'},{uk:'взуття',en:'shoes'},{uk:'годинник',en:'clock'},{uk:'комп'ютер',en:'computer'},{uk:'лампа',en:'lamp'},
+    {uk:'м\'ясо',en:'meat'},{uk:'сіль',en:'salt'},{uk:'цукор',en:'sugar'},{uk:'гроші',en:'money'},{uk:'сумка',en:'bag'},
+    {uk:'одяг',en:'clothes'},{uk:'взуття',en:'shoes'},{uk:'годинник',en:'clock'},{uk:'комп\'ютер',en:'computer'},{uk:'лампа',en:'lamp'},
     {uk:'холодильник',en:'fridge'},{uk:'плита',en:'stove'},{uk:'душ',en:'shower'},{uk:'рушник',en:'towel'},{uk:'мило',en:'soap'},
   ]},
   {id:5,emoji:'🌍',title:'Рівень 5 — Люди і суспільство',sub:'Стосунки, робота, місця',color:'#10b981',words:[
-    {uk:'людина',en:'person'},{uk:'друг',en:'friend'},{uk:'сім'я',en:'family'},{uk:'батько',en:'father'},{uk:'мати',en:'mother'},
+    {uk:'людина',en:'person'},{uk:'друг',en:'friend'},{uk:'сім\'я',en:'family'},{uk:'батько',en:'father'},{uk:'мати',en:'mother'},
     {uk:'дитина',en:'child'},{uk:'вчитель',en:'teacher'},{uk:'лікар',en:'doctor'},{uk:'робота',en:'work'},{uk:'місто',en:'city'},
     {uk:'країна',en:'country'},{uk:'мова',en:'language'},{uk:'слово',en:'word'},{uk:'питання',en:'question'},{uk:'відповідь',en:'answer'},
     {uk:'проблема',en:'problem'},{uk:'рішення',en:'solution'},{uk:'ідея',en:'idea'},{uk:'план',en:'plan'},{uk:'час',en:'time'},
@@ -3677,7 +3822,7 @@ const COURSE_LEVELS=[
   ]},
   {id:6,emoji:'🚀',title:'Рівень 6 — Активні дієслова',sub:'Розширений набір дій',color:'#f97316',words:[
     {uk:'читати',en:'read'},{uk:'писати',en:'write'},{uk:'слухати',en:'listen'},{uk:'говорити',en:'speak'},{uk:'вчити',en:'learn'},
-    {uk:'розуміти',en:'understand'},{uk:'пам'ятати',en:'remember'},{uk:'забути',en:'forget'},{uk:'купити',en:'buy'},{uk:'продати',en:'sell'},
+    {uk:'розуміти',en:'understand'},{uk:'пам\'ятати',en:'remember'},{uk:'забути',en:'forget'},{uk:'купити',en:'buy'},{uk:'продати',en:'sell'},
     {uk:'відкрити',en:'open'},{uk:'закрити',en:'close'},{uk:'сидіти',en:'sit'},{uk:'стояти',en:'stand'},{uk:'бігти',en:'run'},
     {uk:'летіти',en:'fly'},{uk:'плисти',en:'swim'},{uk:'грати',en:'play'},{uk:'співати',en:'sing'},{uk:'малювати',en:'draw'},
     {uk:'готувати',en:'cook'},{uk:'їсти',en:'eat'},{uk:'пити',en:'drink'},{uk:'спати',en:'sleep'},{uk:'прокинутися',en:'wake up'},
@@ -3685,13 +3830,13 @@ const COURSE_LEVELS=[
     {uk:'вирішити',en:'decide'},{uk:'змінити',en:'change'},{uk:'підготуватися',en:'prepare'},{uk:'порівняти',en:'compare'},{uk:'пояснити',en:'explain'},
   ]},
   {id:7,emoji:'💡',title:'Рівень 7 — Числа і час',sub:'Кількості, порядок, дні тижня',color:'#ec4899',words:[
-    {uk:'один',en:'one'},{uk:'два',en:'two'},{uk:'три',en:'three'},{uk:'чотири',en:'four'},{uk:'п'ять',en:'five'},
-    {uk:'шість',en:'six'},{uk:'сім',en:'seven'},{uk:'вісім',en:'eight'},{uk:'дев'ять',en:'nine'},{uk:'десять',en:'ten'},
-    {uk:'двадцять',en:'twenty'},{uk:'п'ятдесят',en:'fifty'},{uk:'сто',en:'hundred'},{uk:'тисяча',en:'thousand'},{uk:'мільйон',en:'million'},
+    {uk:'один',en:'one'},{uk:'два',en:'two'},{uk:'три',en:'three'},{uk:'чотири',en:'four'},{uk:'п\'ять',en:'five'},
+    {uk:'шість',en:'six'},{uk:'сім',en:'seven'},{uk:'вісім',en:'eight'},{uk:'дев\'ять',en:'nine'},{uk:'десять',en:'ten'},
+    {uk:'двадцять',en:'twenty'},{uk:'п\'ятдесят',en:'fifty'},{uk:'сто',en:'hundred'},{uk:'тисяча',en:'thousand'},{uk:'мільйон',en:'million'},
     {uk:'перший',en:'first'},{uk:'другий',en:'second'},{uk:'третій',en:'third'},{uk:'половина',en:'half'},{uk:'чверть',en:'quarter'},
     {uk:'ранок',en:'morning'},{uk:'вечір',en:'evening'},{uk:'ніч',en:'night'},{uk:'сьогодні',en:'today'},{uk:'вчора',en:'yesterday'},
     {uk:'завтра',en:'tomorrow'},{uk:'понеділок',en:'Monday'},{uk:'вівторок',en:'Tuesday'},{uk:'середа',en:'Wednesday'},{uk:'четвер',en:'Thursday'},
-    {uk:'п'ятниця',en:'Friday'},{uk:'субота',en:'Saturday'},{uk:'неділя',en:'Sunday'},{uk:'опівночі',en:'midnight'},{uk:'зараз',en:'now'},
+    {uk:'п\'ятниця',en:'Friday'},{uk:'субота',en:'Saturday'},{uk:'неділя',en:'Sunday'},{uk:'опівночі',en:'midnight'},{uk:'зараз',en:'now'},
   ]},
   {id:8,emoji:'🌿',title:'Рівень 8 — Природа і світ',sub:'Навколишнє середовище',color:'#22c55e',words:[
     {uk:'сонце',en:'sun'},{uk:'місяць',en:'moon'},{uk:'зірка',en:'star'},{uk:'небо',en:'sky'},{uk:'земля',en:'earth'},
@@ -3725,7 +3870,7 @@ const COURSE_LEVELS=[
     {uk:'радість',en:'joy'},{uk:'щастя',en:'happiness'},{uk:'сум',en:'sadness'},{uk:'злість',en:'anger'},{uk:'страх',en:'fear'},
     {uk:'здивування',en:'surprise'},{uk:'відраза',en:'disgust'},{uk:'сором',en:'shame'},{uk:'гордість',en:'pride'},{uk:'заздрість',en:'envy'},
     {uk:'любов',en:'love'},{uk:'ненависть',en:'hate'},{uk:'довіра',en:'trust'},{uk:'надія',en:'hope'},{uk:'розпач',en:'despair'},
-    {uk:'спокійний',en:'calm'},{uk:'нервовий',en:'nervous'},{uk:'впевнений',en:'confident'},{uk:'сором'язливий',en:'shy'},{uk:'добрий',en:'kind'},
+    {uk:'спокійний',en:'calm'},{uk:'нервовий',en:'nervous'},{uk:'впевнений',en:'confident'},{uk:'сором\'язливий',en:'shy'},{uk:'добрий',en:'kind'},
     {uk:'жорстокий',en:'cruel'},{uk:'чесний',en:'honest'},{uk:'терплячий',en:'patient'},{uk:'сміливий',en:'brave'},{uk:'щедрий',en:'generous'},
     {uk:'жадібний',en:'greedy'},{uk:'скромний',en:'humble'},{uk:'амбітний',en:'ambitious'},{uk:'творчий',en:'creative'},{uk:'допитливий',en:'curious'},
     {uk:'організований',en:'organized'},{uk:'відповідальний',en:'responsible'},{uk:'образитися',en:'be offended'},{uk:'вибачити',en:'forgive'},{uk:'підтримати',en:'support'},
@@ -3813,6 +3958,12 @@ function renderCourse(){
   }).join('');
 }
 
+function hexToRgbStr(c){
+  c=c.replace('#','');
+  if(c.length===3)c=c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+  const n=parseInt(c,16);
+  return `${(n>>16)&255},${(n>>8)&255},${n&255}`;
+}
 function hexToRgb(c){return hexToRgbStr(c);}
 
 function toggleCourseLevel(id){}
@@ -3866,7 +4017,7 @@ function startCourseLevel(lvlId){
     }
   });
   sW();
-  const pool=[...lvl.words].sort(()=>Math.random()-0.5).slice(0,Math.min(15,lvl.words.length));
+  const pool=[...lvl.words].sort(()=>Math.random()-0.5);
   launchCourseQuiz(lvl,pool,false);
 }
 
@@ -3880,6 +4031,7 @@ function launchCourseQuiz(lvl,pool,isRepeat){
   renderCQLives();
   renderCQ();
   document.getElementById('courseQuizOverlay').style.display='flex';
+  sessActive.course=true;
 }
 
 function renderCQLives(){
@@ -3936,6 +4088,7 @@ function ansCQ(btn,sel,cor){
 }
 
 function showCQResult(){
+  sessActive.course=false;
   document.getElementById('cqSessInner').style.display='none';
   document.getElementById('cqResInner').style.display='block';
   const total=cqWords.length;
@@ -3960,6 +4113,23 @@ function showCQResult(){
     if(!(progress[cqLvlId]||{}).completed){
       progress[cqLvlId]={completed:true,completedAt:new Date().toISOString(),score:pct};
       saveCourseProgress(progress);
+      // Звук проходження рівня
+      if(C.sound){
+        try{
+          const ac=getAC();if(ac){
+            [[392,0],[523,0.1],[659,0.2],[784,0.32],[1047,0.44]].forEach(([freq,delay])=>{
+              const o=ac.createOscillator(),g=ac.createGain();
+              o.connect(g);g.connect(ac.destination);
+              o.type='sine';o.frequency.value=freq;
+              const t=ac.currentTime+delay;
+              g.gain.setValueAtTime(0,t);
+              g.gain.linearRampToValueAtTime(0.2,t+0.03);
+              g.gain.exponentialRampToValueAtTime(0.001,t+0.35);
+              o.start(t);o.stop(t+0.36);
+            });
+          }
+        }catch(e){}
+      }
       setTimeout(()=>notify(`Рівень ${cqLvlId} пройдено! 🎓 Рівень ${cqLvlId+1} відкрито!`,'ok'),600);
       showCelebration();
     }
@@ -3975,10 +4145,38 @@ function repeatCourseQuizMistakes(){
 }
 
 function exitCourseQuiz(){
+  // Якщо сесія активна (ще не на екрані результатів) — просимо підтвердження
+  if(sessActive.course){
+    // Тимчасово піднімаємо z-index модалки вище overlay (600) щоб вона була видима
+    const mw=document.getElementById('mwrap');
+    if(mw)mw.style.zIndex='700';
+    modal(
+      'Вийти з рівня?',
+      'Сесія не завершена. Прогрес цього рівня не зарахується.',
+      ()=>{
+        sessActive.course=false;
+        document.getElementById('courseQuizOverlay').style.display='none';
+        renderCourse();
+      }
+    );
+    return;
+  }
+  // Екран результатів — закриваємо без підтвердження (як в інших іграх)
   document.getElementById('courseQuizOverlay').style.display='none';
   renderCourse();
 }
 
+function resetCourseProgress(){
+  modal(
+    'Скинути Поступове навчання?',
+    'Весь прогрес рівнів буде видалено. Слова залишаться у словнику.',
+    ()=>{
+      localStorage.removeItem('wv_course');
+      renderCourse();
+      notify('Прогрес Поступового навчання скинуто');
+    }
+  );
+}
 function startCourseQuiz(id){startCourseLevel(id);}
 
 /* INIT */
@@ -4039,7 +4237,7 @@ window.addEventListener('pagehide', _onLeave);
   <div class="tut-box-title" id="tutTitle"></div>
   <div class="tut-box-text" id="tutText"></div>
   <div class="tut-box-btns">
-    <span class="tut-step" id="tutStep">1 / 8</span>
+    <span class="tut-step" id="tutStep">1 / 15</span>
     <button class="btn btn-ghost btn-sm" id="tutSkipBtn" onclick="tutSkip()">Пропустити</button>
     <button class="btn btn-blue btn-sm" id="tutNextBtn" onclick="tutNext()">Далі</button>
   </div>
