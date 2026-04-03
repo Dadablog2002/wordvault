@@ -167,9 +167,9 @@ select option{background:var(--card)}
 .flash-mode-desc{font-size:0.72rem;color:var(--text3);font-weight:600}
 .flash-mode-count{font-size:1.3rem;font-weight:900;margin-left:12px;flex-shrink:0}
 /* Єдиний стиль рядка виходу для ВСІХ сесій */
-.sess-header{display:flex;align-items:center;gap:10px;margin:8px 0 10px;flex-shrink:0;position:relative}
+.sess-header{display:flex;align-items:center;gap:8px;margin:8px 0 10px;flex-shrink:0}
 .sess-header .btn-exit{padding:7px 14px;font-size:0.78rem;font-weight:800;border-radius:var(--rs);flex-shrink:0}
-.sess-ctr{flex:1;text-align:center;font-size:0.8rem;font-weight:700;color:var(--text2);display:flex;align-items:center;justify-content:center;position:absolute;left:0;right:0;pointer-events:none}
+.sess-ctr{flex:1;text-align:center;font-size:0.8rem;font-weight:700;color:var(--text2);display:flex;align-items:center;justify-content:center;min-width:0}
 /* QUIZ */
 .quiz-q{text-align:center;background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:24px 20px 20px;margin-bottom:14px}
 .qword{font-size:2.2rem;font-weight:900;color:var(--gold);margin-bottom:4px;line-height:1.2}
@@ -380,6 +380,7 @@ select option{background:var(--card)}
     <button class="ni on" onclick="go('home',this)"><div class="ni-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>Дашборд</button>
     <button class="ni" onclick="go('add',this)"><div class="ni-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>Додати слово</button>
     <button class="ni" onclick="go('dict',this)"><div class="ni-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>Словник</button>
+    <button class="ni" onclick="go('mywords',this)"><div class="ni-ic" style="background:linear-gradient(135deg,rgba(168,85,247,.3),rgba(232,121,249,.15))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><span style="color:var(--blue);font-weight:900">Мої Слова!</span></button>
     <div class="nav-sec" style="margin-top:6px">Тренування</div>
     <button class="ni" onclick="go('course',this)"><div class="ni-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>Поступове навчання</button>
     <button class="ni" onclick="go('flash',this)"><div class="ni-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg></div>Картки</button>
@@ -457,62 +458,32 @@ select option{background:var(--card)}
     <!-- ADD -->
     <div id="p-add" class="page">
 
-      <!-- Перемикач напрямку -->
-      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px">
-        <span id="addDirLabelA" style="font-size:0.72rem;font-weight:900;color:var(--teal);text-transform:uppercase;letter-spacing:1px">UA</span>
-        <button id="addDirBtn" onclick="toggleAddDir()" style="background:var(--card2);border:2px solid var(--border2);border-radius:20px;padding:5px 14px;cursor:pointer;font-family:var(--f);font-size:0.78rem;font-weight:800;color:var(--text2);transition:all .15s" title="Змінити напрямок перекладу">&#8644; Змінити</button>
-        <span id="addDirLabelB" style="font-size:0.72rem;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px">EN</span>
-      </div>
-
-      <!-- Translate panel -->
-      <div class="block mb12" style="padding:0;overflow:hidden">
-        <div style="display:grid;grid-template-columns:1fr 2px 1fr">
-          <!-- Ліва сторона (input) -->
-          <div style="padding:14px 16px">
-            <div id="addSrcLabel" style="font-size:0.6rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:8px">&#127482;&#127462; Українська</div>
-            <textarea id="inUk" placeholder="Введи слово..." oninput="onUkI()" rows="2"
-              style="width:100%;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--f);font-size:1.15rem;font-weight:700;resize:none;line-height:1.4;display:block"></textarea>
-            <div style="margin-top:10px;display:flex;gap:6px">
-              <button class="btn btn-ghost btn-sm" id="srcSpeakBtn" onclick="speak(document.getElementById('inUk').value, addDir==='uk2en'?'uk':'en')">&#9654;</button>
-              <button class="btn btn-ghost btn-sm" onclick="clearAdd()">&#x2715;</button>
-            </div>
-          </div>
-          <!-- Divider -->
-          <div style="background:var(--border)"></div>
-          <!-- Права сторона (переклад) -->
-          <div style="padding:14px 16px;background:var(--card2);position:relative">
-            <div id="addTrgLabel" style="font-size:0.6rem;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--text3);margin-bottom:8px">&#127468;&#127463; English</div>
-            <div id="enDisplay" style="font-size:1.15rem;font-weight:700;color:var(--teal);min-height:32px;line-height:1.4;cursor:pointer;word-break:break-word" onclick="startEditEn()" title="Натисни щоб редагувати">—</div>
-            <input type="text" id="inEn" placeholder="введи вручну..."
-              style="display:none;width:100%;background:transparent;border:none;border-bottom:2px solid var(--teal);outline:none;color:var(--teal);font-family:var(--f);font-size:1.15rem;font-weight:700;padding:0 0 2px 0"
-              onblur="stopEditEn()" onkeydown="if(event.key==='Enter')stopEditEn()">
-            <div style="margin-top:10px;display:flex;gap:6px;align-items:center">
-              <button class="btn btn-ghost btn-sm" id="enSpeakBtn" onclick="speak(document.getElementById('inEn').value||document.getElementById('enDisplay').textContent, addDir==='uk2en'?'en':'uk')">&#9654;</button>
-              <button class="btn btn-ghost btn-sm" onclick="startEditEn()" title="Редагувати переклад" style="font-size:0.85rem">&#9998;</button>
-              <span id="trStatus" style="font-size:0.7rem;color:var(--text3);font-weight:600;margin-left:2px"></span>
-            </div>
-          </div>
+      <!-- Ручне додавання одного слова -->
+      <div class="block mb12">
+        <div class="block-title" style="margin-bottom:12px">Додати слово</div>
+        <div class="field">
+          <label>&#127482;&#127462; Українське слово</label>
+          <input type="text" id="inUk" placeholder="Введи українське слово..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
         </div>
-        <!-- Loading indicator -->
-        <div id="trLoading" style="display:none;padding:8px 16px;border-top:2px solid var(--border);font-size:0.78rem;color:var(--text3);font-weight:600;align-items:center;gap:8px">
-          <div class="spin"></div>Перекладаю...
+        <div class="field" style="margin-bottom:16px">
+          <label>&#127468;&#127463; English word</label>
+          <input type="text" id="inEn" placeholder="Enter English word..." autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-green" style="flex:1;padding:13px" onclick="addW()">Зберегти</button>
+          <button class="btn btn-ghost btn-sq" onclick="clearAdd()" title="Очистити">&#x2715;</button>
         </div>
       </div>
 
-      <!-- Add button -->
-      <input type="hidden" id="inCat" value="general">
-      <button class="btn btn-green w100 mb12" style="padding:15px;font-size:1rem" onclick="addW()">Додати до словника</button>
-
-      <!-- BULK ADD -->
-      <div class="block" style="margin-top:4px">
-        <div class="block-title" style="margin-bottom:6px">Додати кілька слів одразу</div>
-        <div style="font-size:0.75rem;color:var(--text2);margin-bottom:8px">Введи слова через кому або з нового рядка. Програма перекладе кожне слово окремо.</div>
-        <textarea id="bulkInput" placeholder="привіт, кіт, яблуко&#10;або кожне слово з нового рядка..." rows="4" oninput="previewBulk()" style="width:100%;background:var(--card2);border:2.5px solid var(--border);border-radius:var(--rm);color:var(--text);font-family:var(--f);font-size:0.88rem;padding:10px 12px;outline:none;resize:vertical;line-height:1.5;transition:border-color .15s" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"></textarea>
-        <!-- Попередній перегляд перекладів -->
-        <div id="bulkPreview" style="display:none;margin-top:8px;max-height:180px;overflow-y:auto;border:2px solid var(--border);border-radius:var(--rm);background:var(--card2)"></div>
+      <!-- BULK ADD — формат: укр - eng -->
+      <div class="block">
+        <div class="block-title" style="margin-bottom:6px">Додати список слів</div>
+        <div style="font-size:0.75rem;color:var(--text2);margin-bottom:10px;line-height:1.5">Вставте пари у форматі <b style="color:var(--teal);font-family:var(--fm)">укр - eng</b> через кому або з нового рядка:<br>
+        <span style="font-family:var(--fm);font-size:0.72rem;color:var(--text3)">яблуко - apple, кіт - cat&#10;або кожна пара з нового рядка</span></div>
+        <textarea id="bulkInput" placeholder="яблуко - apple, кіт - cat, собака - dog&#10;або&#10;яблуко - apple&#10;кіт - cat" rows="5" oninput="previewBulk()" style="width:100%;background:var(--card2);border:2.5px solid var(--border);border-radius:var(--rm);color:var(--text);font-family:var(--fm);font-size:0.85rem;padding:10px 12px;outline:none;resize:vertical;line-height:1.6;transition:border-color .15s" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+        <div id="bulkPreview" style="display:none;margin-top:8px;max-height:200px;overflow-y:auto;border:2px solid var(--border);border-radius:var(--rm);background:var(--card2)"></div>
         <div id="bulkProgress" style="display:none;margin-top:8px;font-size:0.78rem;color:var(--text2);font-weight:600;text-align:center"></div>
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-          <button class="btn btn-ghost btn-sm" onclick="translateBulkPreview()" id="bulkTranslateBtn">Перекласти</button>
           <button class="btn btn-blue" onclick="saveBulkWords()" id="bulkBtn" disabled style="flex:1;min-width:120px">Додати до словника</button>
           <button class="btn btn-ghost btn-sq btn-sm" onclick="clearBulk()" title="Очистити" style="flex-shrink:0;width:36px;height:36px;padding:0">&#x2715;</button>
         </div>
@@ -526,6 +497,12 @@ select option{background:var(--card)}
         <select id="srchL" onchange="renderDict()" style="width:auto">
           <option value="">Всі рівні</option>
           <option value="new">Нові</option><option value="learning">Вивчаються</option><option value="known">Вивчені</option>
+        </select>
+        <select id="srchCat" onchange="renderDict()" style="width:auto">
+          <option value="">Всі слова</option>
+          <option value="user-added">★ Мої Слова</option>
+          <option value="course">Слова курсу</option>
+          <option value="base">Базові слова</option>
         </select>
         <select id="srchSort" onchange="renderDict()" style="width:auto">
           <option value="az">А — Я</option>
@@ -541,11 +518,41 @@ select option{background:var(--card)}
       <div id="dictList"></div>
     </div>
 
+    <!-- MY WORDS PAGE -->
+    <div id="p-mywords" class="page">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:14px 16px;background:linear-gradient(135deg,rgba(168,85,247,.2),rgba(232,121,249,.1));border:2px solid rgba(168,85,247,.4);border-radius:var(--r)">
+        <span style="font-size:1.5rem">★</span>
+        <div style="flex:1">
+          <div style="font-size:1rem;font-weight:900;color:var(--blue)">Мої Слова!</div>
+          <div style="font-size:0.75rem;color:var(--text2);font-weight:600;margin-top:2px">Слова додані тобою особисто</div>
+        </div>
+        <button class="btn btn-xs" style="background:rgba(168,85,247,.25);color:var(--blue);border:1px solid rgba(168,85,247,.4);padding:6px 12px;font-size:0.78rem" onclick="go('add',null)">+ Додати</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <input type="search" id="mywordsSearch" placeholder="Пошук..." style="flex:1;min-width:140px" oninput="renderMyWords()">
+        <select id="mywordsLevel" onchange="renderMyWords()" style="width:auto">
+          <option value="">Всі рівні</option>
+          <option value="new">Нові</option>
+          <option value="learning">Вивчаються</option>
+          <option value="known">Вивчені</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+        <span id="mywordsCnt" class="mute"></span>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="go('flash',null);startFlash('user-smart')">★ Картки</button>
+          <button class="btn btn-ghost btn-sm" onclick="go('quiz',null);startQuizMyWords()">★ Тест</button>
+          <button class="btn btn-ghost btn-sm" onclick="go('match',null);startMatchMyWords()">★ Пари</button>
+        </div>
+      </div>
+      <div id="mywordsList"></div>
+    </div>
+
     <!-- FLASH -->
     <div id="p-flash" class="page">
       <div id="fSetup" style="overflow-y:auto;flex:1;padding:16px">
 
-        <!-- ВАРІАНТ А: Сьогоднішнє завдання -->
+        <!-- Сьогоднішнє завдання (основний словник) -->
         <div class="block mb12">
           <div class="block-title">Сьогоднішнє завдання</div>
           <div id="fTodayStats" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
@@ -562,9 +569,9 @@ select option{background:var(--card)}
           <button class="btn btn-gold w100" style="padding:15px;font-size:1rem;font-weight:900" onclick="startFlash('smart')">Почати</button>
         </div>
 
-        <!-- ВАРІАНТ Б: Вибір режиму -->
+        <!-- Режими — основний словник -->
         <div class="block-title" style="margin-bottom:10px">Або обери режим</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
           <button class="btn btn-ghost w100" style="justify-content:space-between;padding:14px 16px" onclick="startFlash('due')">
             <span style="font-weight:800">Повторити</span>
             <span id="fBtnDue" style="font-size:0.75rem;color:var(--text3);font-weight:700"></span>
@@ -574,12 +581,10 @@ select option{background:var(--card)}
             <span id="fBtnNew" style="font-size:0.75rem;color:var(--text3);font-weight:700"></span>
           </button>
           <div id="fShuffleBtn" style="border:2px solid var(--border2);border-radius:var(--rm);overflow:hidden;box-shadow:0 3px 0 var(--border2)">
-            <!-- Основна кнопка -->
             <button class="btn btn-ghost w100" style="justify-content:space-between;padding:14px 16px;border:none;border-radius:0;box-shadow:none" onclick="startFlash('shuffle')">
               <span style="font-weight:800">Всі перемішати</span>
               <span id="fBtnAll" style="font-size:0.75rem;color:var(--text3);font-weight:700"></span>
             </button>
-            <!-- Збережена позиція — вбудована в кнопку -->
             <div id="fResumeBox" style="display:none;border-top:2px solid rgba(245,158,11,.35);background:var(--golddim);padding:10px 16px">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
                 <div style="display:flex;align-items:center;gap:7px">
@@ -594,6 +599,27 @@ select option{background:var(--card)}
             </div>
           </div>
         </div>
+
+        <!-- Секція: Мої додані слова -->
+        <div class="block" id="fUserBlock">
+          <div class="block-title" style="margin-bottom:8px">Мої додані слова</div>
+          <div id="fUserMsg" style="font-size:0.8rem;color:var(--text2);font-weight:600;margin-bottom:12px"></div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <button class="btn btn-ghost w100" style="justify-content:space-between;padding:14px 16px" onclick="startFlash('user-smart')">
+              <span style="font-weight:800">Розумний старт</span>
+              <span id="fBtnUserSmart" style="font-size:0.75rem;color:var(--text3);font-weight:700"></span>
+            </button>
+            <button class="btn btn-ghost w100" style="justify-content:space-between;padding:14px 16px" onclick="startFlash('user-new')">
+              <span style="font-weight:800">Вчити нові</span>
+              <span id="fBtnUserNew" style="font-size:0.75rem;color:var(--text3);font-weight:700"></span>
+            </button>
+            <button class="btn btn-ghost w100" style="justify-content:space-between;padding:14px 16px" onclick="startFlash('user-shuffle')">
+              <span style="font-weight:800">Всі підряд</span>
+              <span id="fBtnUserAll" style="font-size:0.75rem;color:var(--text3);font-weight:700"></span>
+            </button>
+          </div>
+        </div>
+
       </div>
             <div id="fSess" style="display:none">
         <div style="flex-shrink:0">
@@ -644,7 +670,7 @@ select option{background:var(--card)}
           <div class="rpct" style="color:var(--accent)" id="fScore">—</div>
           <div class="rlbl" id="fScLbl">Молодець!</div>
           <div class="flex gap10" style="justify-content:center;flex-wrap:wrap">
-            <button class="btn btn-gold btn-lg" onclick="startFlash('smart')">Ще раз</button>
+            <button class="btn btn-gold btn-lg" id="fRepeatBtn" onclick="startFlash(fCurrentMode||'smart')">Ще раз</button>
             <button class="btn btn-ghost btn-lg" id="repeatFlashBtn" onclick="startRepeat()" style="display:none">Повторити помилки</button>
             <button class="btn btn-ghost btn-lg" onclick="go('home',null)">На головну</button>
           </div>
@@ -1523,8 +1549,8 @@ function updateDailyGoal(){
   if(!el)return;
   const t=today();
 
-  // Завдання 1: Додай 5 нових слів
-  const newAdded=W.filter(w=>w.added&&w.added.startsWith(t)&&!w.isDefault).length;
+  // Завдання 1: Додай 5 нових слів — рахуємо тільки слова додані вручну через розділ "Додати слово"
+  const newAdded=W.filter(w=>w.added&&w.added.startsWith(t)&&w.isUserAdded===true).length;
   // Завдання 2: Пройди 10 карток/відповідей сьогодні
   const todayAns=S.daily[t]||0;
   // Завдання 3: 7 правильних відповідей сьогодні
@@ -1598,7 +1624,9 @@ function load(){
       nextReview:w.nextReview||new Date().toISOString(),
       reviewCount:Number(w.reviewCount)||0,
       correctCount:Number(w.correctCount)||0,
-      interval:Number(w.interval)||1
+      interval:Number(w.interval)||1,
+      isUserAdded:w.isUserAdded===true,
+      isDefault:w.isDefault===true
     }))
     .filter(w=>w.uk.length>0&&w.en.length>0&&w.en!=='—'&&w.en!=='???');
   if(W.length<before){
@@ -1608,10 +1636,9 @@ function load(){
   loadShufflePosition();
   loadRepeatPool();
   updateRepeatBtns();
-  applyAddDir();
   checkOnboarding();
   // Автоматично додаємо базові слова при першому запуску
-  if(W.length===0)setTimeout(addDemo,400);
+  setTimeout(syncDemoWords,400);
   updateFlashSetup();
   // Показуємо анімацію стріку якщо є стрік
   if((S.streak||0)>=2)setTimeout(maybeShowStreakFire,1200);
@@ -1697,7 +1724,7 @@ function applyStg(){
 }
 
 /* NAV */
-const titles={home:'Дашборд',add:'Додати слово',dict:'Словник',course:'Поступове навчання',flash:'Картки',quiz:'Тест: вибір',match:'Гра в пари',type:'Написання',spell:'Склади слово',known:'Вивчені слова',stats:'Статистика',cfg:'Налаштування'};
+const titles={home:'Дашборд',mywords:'Мої Слова!',add:'Додати слово',dict:'Словник',course:'Поступове навчання',flash:'Картки',quiz:'Тест: вибір',match:'Гра в пари',type:'Написання',spell:'Склади слово',known:'Вивчені слова',stats:'Статистика',cfg:'Налаштування'};
 // Прапорці активних сесій — скидаються при завершенні або виході
 let sessActive={quiz:false,match:false,type:false,flash:false,spell:false,course:false};
 function activeSession(){
@@ -1761,6 +1788,7 @@ function goForce(id,btn){
     sv('spSess',false);sv('spRes',false);sv('spSetup',true);
     sessActive.spell=false;
   }
+  if(id==='mywords')renderMyWords();
   if(id==='stats')renderStats();
   if(id==='known')renderKnown();
   if(id==='home')updateHome();
@@ -1865,225 +1893,61 @@ function speak(text, lang){
     setTimeout(()=>speechSynthesis.speak(u), 50);
   });
 }
-/* TRANSLATE — Google Translate (двонаправлений) */
-let addDir = 'uk2en'; // 'uk2en' або 'en2uk'
-
-function toggleAddDir(){
-  addDir = addDir === 'uk2en' ? 'en2uk' : 'uk2en';
-  applyAddDir();
-  clearAdd();
-}
-
-function applyAddDir(){
-  const isUK = addDir === 'uk2en';
-  const lA = document.getElementById('addDirLabelA');
-  const lB = document.getElementById('addDirLabelB');
-  const src = document.getElementById('addSrcLabel');
-  const trg = document.getElementById('addTrgLabel');
-  const inp = document.getElementById('inUk');
-  if(lA){ lA.textContent = isUK ? 'UA' : 'EN'; lA.style.color = 'var(--teal)'; }
-  if(lB){ lB.textContent = isUK ? 'EN' : 'UA'; lB.style.color = 'var(--text3)'; }
-  if(src) src.innerHTML = isUK ? '&#127482;&#127462; Українська' : '&#127468;&#127463; English';
-  if(trg) trg.innerHTML = isUK ? '&#127468;&#127463; English' : '&#127482;&#127462; Українська';
-  if(inp) inp.placeholder = isUK ? 'Введи слово...' : 'Enter word...';
-}
-
-async function googleTranslate(text, sl, tl){
-  // sl = source lang, tl = target lang
-  try{
-    const url='https://translate.googleapis.com/translate_a/single?client=gtx&sl='+sl+'&tl='+tl+'&dt=t&q='+encodeURIComponent(text);
-    const r=await fetch(url);
-    if(!r.ok)throw new Error('fail');
-    const d=await r.json();
-    const result=d[0].map(s=>s[0]).filter(Boolean).join('').trim();
-    if(result&&result.toLowerCase()!==text.toLowerCase())return result;
-    throw new Error('bad');
-  }catch(e1){
-    try{
-      const lp=sl+'|'+tl;
-      const url2='https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair='+lp;
-      const r2=await fetch(url2);
-      if(!r2.ok)throw new Error('fail2');
-      const d2=await r2.json();
-      if(d2.responseStatus===200&&d2.responseData?.translatedText){
-        const t=d2.responseData.translatedText.trim();
-        if(t&&t.toLowerCase()!==text.toLowerCase())return t;
-      }
-    }catch(e2){}
-    return null;
-  }
-}
-
-function setEnResult(val,status){
-  document.getElementById('enDisplay').textContent=val||'—';
-  document.getElementById('inEn').value=val||'';
-  document.getElementById('trStatus').textContent=status||'';
-  document.getElementById('inEn').style.display='none';
-  document.getElementById('enDisplay').style.display='block';
-}
-function startEditEn(){
-  const cur=document.getElementById('inEn').value||document.getElementById('enDisplay').textContent;
-  const inp=document.getElementById('inEn');
-  inp.value=(cur==='—')?'':cur;
-  inp.style.display='block';
-  document.getElementById('enDisplay').style.display='none';
-  inp.focus();inp.select();
-  document.getElementById('trStatus').textContent='&#9998; Редагування';
-}
-function stopEditEn(){
-  const val=document.getElementById('inEn').value.trim();
-  document.getElementById('enDisplay').textContent=val||'—';
-  document.getElementById('inEn').style.display='none';
-  document.getElementById('enDisplay').style.display='block';
-  if(val)document.getElementById('trStatus').textContent='&#9998; Відредаговано';
-}
-function clearAdd(){
-  document.getElementById('inUk').value='';
-  setEnResult('','');
-  const mh=document.getElementById('micHint'); if(mh)mh.textContent='';
-  clearTimeout(autoTrTimer);
-}
-
-/* AUTO-TRANSLATE */
-function showTrLoading(v){
-  const el=document.getElementById('trLoading');
-  if(el)el.style.display=v?'flex':'none';
-}
-async function fetchDictApi(word){
-  // Отримуємо транскрипцію і приклад з Free Dictionary API
-  if(!word||word.length<2)return;
-  try{
-    const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(word.trim().toLowerCase()));
-    if(!r.ok)return;
-    const data=await r.json();
-    if(!Array.isArray(data)||!data.length)return;
-    const entry=data[0];
-    // Транскрипція
-    const phonetic=entry.phonetic||(entry.phonetics||[]).find(p=>p.text)?.text||'';
-    // Приклад речення
-    let example='';
-    for(const meaning of entry.meanings||[]){
-      for(const def of meaning.definitions||[]){
-        if(def.example){example=def.example;break;}
-      }
-      if(example)break;
-    }
-    dictApiCache={
-      transcription:phonetic,
-      example:example
-    };
-    // Показуємо підказку під полем якщо є дані
-    const statusEl=document.getElementById('trStatus');
-    if(phonetic&&statusEl){
-      statusEl.textContent='Перекладено  '+phonetic;
-    }
-  }catch(e){}
-}
-
-async function doAutoTranslate(text){
-  if(!text||text.length<1)return;
-  showTrLoading(true);
-  document.getElementById('trStatus').textContent='';
-  const sl = addDir==='uk2en' ? 'uk' : 'en';
-  const tl = addDir==='uk2en' ? 'en' : 'uk';
-  const res=await googleTranslate(text, sl, tl);
-  showTrLoading(false);
-  if(res){
-    setEnResult(res,'Перекладено');
-    // Паралельно тягнемо дані з Dictionary API для EN слова
-    const enWord = addDir==='uk2en' ? res : text;
-    fetchDictApi(enWord);
-  }else{
-    document.getElementById('trStatus').textContent='Не вдалося — введи вручну';
-  }
-}
-
 /* ADD WORD */
-let autoTrTimer=null;
-function onUkI(){
-  const val=document.getElementById('inUk').value;
-  clearTimeout(autoTrTimer);
-  if(val.trim().length<2){if(!val.trim())setEnResult('','');return;}
-  document.getElementById('trStatus').textContent='';
-  autoTrTimer=setTimeout(()=>doAutoTranslate(val.trim()),700);
-}
-// Глобальний кеш для даних з Dictionary API
-let dictApiCache={transcription:'',example:''};
-
 function addW(){
-  const srcVal=document.getElementById('inUk').value.trim();
-  // Беремо переклад з активного поля
-  const inEnEl=document.getElementById('inEn');
-  const dispEl=document.getElementById('enDisplay');
-  let trgVal='';
-  if(inEnEl.style.display!=='none'){
-    trgVal=inEnEl.value.trim();
-  }else{
-    const t=dispEl.textContent.trim();
-    trgVal=(t==='—'||t==='')?'':t;
-  }
-  const cat=document.getElementById('inCat').value||'general';
-  // Визначаємо uk/en залежно від напрямку
-  const uk = addDir==='uk2en' ? srcVal : trgVal;
-  const en = addDir==='uk2en' ? trgVal : srcVal;
-  // Жорстка валідація
-  if(!srcVal){notify(addDir==='uk2en'?'Введи українське слово':'Enter English word','err');return;}
-  if(!trgVal||trgVal==='—'||trgVal==='???'){notify('Переклад відсутній — введи або відредагуй','err');return;}
-  if(!uk||!en){notify('Помилка — обидва поля порожні','err');return;}
-  if(W.find(w=>w.uk.toLowerCase()===uk.toLowerCase()&&w.en.toLowerCase()===en.toLowerCase())){notify('Таке слово з таким перекладом вже є','err');return;}
-  W.unshift({id:Date.now(),uk,en,cat,level:'new',added:new Date().toISOString(),nextReview:new Date().toISOString(),reviewCount:0,correctCount:0,interval:1,easeFactor:2.5,correctStreak:0,transcription:dictApiCache.transcription||'',example:dictApiCache.example||''});
-  dictApiCache={transcription:'',example:''};
+  const uk=(document.getElementById('inUk').value||'').trim();
+  const en=(document.getElementById('inEn').value||'').trim();
+  if(!uk){notify('Введи українське слово','err');return;}
+  if(!en){notify('Введи англійське слово','err');return;}
+  // Перевірка дублікатів
+  const dup=W.find(w=>w.uk.toLowerCase()===uk.toLowerCase()&&w.en.toLowerCase()===en.toLowerCase());
+  if(dup){notify('"'+uk+'" = "'+en+'" вже є в словнику','err');return;}
+  // Перевірка тільки за uk
+  const dupUk=W.find(w=>w.uk.toLowerCase()===uk.toLowerCase());
+  if(dupUk){notify('"'+uk+'" вже є ('+dupUk.en+'). Змінити переклад можна в Словнику','err');return;}
+  W.unshift({id:Date.now(),uk,en,cat:'user-added',level:'new',
+    added:new Date().toISOString(),nextReview:new Date().toISOString(),
+    reviewCount:0,correctCount:0,interval:1,easeFactor:2.5,correctStreak:0,
+    transcription:'',example:'',isUserAdded:true});
   sW();trackDay();notify('"'+uk+'" = "'+en+'" додано');
-  clearAdd();
+  document.getElementById('inUk').value='';
+  document.getElementById('inEn').value='';
   updateHome();
   updateFlashSetup();
-
 }
 
-/* BULK ADD */
-let bulkTranslated=[]; // [{src, tr, uk, en}]
+/* BULK ADD — формат: укр - eng або укр - eng, укр - eng */
+let bulkTranslated=[]; // [{uk, en}]
 
-function getBulkWords(){
+function parseBulkPairs(){
   const raw=document.getElementById('bulkInput').value.trim();
   if(!raw)return[];
-  return [...new Set(raw.split(/[,\n]/).map(s=>s.trim().replace(/[.!?;]+$/,'')).filter(s=>s.length>1&&s.split(/\s+/).length<=3))];
+  const pairs=[];
+  // Розбиваємо по комах та новим рядкам
+  const items=raw.split(/[,\n]/).map(s=>s.trim()).filter(s=>s.length>0);
+  items.forEach(item=>{
+    // Шукаємо розділювач " - " або " – "
+    const m=item.match(/^(.+?)\s*[-–]\s*(.+)$/);
+    if(m){
+      const uk=m[1].trim();
+      const en=m[2].trim();
+      if(uk&&en)pairs.push({uk,en});
+    }
+  });
+  return pairs;
 }
 
 function previewBulk(){
-  // Скидаємо переклади при зміні тексту
   bulkTranslated=[];
   const btn=document.getElementById('bulkBtn');
-  if(btn)btn.disabled=true;
   const preview=document.getElementById('bulkPreview');
-  if(preview)preview.style.display='none';
-  const words=getBulkWords();
-  const tb=document.getElementById('bulkTranslateBtn');
-  if(tb)tb.style.opacity=words.length?'1':'0.4';
-}
-
-async function translateBulkPreview(){
-  const words=getBulkWords();
-  if(!words.length){notify('Введи слова','err');return;}
-  const tb=document.getElementById('bulkTranslateBtn');
-  const prog=document.getElementById('bulkProgress');
-  tb.disabled=true;
-  prog.style.display='block';
-  bulkTranslated=[];
-  const sl=addDir==='uk2en'?'uk':'en';
-  const tl=addDir==='uk2en'?'en':'uk';
-  for(let i=0;i<words.length;i++){
-    const src=words[i];
-    prog.textContent='Перекладаємо '+(i+1)+' з '+words.length+': "'+src+'"...';
-    try{
-      const tr=await googleTranslate(src,sl,tl);
-      const uk=addDir==='uk2en'?src:(tr||'');
-      const en=addDir==='uk2en'?(tr||''):src;
-      bulkTranslated.push({src,tr:tr||'',uk,en,ok:!!tr});
-    }catch(e){bulkTranslated.push({src,tr:'',uk:addDir==='uk2en'?src:'',en:addDir==='uk2en'?'':src,ok:false});}
-    await new Promise(r=>setTimeout(r,250));
+  const pairs=parseBulkPairs();
+  if(btn)btn.disabled=pairs.length===0;
+  if(!pairs.length){
+    if(preview)preview.style.display='none';
+    return;
   }
-  prog.style.display='none';
-  tb.disabled=false;
+  bulkTranslated=pairs;
   renderBulkPreview();
 }
 
@@ -2092,38 +1956,43 @@ function renderBulkPreview(){
   if(!preview)return;
   if(!bulkTranslated.length){preview.style.display='none';return;}
   preview.style.display='block';
-  preview.innerHTML=bulkTranslated.map((item,i)=>`
-    <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);${i===bulkTranslated.length-1?'border-bottom:none':''}">
-      <input type="checkbox" id="bchk_${i}" checked style="width:16px;height:16px;cursor:pointer;flex-shrink:0">
+  preview.innerHTML=bulkTranslated.map((item,i)=>{
+    const isDup=W.find(w=>w.uk.toLowerCase()===item.uk.toLowerCase()&&w.en.toLowerCase()===item.en.toLowerCase());
+    return`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);${i===bulkTranslated.length-1?'border-bottom:none':''}">
+      <input type="checkbox" id="bchk_${i}" ${isDup?'':' checked'} style="width:16px;height:16px;cursor:pointer;flex-shrink:0">
       <div style="flex:1;min-width:0">
-        <span style="font-weight:700;font-size:0.88rem">${item.uk||item.src}</span>
+        <span style="font-weight:700;font-size:0.88rem">${item.uk}</span>
         <span style="color:var(--border2);margin:0 6px">=</span>
-        <input type="text" value="${item.en||item.tr}" id="btr_${i}" style="font-family:var(--fm);color:var(--teal);font-size:0.85rem;background:transparent;border:none;border-bottom:1px solid ${item.ok?'transparent':'var(--red)'};outline:none;width:120px;font-weight:500">
+        <span style="font-family:var(--fm);color:var(--teal);font-size:0.85rem">${item.en}</span>
       </div>
-      <span style="font-size:0.7rem;color:${item.ok?'var(--accent)':'var(--red)'}">${item.ok?'OK':'!'}</span>
-    </div>`).join('');
+      <span style="font-size:0.7rem;color:${isDup?'var(--text3)':'var(--accent)'}">${isDup?'вже є':'OK'}</span>
+    </div>`;
+  }).join('');
   const btn=document.getElementById('bulkBtn');
   if(btn)btn.disabled=false;
 }
 
 function saveBulkWords(){
-  if(!bulkTranslated.length){notify('Спочатку перекладіть слова','err');return;}
-  let added=0,skipped=0;
+  if(!bulkTranslated.length){notify('Введіть пари слів у форматі: укр - eng','err');return;}
+  let added=0,skipped=0,dupCount=0;
   bulkTranslated.forEach((item,i)=>{
     const chk=document.getElementById('bchk_'+i);
-    const trInput=document.getElementById('btr_'+i);
     if(!chk||!chk.checked)return;
-    const en=(trInput?trInput.value.trim():item.en)||'';
-    const uk=item.uk||item.src;
-    if(!uk||!en)return;
-    if(W.find(w=>w.uk.toLowerCase()===uk.toLowerCase()&&w.en.toLowerCase()===en.toLowerCase())){skipped++;return;}
-    W.unshift({id:Date.now()+Math.random()*999|0,uk,en,cat:'general',level:'new',
+    const uk=item.uk;
+    const en=item.en;
+    if(!uk||!en){skipped++;return;}
+    // Перевірка дублікатів
+    if(W.find(w=>w.uk.toLowerCase()===uk.toLowerCase()&&w.en.toLowerCase()===en.toLowerCase())){dupCount++;return;}
+    W.unshift({id:Date.now()+Math.random()*999|0,uk,en,cat:'user-added',level:'new',
       added:new Date().toISOString(),nextReview:new Date().toISOString(),
-      reviewCount:0,correctCount:0,interval:1,easeFactor:2.5,correctStreak:0});
+      reviewCount:0,correctCount:0,interval:1,easeFactor:2.5,correctStreak:0,isUserAdded:true});
     added++;
   });
   sW();updateHome();updateFlashSetup();
-  notify('Додано: '+added+(skipped?' | Вже є: '+skipped:''));
+  let msg='Додано: '+added;
+  if(dupCount)msg+=' | Вже є: '+dupCount;
+  if(skipped)msg+=' | Пропущено: '+skipped;
+  notify(msg);
   clearBulk();
 }
 
@@ -2364,27 +2233,24 @@ function renderChart(cid,did){
 function renderDict(){
   const q=(document.getElementById('srchI')?.value||'').trim().toLowerCase();
   const lvl=document.getElementById('srchL')?.value||'';
+  const cat=document.getElementById('srchCat')?.value||'';
   const sort=document.getElementById('srchSort')?.value||'az';
-  let f=W.filter(w=>{
-    if(lvl&&w.level!==lvl)return false;
+
+  function matchesSearch(w){
     if(!q)return true;
     return w.uk.trim().toLowerCase().includes(q)||w.en.trim().toLowerCase().includes(q);
-  });
-  // Сортування
-  if(sort==='az') f=[...f].sort((a,b)=>a.uk.localeCompare(b.uk,'uk'));
-  else if(sort==='za') f=[...f].sort((a,b)=>b.uk.localeCompare(a.uk,'uk'));
-  else if(sort==='newest') f=[...f].sort((a,b)=>new Date(b.added||0)-new Date(a.added||0));
-  else if(sort==='oldest') f=[...f].sort((a,b)=>new Date(a.added||0)-new Date(b.added||0));
-  document.getElementById('dictCnt').textContent=`${f.length} / ${W.length}`;
-  const el=document.getElementById('dictList');
-  if(!f.length){el.innerHTML=`<div class="empty"><div class="empty-ic">[ ? ]</div><h3>Нічого не знайдено</h3><p>Спробуй інший пошук або додай нові слова</p></div>`;return;}
-  el.innerHTML=f.map(w=>`
+  }
+  function matchesLevel(w){return !lvl||w.level===lvl;}
+
+  const wRowHtml=w=>`
     <div class="wrow">
       <div class="wrow-main">
         <span class="wuk">${w.uk}</span>
         <span class="wsep"></span>
         <span class="wen">${w.en}</span>
         <span class="wlvl l${w.level}">${lvlL(w.level)}</span>
+        ${w.isUserAdded?'<span class="wlvl" style="background:rgba(168,85,247,.18);color:var(--blue);border:1px solid rgba(168,85,247,.3);font-size:0.52rem">моє</span>':''}
+        ${w.isCourseWord?'<span class="wlvl" style="background:rgba(232,121,249,.12);color:var(--teal);border:1px solid rgba(232,121,249,.25);font-size:0.52rem">курс</span>':''}
       </div>
       <div class="wrow-actions">
         <button class="wact wact-spk" onclick="speak('${esc(w.uk)}','uk')" title="UA">UA</button>
@@ -2393,8 +2259,68 @@ function renderDict(){
         <button class="wact" onclick="editW(${w.id})" title="Редагувати">ред</button>
         <button class="wact wact-del" onclick="delW(${w.id})" title="Видалити">&#10005;</button>
       </div>
-    </div>`).join('');
+    </div>`;
 
+  function sortArr(arr){
+    if(sort==='az')return [...arr].sort((a,b)=>a.uk.localeCompare(b.uk,'uk'));
+    if(sort==='za')return [...arr].sort((a,b)=>b.uk.localeCompare(a.uk,'uk'));
+    if(sort==='newest')return [...arr].sort((a,b)=>new Date(b.added||0)-new Date(a.added||0));
+    if(sort==='oldest')return [...arr].sort((a,b)=>new Date(a.added||0)-new Date(b.added||0));
+    return arr;
+  }
+
+  const el=document.getElementById('dictList');
+
+  // ── Якщо фільтр "Додані мною" — показуємо тільки мої слова ──
+  if(cat==='user-added'){
+    let f=W.filter(w=>w.isUserAdded&&matchesLevel(w)&&matchesSearch(w));
+    f=sortArr(f);
+    document.getElementById('dictCnt').textContent=`${f.length} / ${W.filter(w=>w.isUserAdded).length} моїх`;
+    if(!f.length){el.innerHTML=`<div class="empty"><div class="empty-ic">[ ★ ]</div><h3>Немає доданих слів</h3><p>Додай свої слова через «Додати слово»</p></div>`;return;}
+    el.innerHTML=f.map(wRowHtml).join('');
+    return;
+  }
+
+  // ── Всі інші фільтри (base, course, '') ──
+  let f=W.filter(w=>{
+    if(cat==='course'&&!w.isCourseWord)return false;
+    if(cat==='base'&&(w.isUserAdded||w.isCourseWord))return false;
+    if(cat===''&&w.isUserAdded)return false; // Мої слова виводяться окремим блоком нижче
+    return matchesLevel(w)&&matchesSearch(w);
+  });
+  f=sortArr(f);
+
+  // Мої слова для окремого блоку (тільки якщо cat='')
+  const myWords=cat===''?W.filter(w=>w.isUserAdded&&matchesLevel(w)&&matchesSearch(w)):[];
+  const mySorted=sortArr(myWords);
+
+  const totalShown=(cat===''?myWords.length:0)+f.length;
+  document.getElementById('dictCnt').textContent=`${totalShown} / ${W.length}`;
+
+  if(!totalShown){el.innerHTML=`<div class="empty"><div class="empty-ic">[ ? ]</div><h3>Нічого не знайдено</h3><p>Спробуй інший пошук або додай нові слова</p></div>`;return;}
+
+  let html='';
+
+  // ── Блок "Мої Слова!" — зверху ──
+  if(cat===''&&mySorted.length>0){
+    html+=`<div style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:10px 14px;background:linear-gradient(135deg,rgba(168,85,247,.18),rgba(232,121,249,.1));border:2px solid rgba(168,85,247,.35);border-radius:var(--rm)">
+        <span style="font-size:1.1rem">★</span>
+        <div style="flex:1">
+          <div style="font-size:0.78rem;font-weight:900;color:var(--blue);text-transform:uppercase;letter-spacing:1px">Мої Слова!</div>
+          <div style="font-size:0.68rem;color:var(--text3);font-weight:600;margin-top:1px">${mySorted.length} ${mySorted.length===1?'слово':mySorted.length<5?'слова':'слів'}</div>
+        </div>
+        <button class="btn btn-xs" style="background:rgba(168,85,247,.2);color:var(--blue);border:1px solid rgba(168,85,247,.4)" onclick="document.getElementById('srchCat').value='user-added';renderDict()">Всі →</button>
+      </div>
+      ${mySorted.map(wRowHtml).join('')}
+    </div>
+    <div style="margin-bottom:10px;padding:8px 14px;background:var(--card2);border:2px solid var(--border);border-radius:var(--rm)">
+      <div style="font-size:0.7rem;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px">Словник</div>
+    </div>`;
+  }
+
+  html+=f.map(wRowHtml).join('');
+  el.innerHTML=html;
 }
 const esc=s=>(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
 const lvlL=l=>({new:'нове',learning:'вивч.',known:'знаю'}[l]||l);
@@ -2644,10 +2570,23 @@ function smartPool(){
     .sort((a,b)=>new Date(a.nextReview)-new Date(b.nextReview));
 }
 
+function userAddedWords(){return validWords().filter(w=>w.isUserAdded===true);}
+function userDueWords(){
+  const n=new Date();
+  return userAddedWords().filter(w=>{
+    if(w.level==='known')return false;
+    if(w.interval===0)return true;
+    return new Date(w.nextReview)<=n;
+  });
+}
+
 function updateFlashSetup(){
   const due=dueWords();
   const nw=newWords();
-  const all=validWords().filter(w=>w.level!=='known');
+  // Основний словник — НЕ включає user-added
+  const allMain=validWords().filter(w=>w.level!=='known'&&!w.isUserAdded);
+  const dueMain=due.filter(w=>!w.isUserAdded);
+  const newMain=nw.filter(w=>!w.isUserAdded);
   // Лічильники
   const elDue=document.getElementById('fCountDue');
   const elNew=document.getElementById('fCountNew');
@@ -2655,71 +2594,107 @@ function updateFlashSetup(){
   const elBtnDue=document.getElementById('fBtnDue');
   const elBtnNew=document.getElementById('fBtnNew');
   const elBtnAll=document.getElementById('fBtnAll');
-  if(elDue)elDue.textContent=due.length;
-  if(elNew)elNew.textContent=nw.length;
-  const learning=validWords().filter(w=>w.level==='learning');
-  const dueOrLearning=due.length>0?due.length:learning.length;
-  const newOrLearning=nw.length>0?nw.length:learning.length;
-  if(elBtnDue)elBtnDue.textContent=(dueOrLearning)+' слів';
-  if(elBtnNew)elBtnNew.textContent=(newOrLearning)+' слів';
-  if(elBtnAll)elBtnAll.textContent=all.length+' слів';
+  if(elDue)elDue.textContent=dueMain.length;
+  if(elNew)elNew.textContent=newMain.length;
+  const learningMain=validWords().filter(w=>w.level==='learning'&&!w.isUserAdded);
+  const dueOrLearning=dueMain.length>0?dueMain.length:learningMain.length;
+  const newOrLearning=newMain.length>0?newMain.length:learningMain.length;
+  if(elBtnDue)elBtnDue.textContent=dueOrLearning+' слів';
+  if(elBtnNew)elBtnNew.textContent=newOrLearning+' слів';
+  if(elBtnAll)elBtnAll.textContent=allMain.length+' слів';
   if(elMsg){
-    if(!all.length)elMsg.textContent='Всі слова вивчені! Додай нові.';
-    else if(!due.length&&!nw.length)elMsg.textContent='Повтори вже вивчені — '+learning.length+' слів доступно.';
-    else if(!due.length)elMsg.textContent='Нових: '+nw.length+'. Починай вчити!';
-    else if(!nw.length)elMsg.textContent='Повтори '+due.length+' слів!';
-    else elMsg.textContent=due.length+' на повторення + '+Math.min(nw.length,5)+' нових.';
+    if(!allMain.length)elMsg.textContent='Всі базові слова вивчені!';
+    else if(!dueMain.length&&!newMain.length)elMsg.textContent='Повтори вивчені — '+learningMain.length+' слів доступно.';
+    else if(!dueMain.length)elMsg.textContent='Нових: '+newMain.length+'. Починай вчити!';
+    else if(!newMain.length)elMsg.textContent='Повтори '+dueMain.length+' слів!';
+    else elMsg.textContent=dueMain.length+' на повторення + '+Math.min(newMain.length,5)+' нових.';
+  }
+  // Лічильники для user-added секції
+  const uAll=userAddedWords();
+  const uDue=userDueWords();
+  const uNew=uAll.filter(w=>w.level==='new');
+  const elUMsg=document.getElementById('fUserMsg');
+  const elUAll=document.getElementById('fBtnUserAll');
+  const elUSmart=document.getElementById('fBtnUserSmart');
+  const elUNew=document.getElementById('fBtnUserNew');
+  const uBlock=document.getElementById('fUserBlock');
+  if(uBlock)uBlock.style.display=uAll.length?'block':'none';
+  if(elUAll)elUAll.textContent=uAll.filter(w=>w.level!=='known').length+' слів';
+  if(elUSmart)elUSmart.textContent=(uDue.length+Math.min(uNew.length,5))+' слів';
+  if(elUNew)elUNew.textContent=uNew.length+' слів';
+  if(elUMsg){
+    if(!uAll.length)elUMsg.textContent='Ще немає доданих слів.';
+    else if(!uAll.filter(w=>w.level!=='known').length)elUMsg.textContent='Всі твої слова вивчені!';
+    else elUMsg.textContent=uAll.filter(w=>w.level!=='known').length+' слів чекають на вивчення.';
   }
 }
 
 function startFlash(mode){
   let pool=[];
+  // Режими для user-added слів
+  if(mode==='user-smart'){
+    const uDue=userDueWords();
+    const uNew=userAddedWords().filter(w=>w.level==='new').slice(0,5);
+    pool=[...uDue,...uNew];
+    if(!pool.length)pool=userAddedWords().filter(w=>w.level!=='known');
+    if(!pool.length){notify('Немає твоїх слів для навчання. Додай слова через «Додати слово»!','info');return;}
+    pool=pool.sort(()=>Math.random()-0.5).slice(0,C.cards);
+    fCurrentMode='user-smart';
+    fS=pool;fI=0;fOk=0;
+    sv('fSetup',false);document.getElementById('fSess').style.display='flex';sv('fDone',false);
+    sessActive.flash=true;renderFC();return;
+  }
+  if(mode==='user-new'){
+    pool=userAddedWords().filter(w=>w.level==='new');
+    if(!pool.length)pool=userAddedWords().filter(w=>w.level==='learning').sort((a,b)=>(a.correctCount||0)/(a.reviewCount||1)-(b.correctCount||0)/(b.reviewCount||1));
+    if(!pool.length){notify('Немає нових твоїх слів!','info');return;}
+    pool=pool.slice(0,C.cards);
+    fCurrentMode='user-new';
+    fS=pool;fI=0;fOk=0;
+    sv('fSetup',false);document.getElementById('fSess').style.display='flex';sv('fDone',false);
+    sessActive.flash=true;renderFC();return;
+  }
+  if(mode==='user-shuffle'){
+    pool=userAddedWords().filter(w=>w.level!=='known').sort(()=>Math.random()-0.5);
+    if(!pool.length){notify('Немає твоїх слів для навчання!','info');return;}
+    fCurrentMode='user-shuffle';
+    fS=pool;fI=0;fOk=0;fDoneOffset=0;fTotalAll=pool.length;
+    localStorage.removeItem('wv_shuffle_pos');shuffleSavedSession=null;
+    sv('fSetup',false);document.getElementById('fSess').style.display='flex';sv('fDone',false);
+    sessActive.flash=true;renderFC();return;
+  }
   if(mode==='smart'){
-    // Спочатку due+new, якщо порожньо — беремо всі learning теж
-    pool=smartPool();
-    if(!pool.length){
-      // Fallback: всі слова не-known
-      pool=validWords().filter(w=>w.level!=='known').sort(()=>Math.random()-0.5);
-    }
+    // Основний словник (без user-added)
+    const mainValid=validWords().filter(w=>!w.isUserAdded);
+    const mainDue=mainValid.filter(w=>{
+      if(w.level==='known')return false;
+      if(w.interval===0)return true;
+      return new Date(w.nextReview)<=new Date();
+    }).sort((a,b)=>new Date(a.nextReview)-new Date(b.nextReview));
+    const mainNew=mainValid.filter(w=>w.level==='new').slice(0,5);
+    pool=[...mainDue,...mainNew];
+    if(!pool.length)pool=mainValid.filter(w=>w.level!=='known').sort(()=>Math.random()-0.5);
     if(!pool.length){notify('Немає слів для навчання. Додай нові слова!','info');return;}
   }else if(mode==='due'){
-    pool=dueWords();
-    if(!pool.length){
-      // Немає "прострочених" — беремо всі learning слова (вони потребують повторення)
-      pool=validWords().filter(w=>w.level==='learning').sort(()=>Math.random()-0.5);
-    }
-    if(!pool.length){
-      // Якщо навіть learning немає — беремо нові
-      pool=newWords();
-    }
+    pool=dueWords().filter(w=>!w.isUserAdded);
+    if(!pool.length)pool=validWords().filter(w=>w.level==='learning'&&!w.isUserAdded).sort(()=>Math.random()-0.5);
+    if(!pool.length)pool=newWords().filter(w=>!w.isUserAdded);
     if(!pool.length){notify('Немає слів для повторення. Додай нові слова!','info');return;}
   }else if(mode==='new'){
-    pool=newWords();
-    if(!pool.length){
-      // Немає "нових" — беремо learning слова з найгіршою точністю
-      pool=validWords()
-        .filter(w=>w.level==='learning')
-        .sort((a,b)=>{
-          const accA=(a.correctCount||0)/(a.reviewCount||1);
-          const accB=(b.correctCount||0)/(b.reviewCount||1);
-          return accA-accB; // найгірші спочатку
-        });
-    }
+    pool=newWords().filter(w=>!w.isUserAdded);
+    if(!pool.length)pool=validWords().filter(w=>w.level==='learning'&&!w.isUserAdded).sort((a,b)=>(a.correctCount||0)/(a.reviewCount||1)-(b.correctCount||0)/(b.reviewCount||1));
     if(!pool.length){notify('Немає слів для вивчення. Додай нові слова!','info');return;}
   }else if(mode==='hard'){
-    // Найважчі слова — точність нижче 50%, мінімум 2 повторення
-    pool=validWords().filter(w=>w.level!=='known'&&(w.reviewCount||0)>=2&&((w.correctCount||0)/(w.reviewCount||1))<0.5);
+    pool=validWords().filter(w=>!w.isUserAdded&&w.level!=='known'&&(w.reviewCount||0)>=2&&((w.correctCount||0)/(w.reviewCount||1))<0.5);
     pool.sort((a,b)=>((a.correctCount||0)/(a.reviewCount||1))-((b.correctCount||0)/(b.reviewCount||1)));
     if(!pool.length){notify('Немає важких слів — так тримати!','info');return;}
     notify('Важкі слова: '+pool.length+' слів','info');
   }else if(mode==='shuffle'){
-    // Режим "Всі підряд" — НЕ обмежуємо кількість, показуємо всі слова
-    pool=validWords().filter(w=>w.level!=='known').sort(()=>Math.random()-0.5);
+    pool=validWords().filter(w=>w.level!=='known'&&!w.isUserAdded).sort(()=>Math.random()-0.5);
     if(!pool.length){notify('Немає слів','err');return;}
     fCurrentMode='shuffle';
     fS=pool;fI=0;fOk=0;
     fDoneOffset=0;fTotalAll=pool.length;
-    // Очищаємо стару збережену позицію при новому старті
     localStorage.removeItem('wv_shuffle_pos');
     shuffleSavedSession=null;
     sv('fSetup',false);
@@ -2729,9 +2704,8 @@ function startFlash(mode){
     renderFC();
     return;
   }else{
-    pool=validWords().filter(w=>w.level!=='known');
+    pool=validWords().filter(w=>w.level!=='known'&&!w.isUserAdded);
   }
-  // Обмежуємо кількість (крім smart де показуємо всі due + 5 нових)
   if(mode!=='smart')pool=pool.sort(()=>Math.random()-0.5).slice(0,C.cards);
   fCurrentMode=mode;
   fS=pool;fI=0;fOk=0;
@@ -3549,22 +3523,253 @@ function beepRating(rating){
 }
 
 /* DEMO */
+const DEMO_WORDS=[
+  /* ── Займенники та службові слова ── */
+  {uk:'я',en:'I'},{uk:'ти',en:'you'},{uk:'він',en:'he'},{uk:'вона',en:'she'},{uk:'воно',en:'it'},
+  {uk:'ми',en:'we'},{uk:'вони',en:'they'},{uk:'мій',en:'my'},{uk:'твій',en:'your'},{uk:'його',en:'his'},
+  {uk:'її',en:'her'},{uk:'наш',en:'our'},{uk:'їхній',en:'their'},{uk:'цей',en:'this'},{uk:'той',en:'that'},
+  {uk:'ці',en:'these'},{uk:'ті',en:'those'},{uk:'всі',en:'all'},{uk:'кожен',en:'every'},{uk:'деякий',en:'some'},
+  {uk:'будь-який',en:'any'},{uk:'жодний',en:'no'},{uk:'інший',en:'other'},{uk:'такий',en:'such'},{uk:'сам',en:'self'},
+  /* ── Сполучники та прийменники ── */
+  {uk:'і',en:'and'},{uk:'але',en:'but'},{uk:'або',en:'or'},{uk:'якщо',en:'if'},{uk:'тому що',en:'because'},
+  {uk:'хоча',en:'although'},{uk:'поки',en:'while'},{uk:'коли',en:'when'},{uk:'де',en:'where'},{uk:'як',en:'how'},
+  {uk:'що',en:'that'},{uk:'тож',en:'so'},{uk:'ані',en:'nor'},{uk:'поки що',en:'until'},{uk:'після',en:'after'},
+  {uk:'до',en:'before'},{uk:'з',en:'with'},{uk:'без',en:'without'},{uk:'для',en:'for'},{uk:'проти',en:'against'},
+  {uk:'крім',en:'except'},{uk:'між',en:'between'},{uk:'серед',en:'among'},{uk:'через',en:'through'},{uk:'навколо',en:'around'},
+  /* ── Питальні слова ── */
+  {uk:'хто',en:'who'},{uk:'що',en:'what'},{uk:'де',en:'where'},{uk:'куди',en:'where to'},{uk:'звідки',en:'where from'},
+  {uk:'чому',en:'why'},{uk:'як',en:'how'},{uk:'скільки',en:'how many'},{uk:'котрий',en:'which'},{uk:'чий',en:'whose'},
+  /* ── Базові дієслова ── */
+  {uk:'бути',en:'be'},{uk:'мати',en:'have'},{uk:'робити',en:'do'},{uk:'йти',en:'go'},{uk:'приходити',en:'come'},
+  {uk:'казати',en:'say'},{uk:'говорити',en:'speak'},{uk:'бачити',en:'see'},{uk:'знати',en:'know'},{uk:'думати',en:'think'},
+  {uk:'хотіти',en:'want'},{uk:'давати',en:'give'},{uk:'брати',en:'take'},{uk:'отримати',en:'get'},{uk:'знайти',en:'find'},
+  {uk:'залишити',en:'leave'},{uk:'ставити',en:'put'},{uk:'здається',en:'seem'},{uk:'розповісти',en:'tell'},{uk:'попросити',en:'ask'},
+  {uk:'показати',en:'show'},{uk:'відчувати',en:'feel'},{uk:'спробувати',en:'try'},{uk:'залишатись',en:'stay'},{uk:'дозволити',en:'let'},
+  {uk:'почати',en:'begin'},{uk:'показати',en:'show'},{uk:'чути',en:'hear'},{uk:'грати',en:'play'},{uk:'бігти',en:'run'},
+  {uk:'рухатись',en:'move'},{uk:'жити',en:'live'},{uk:'вірити',en:'believe'},{uk:'тримати',en:'hold'},{uk:'принести',en:'bring'},
+  {uk:'написати',en:'write'},{uk:'стояти',en:'stand'},{uk:'чекати',en:'wait'},{uk:'служити',en:'serve'},{uk:'здаватись',en:'appear'},
+  {uk:'любити',en:'love'},{uk:'подобатись',en:'like'},{uk:'ненавидіти',en:'hate'},{uk:'допомагати',en:'help'},{uk:'потрібен',en:'need'},
+  {uk:'зупинити',en:'stop'},{uk:'повернутись',en:'return'},{uk:'зберегти',en:'save'},{uk:'змінити',en:'change'},{uk:'відкрити',en:'open'},
+  {uk:'закрити',en:'close'},{uk:'читати',en:'read'},{uk:'вчити',en:'learn'},{uk:'працювати',en:'work'},{uk:'платити',en:'pay'},
+  {uk:'купити',en:'buy'},{uk:'продати',en:'sell'},{uk:'їсти',en:'eat'},{uk:'пити',en:'drink'},{uk:'спати',en:'sleep'},
+  {uk:'прокинутись',en:'wake up'},{uk:'відпочивати',en:'rest'},{uk:'кохати',en:'love deeply'},{uk:'розуміти',en:'understand'},{uk:'пам\'ятати',en:'remember'},
+  {uk:'забути',en:'forget'},{uk:'вирішити',en:'decide'},{uk:'пояснити',en:'explain'},{uk:'порівняти',en:'compare'},{uk:'вибрати',en:'choose'},
+  {uk:'відповісти',en:'answer'},{uk:'запитати',en:'ask question'},{uk:'прийняти',en:'accept'},{uk:'відмовити',en:'refuse'},{uk:'дозволяти',en:'allow'},
+  /* ── Числа та кількість ── */
+  {uk:'один',en:'one'},{uk:'два',en:'two'},{uk:'три',en:'three'},{uk:'чотири',en:'four'},{uk:'п\'ять',en:'five'},
+  {uk:'шість',en:'six'},{uk:'сім',en:'seven'},{uk:'вісім',en:'eight'},{uk:'дев\'ять',en:'nine'},{uk:'десять',en:'ten'},
+  {uk:'одинадцять',en:'eleven'},{uk:'дванадцять',en:'twelve'},{uk:'двадцять',en:'twenty'},{uk:'тридцять',en:'thirty'},{uk:'сорок',en:'forty'},
+  {uk:'п\'ятдесят',en:'fifty'},{uk:'сто',en:'hundred'},{uk:'тисяча',en:'thousand'},{uk:'мільйон',en:'million'},{uk:'нуль',en:'zero'},
+  {uk:'перший',en:'first'},{uk:'другий',en:'second'},{uk:'третій',en:'third'},{uk:'останній',en:'last'},{uk:'наступний',en:'next'},
+  /* ── Час ── */
+  {uk:'час',en:'time'},{uk:'день',en:'day'},{uk:'ніч',en:'night'},{uk:'ранок',en:'morning'},{uk:'вечір',en:'evening'},
+  {uk:'тиждень',en:'week'},{uk:'місяць',en:'month'},{uk:'рік',en:'year'},{uk:'сьогодні',en:'today'},{uk:'завтра',en:'tomorrow'},
+  {uk:'вчора',en:'yesterday'},{uk:'зараз',en:'now'},{uk:'потім',en:'then'},{uk:'скоро',en:'soon'},{uk:'пізно',en:'late'},
+  {uk:'рано',en:'early'},{uk:'завжди',en:'always'},{uk:'ніколи',en:'never'},{uk:'іноді',en:'sometimes'},{uk:'часто',en:'often'},
+  {uk:'рідко',en:'rarely'},{uk:'вже',en:'already'},{uk:'ще',en:'still'},{uk:'раніше',en:'before'},{uk:'після',en:'after'},
+  {uk:'секунда',en:'second'},{uk:'хвилина',en:'minute'},{uk:'година',en:'hour'},{uk:'понеділок',en:'Monday'},{uk:'вівторок',en:'Tuesday'},
+  {uk:'середа',en:'Wednesday'},{uk:'четвер',en:'Thursday'},{uk:'п\'ятниця',en:'Friday'},{uk:'субота',en:'Saturday'},{uk:'неділя',en:'Sunday'},
+  {uk:'січень',en:'January'},{uk:'лютий',en:'February'},{uk:'березень',en:'March'},{uk:'квітень',en:'April'},{uk:'травень',en:'May'},
+  {uk:'червень',en:'June'},{uk:'липень',en:'July'},{uk:'серпень',en:'August'},{uk:'вересень',en:'September'},{uk:'жовтень',en:'October'},
+  {uk:'листопад',en:'November'},{uk:'грудень',en:'December'},{uk:'весна',en:'spring'},{uk:'літо',en:'summer'},{uk:'осінь',en:'autumn'},
+  {uk:'зима',en:'winter'},{uk:'опівночі',en:'midnight'},{uk:'опівдні',en:'noon'},{uk:'минулого року',en:'last year'},{uk:'минулого тижня',en:'last week'},
+  /* ── Людина, сім'я ── */
+  {uk:'людина',en:'person'},{uk:'чоловік',en:'man'},{uk:'жінка',en:'woman'},{uk:'дитина',en:'child'},{uk:'хлопчик',en:'boy'},
+  {uk:'дівчинка',en:'girl'},{uk:'немовля',en:'baby'},{uk:'дорослий',en:'adult'},{uk:'старий',en:'old man'},{uk:'стара',en:'old woman'},
+  {uk:'батько',en:'father'},{uk:'мати',en:'mother'},{uk:'брат',en:'brother'},{uk:'сестра',en:'sister'},{uk:'син',en:'son'},
+  {uk:'дочка',en:'daughter'},{uk:'дідусь',en:'grandfather'},{uk:'бабуся',en:'grandmother'},{uk:'онук',en:'grandson'},{uk:'онука',en:'granddaughter'},
+  {uk:'дядько',en:'uncle'},{uk:'тітка',en:'aunt'},{uk:'двоюрідний брат',en:'cousin'},{uk:'племінник',en:'nephew'},{uk:'племінниця',en:'niece'},
+  {uk:'чоловік',en:'husband'},{uk:'дружина',en:'wife'},{uk:'наречений',en:'groom'},{uk:'наречена',en:'bride'},{uk:'сім\'я',en:'family'},
+  {uk:'батьки',en:'parents'},{uk:'діти',en:'children'},{uk:'близнюки',en:'twins'},{uk:'друг',en:'friend'},{uk:'подруга',en:'girlfriend'},
+  {uk:'сусід',en:'neighbor'},{uk:'колега',en:'colleague'},{uk:'партнер',en:'partner'},{uk:'пара',en:'couple'},{uk:'родич',en:'relative'},
+  /* ── Тіло людини ── */
+  {uk:'голова',en:'head'},{uk:'обличчя',en:'face'},{uk:'очі',en:'eyes'},{uk:'вухо',en:'ear'},{uk:'ніс',en:'nose'},
+  {uk:'рот',en:'mouth'},{uk:'губи',en:'lips'},{uk:'зуби',en:'teeth'},{uk:'язик',en:'tongue'},{uk:'шия',en:'neck'},
+  {uk:'плече',en:'shoulder'},{uk:'рука',en:'arm'},{uk:'лікоть',en:'elbow'},{uk:'зап\'ясток',en:'wrist'},{uk:'долоня',en:'palm'},
+  {uk:'палець',en:'finger'},{uk:'ніготь',en:'nail'},{uk:'груди',en:'chest'},{uk:'живіт',en:'stomach'},{uk:'спина',en:'back'},
+  {uk:'стегно',en:'hip'},{uk:'нога',en:'leg'},{uk:'коліно',en:'knee'},{uk:'щиколотка',en:'ankle'},{uk:'стопа',en:'foot'},
+  {uk:'шкіра',en:'skin'},{uk:'волосся',en:'hair'},{uk:'серце',en:'heart'},{uk:'легені',en:'lungs'},{uk:'мозок',en:'brain'},
+  {uk:'кров',en:'blood'},{uk:'кістка',en:'bone'},{uk:'м\'яз',en:'muscle'},{uk:'живот',en:'belly'},{uk:'щока',en:'cheek'},
+  /* ── Їжа та напої ── */
+  {uk:'їжа',en:'food'},{uk:'вода',en:'water'},{uk:'хліб',en:'bread'},{uk:'молоко',en:'milk'},{uk:'яйце',en:'egg'},
+  {uk:'м\'ясо',en:'meat'},{uk:'риба',en:'fish'},{uk:'курка',en:'chicken'},{uk:'яловичина',en:'beef'},{uk:'свинина',en:'pork'},
+  {uk:'рис',en:'rice'},{uk:'картопля',en:'potato'},{uk:'макарони',en:'pasta'},{uk:'суп',en:'soup'},{uk:'салат',en:'salad'},
+  {uk:'пицца',en:'pizza'},{uk:'бутерброд',en:'sandwich'},{uk:'пиріг',en:'pie'},{uk:'торт',en:'cake'},{uk:'печиво',en:'cookie'},
+  {uk:'морозиво',en:'ice cream'},{uk:'шоколад',en:'chocolate'},{uk:'цукор',en:'sugar'},{uk:'сіль',en:'salt'},{uk:'перець',en:'pepper'},
+  {uk:'масло',en:'butter'},{uk:'олія',en:'oil'},{uk:'борошно',en:'flour'},{uk:'яблуко',en:'apple'},{uk:'банан',en:'banana'},
+  {uk:'апельсин',en:'orange'},{uk:'лимон',en:'lemon'},{uk:'виноград',en:'grape'},{uk:'полуниця',en:'strawberry'},{uk:'вишня',en:'cherry'},
+  {uk:'помідор',en:'tomato'},{uk:'огірок',en:'cucumber'},{uk:'морква',en:'carrot'},{uk:'цибуля',en:'onion'},{uk:'часник',en:'garlic'},
+  {uk:'капуста',en:'cabbage'},{uk:'гриб',en:'mushroom'},{uk:'горох',en:'pea'},{uk:'квасоля',en:'bean'},{uk:'горіх',en:'nut'},
+  {uk:'чай',en:'tea'},{uk:'кава',en:'coffee'},{uk:'сік',en:'juice'},{uk:'пиво',en:'beer'},{uk:'вино',en:'wine'},
+  {uk:'сніданок',en:'breakfast'},{uk:'обід',en:'lunch'},{uk:'вечеря',en:'dinner'},{uk:'закуска',en:'snack'},{uk:'десерт',en:'dessert'},
+  {uk:'смажений',en:'fried'},{uk:'варений',en:'boiled'},{uk:'запечений',en:'baked'},{uk:'солодкий',en:'sweet'},{uk:'солоний',en:'salty'},
+  {uk:'гострий',en:'spicy'},{uk:'кислий',en:'sour'},{uk:'гіркий',en:'bitter'},{uk:'смачний',en:'delicious'},{uk:'свіжий',en:'fresh'},
+  /* ── Кольори ── */
+  {uk:'червоний',en:'red'},{uk:'синій',en:'blue'},{uk:'зелений',en:'green'},{uk:'жовтий',en:'yellow'},{uk:'помаранчевий',en:'orange'},
+  {uk:'фіолетовий',en:'purple'},{uk:'рожевий',en:'pink'},{uk:'коричневий',en:'brown'},{uk:'чорний',en:'black'},{uk:'білий',en:'white'},
+  {uk:'сірий',en:'grey'},{uk:'золотий',en:'golden'},{uk:'срібний',en:'silver'},{uk:'бежевий',en:'beige'},{uk:'блакитний',en:'light blue'},
+  /* ── Розміри та форми ── */
+  {uk:'великий',en:'big'},{uk:'маленький',en:'small'},{uk:'довгий',en:'long'},{uk:'короткий',en:'short'},{uk:'широкий',en:'wide'},
+  {uk:'вузький',en:'narrow'},{uk:'високий',en:'tall'},{uk:'низький',en:'low'},{uk:'товстий',en:'thick'},{uk:'тонкий',en:'thin'},
+  {uk:'важкий',en:'heavy'},{uk:'легкий',en:'light'},{uk:'глибокий',en:'deep'},{uk:'мілкий',en:'shallow'},{uk:'круглий',en:'round'},
+  {uk:'квадратний',en:'square'},{uk:'трикутний',en:'triangular'},{uk:'прямий',en:'straight'},{uk:'кривий',en:'curved'},{uk:'гострий',en:'sharp'},
+  /* ── Прикметники якості ── */
+  {uk:'добрий',en:'good'},{uk:'поганий',en:'bad'},{uk:'новий',en:'new'},{uk:'старий',en:'old'},{uk:'молодий',en:'young'},
+  {uk:'красивий',en:'beautiful'},{uk:'потворний',en:'ugly'},{uk:'швидкий',en:'fast'},{uk:'повільний',en:'slow'},{uk:'сильний',en:'strong'},
+  {uk:'слабкий',en:'weak'},{uk:'розумний',en:'smart'},{uk:'дурний',en:'stupid'},{uk:'веселий',en:'funny'},{uk:'сумний',en:'sad'},
+  {uk:'щасливий',en:'happy'},{uk:'злий',en:'angry'},{uk:'спокійний',en:'calm'},{uk:'гучний',en:'loud'},{uk:'тихий',en:'quiet'},
+  {uk:'дорогий',en:'expensive'},{uk:'дешевий',en:'cheap'},{uk:'простий',en:'simple'},{uk:'складний',en:'complex'},{uk:'важливий',en:'important'},
+  {uk:'цікавий',en:'interesting'},{uk:'нудний',en:'boring'},{uk:'небезпечний',en:'dangerous'},{uk:'безпечний',en:'safe'},{uk:'чистий',en:'clean'},
+  {uk:'брудний',en:'dirty'},{uk:'гарячий',en:'hot'},{uk:'холодний',en:'cold'},{uk:'теплий',en:'warm'},{uk:'прохолодний',en:'cool'},
+  {uk:'вологий',en:'wet'},{uk:'сухий',en:'dry'},{uk:'м\'який',en:'soft'},{uk:'твердий',en:'hard'},{uk:'гнучкий',en:'flexible'},
+  {uk:'відкритий',en:'open'},{uk:'закритий',en:'closed'},{uk:'повний',en:'full'},{uk:'порожній',en:'empty'},{uk:'правильний',en:'correct'},
+  {uk:'неправильний',en:'wrong'},{uk:'справжній',en:'real'},{uk:'штучний',en:'artificial'},{uk:'відомий',en:'famous'},{uk:'невідомий',en:'unknown'},
+  {uk:'схожий',en:'similar'},{uk:'різний',en:'different'},{uk:'особливий',en:'special'},{uk:'звичайний',en:'ordinary'},{uk:'дивний',en:'strange'},
+  /* ── Прислівники ── */
+  {uk:'дуже',en:'very'},{uk:'занадто',en:'too'},{uk:'досить',en:'enough'},{uk:'майже',en:'almost'},{uk:'зовсім',en:'completely'},
+  {uk:'трохи',en:'a little'},{uk:'багато',en:'much'},{uk:'мало',en:'few'},{uk:'ледве',en:'hardly'},{uk:'напевно',en:'probably'},
+  {uk:'можливо',en:'maybe'},{uk:'точно',en:'exactly'},{uk:'приблизно',en:'approximately'},{uk:'взагалі',en:'generally'},{uk:'особливо',en:'especially'},
+  {uk:'разом',en:'together'},{uk:'окремо',en:'separately'},{uk:'навпаки',en:'on the contrary'},{uk:'нарешті',en:'finally'},{uk:'знову',en:'again'},
+  /* ── Місце та напрямок ── */
+  {uk:'тут',en:'here'},{uk:'там',en:'there'},{uk:'скрізь',en:'everywhere'},{uk:'ніде',en:'nowhere'},{uk:'вгорі',en:'above'},
+  {uk:'внизу',en:'below'},{uk:'ліворуч',en:'to the left'},{uk:'праворуч',en:'to the right'},{uk:'попереду',en:'ahead'},{uk:'позаду',en:'behind'},
+  {uk:'всередині',en:'inside'},{uk:'назовні',en:'outside'},{uk:'поруч',en:'next to'},{uk:'далеко',en:'far'},{uk:'близько',en:'near'},
+  {uk:'північ',en:'north'},{uk:'південь',en:'south'},{uk:'схід',en:'east'},{uk:'захід',en:'west'},{uk:'центр',en:'center'},
+  /* ── Дім та меблі ── */
+  {uk:'дім',en:'house'},{uk:'квартира',en:'apartment'},{uk:'кімната',en:'room'},{uk:'вітальня',en:'living room'},{uk:'спальня',en:'bedroom'},
+  {uk:'кухня',en:'kitchen'},{uk:'ванна кімната',en:'bathroom'},{uk:'туалет',en:'toilet'},{uk:'балкон',en:'balcony'},{uk:'горище',en:'attic'},
+  {uk:'підвал',en:'basement'},{uk:'гараж',en:'garage'},{uk:'двір',en:'yard'},{uk:'сад',en:'garden'},{uk:'паркан',en:'fence'},
+  {uk:'стіна',en:'wall'},{uk:'підлога',en:'floor'},{uk:'стеля',en:'ceiling'},{uk:'вікно',en:'window'},{uk:'двері',en:'door'},
+  {uk:'сходи',en:'stairs'},{uk:'ліфт',en:'elevator'},{uk:'диван',en:'sofa'},{uk:'крісло',en:'armchair'},{uk:'стіл',en:'table'},
+  {uk:'стілець',en:'chair'},{uk:'ліжко',en:'bed'},{uk:'шафа',en:'wardrobe'},{uk:'полиця',en:'shelf'},{uk:'килим',en:'carpet'},
+  {uk:'фіранка',en:'curtain'},{uk:'подушка',en:'pillow'},{uk:'ковдра',en:'blanket'},{uk:'дзеркало',en:'mirror'},{uk:'лампа',en:'lamp'},
+  {uk:'мікрохвильовка',en:'microwave'},{uk:'пральна машина',en:'washing machine'},{uk:'холодильник',en:'refrigerator'},{uk:'плита',en:'stove'},{uk:'пилосос',en:'vacuum cleaner'},
+  /* ── Транспорт ── */
+  {uk:'машина',en:'car'},{uk:'автобус',en:'bus'},{uk:'потяг',en:'train'},{uk:'літак',en:'airplane'},{uk:'корабель',en:'ship'},
+  {uk:'велосипед',en:'bicycle'},{uk:'мотоцикл',en:'motorcycle'},{uk:'таксі',en:'taxi'},{uk:'метро',en:'metro'},{uk:'трамвай',en:'tram'},
+  {uk:'вантажівка',en:'truck'},{uk:'човен',en:'boat'},{uk:'вертоліт',en:'helicopter'},{uk:'ракета',en:'rocket'},{uk:'підводний човен',en:'submarine'},
+  {uk:'дорога',en:'road'},{uk:'вулиця',en:'street'},{uk:'шосе',en:'highway'},{uk:'міст',en:'bridge'},{uk:'тунель',en:'tunnel'},
+  {uk:'зупинка',en:'stop'},{uk:'станція',en:'station'},{uk:'аеропорт',en:'airport'},{uk:'порт',en:'port'},{uk:'вокзал',en:'railway station'},
+  {uk:'водій',en:'driver'},{uk:'пасажир',en:'passenger'},{uk:'пілот',en:'pilot'},{uk:'рейс',en:'flight'},{uk:'квиток',en:'ticket'},
+  /* ── Природа ── */
+  {uk:'природа',en:'nature'},{uk:'ліс',en:'forest'},{uk:'річка',en:'river'},{uk:'озеро',en:'lake'},{uk:'море',en:'sea'},
+  {uk:'океан',en:'ocean'},{uk:'гора',en:'mountain'},{uk:'пагорб',en:'hill'},{uk:'поле',en:'field'},{uk:'пустеля',en:'desert'},
+  {uk:'острів',en:'island'},{uk:'берег',en:'shore'},{uk:'пляж',en:'beach'},{uk:'скеля',en:'cliff'},{uk:'водоспад',en:'waterfall'},
+  {uk:'небо',en:'sky'},{uk:'сонце',en:'sun'},{uk:'місяць',en:'moon'},{uk:'зірка',en:'star'},{uk:'хмара',en:'cloud'},
+  {uk:'дощ',en:'rain'},{uk:'сніг',en:'snow'},{uk:'вітер',en:'wind'},{uk:'буря',en:'storm'},{uk:'блискавка',en:'lightning'},
+  {uk:'туман',en:'fog'},{uk:'веселка',en:'rainbow'},{uk:'земля',en:'earth'},{uk:'камінь',en:'stone'},{uk:'пісок',en:'sand'},
+  {uk:'дерево',en:'tree'},{uk:'квітка',en:'flower'},{uk:'трава',en:'grass'},{uk:'листя',en:'leaves'},{uk:'корінь',en:'root'},
+  {uk:'гілка',en:'branch'},{uk:'насіння',en:'seed'},{uk:'плід',en:'fruit'},{uk:'рослина',en:'plant'},{uk:'кущ',en:'bush'},
+  /* ── Тварини ── */
+  {uk:'тварина',en:'animal'},{uk:'кіт',en:'cat'},{uk:'собака',en:'dog'},{uk:'кінь',en:'horse'},{uk:'корова',en:'cow'},
+  {uk:'свиня',en:'pig'},{uk:'вівця',en:'sheep'},{uk:'коза',en:'goat'},{uk:'кролик',en:'rabbit'},{uk:'миша',en:'mouse'},
+  {uk:'щур',en:'rat'},{uk:'птах',en:'bird'},{uk:'горобець',en:'sparrow'},{uk:'голуб',en:'pigeon'},{uk:'ворона',en:'crow'},
+  {uk:'орел',en:'eagle'},{uk:'сова',en:'owl'},{uk:'папуга',en:'parrot'},{uk:'пінгвін',en:'penguin'},{uk:'лев',en:'lion'},
+  {uk:'тигр',en:'tiger'},{uk:'слон',en:'elephant'},{uk:'жираф',en:'giraffe'},{uk:'зебра',en:'zebra'},{uk:'ведмідь',en:'bear'},
+  {uk:'вовк',en:'wolf'},{uk:'лисиця',en:'fox'},{uk:'заєць',en:'hare'},{uk:'олень',en:'deer'},{uk:'мавпа',en:'monkey'},
+  {uk:'крокодил',en:'crocodile'},{uk:'змія',en:'snake'},{uk:'черепаха',en:'turtle'},{uk:'жаба',en:'frog'},{uk:'риба',en:'fish'},
+  {uk:'акула',en:'shark'},{uk:'кит',en:'whale'},{uk:'дельфін',en:'dolphin'},{uk:'медуза',en:'jellyfish'},{uk:'краб',en:'crab'},
+  {uk:'комаха',en:'insect'},{uk:'метелик',en:'butterfly'},{uk:'бджола',en:'bee'},{uk:'мураха',en:'ant'},{uk:'павук',en:'spider'},
+  /* ── Робота та професії ── */
+  {uk:'робота',en:'work'},{uk:'офіс',en:'office'},{uk:'компанія',en:'company'},{uk:'бізнес',en:'business'},{uk:'проект',en:'project'},
+  {uk:'завдання',en:'task'},{uk:'зустріч',en:'meeting'},{uk:'нарада',en:'conference'},{uk:'звіт',en:'report'},{uk:'план',en:'plan'},
+  {uk:'зарплата',en:'salary'},{uk:'бонус',en:'bonus'},{uk:'кар\'єра',en:'career'},{uk:'посада',en:'position'},{uk:'резюме',en:'resume'},
+  {uk:'лікар',en:'doctor'},{uk:'вчитель',en:'teacher'},{uk:'інженер',en:'engineer'},{uk:'юрист',en:'lawyer'},{uk:'архітектор',en:'architect'},
+  {uk:'програміст',en:'programmer'},{uk:'дизайнер',en:'designer'},{uk:'бухгалтер',en:'accountant'},{uk:'менеджер',en:'manager'},{uk:'директор',en:'director'},
+  {uk:'поліцейський',en:'police officer'},{uk:'пожежник',en:'firefighter'},{uk:'солдат',en:'soldier'},{uk:'кухар',en:'cook'},{uk:'перукар',en:'hairdresser'},
+  /* ── Освіта ── */
+  {uk:'школа',en:'school'},{uk:'університет',en:'university'},{uk:'клас',en:'class'},{uk:'урок',en:'lesson'},{uk:'предмет',en:'subject'},
+  {uk:'іспит',en:'exam'},{uk:'оцінка',en:'grade'},{uk:'диплом',en:'diploma'},{uk:'ступінь',en:'degree'},{uk:'студент',en:'student'},
+  {uk:'викладач',en:'lecturer'},{uk:'лекція',en:'lecture'},{uk:'підручник',en:'textbook'},{uk:'зошит',en:'notebook'},{uk:'ручка',en:'pen'},
+  {uk:'олівець',en:'pencil'},{uk:'дошка',en:'board'},{uk:'математика',en:'mathematics'},{uk:'фізика',en:'physics'},{uk:'хімія',en:'chemistry'},
+  {uk:'біологія',en:'biology'},{uk:'географія',en:'geography'},{uk:'історія',en:'history'},{uk:'мистецтво',en:'art'},{uk:'музика',en:'music'},
+  {uk:'наука',en:'science'},{uk:'дослідження',en:'research'},{uk:'знання',en:'knowledge'},{uk:'розуміння',en:'understanding'},{uk:'практика',en:'practice'},
+  /* ── Здоров'я ── */
+  {uk:'здоров\'я',en:'health'},{uk:'хвороба',en:'illness'},{uk:'симптом',en:'symptom'},{uk:'біль',en:'pain'},{uk:'температура',en:'temperature'},
+  {uk:'ліки',en:'medicine'},{uk:'таблетка',en:'pill'},{uk:'рецепт',en:'prescription'},{uk:'алергія',en:'allergy'},{uk:'операція',en:'surgery'},
+  {uk:'лікарня',en:'hospital'},{uk:'аптека',en:'pharmacy'},{uk:'швидка',en:'ambulance'},{uk:'кашель',en:'cough'},{uk:'нежить',en:'runny nose'},
+  {uk:'головний біль',en:'headache'},{uk:'зубний біль',en:'toothache'},{uk:'нудота',en:'nausea'},{uk:'запаморочення',en:'dizziness'},{uk:'втома',en:'fatigue'},
+  {uk:'здоровий',en:'healthy'},{uk:'хворий',en:'sick'},{uk:'вагітна',en:'pregnant'},{uk:'одужання',en:'recovery'},{uk:'профілактика',en:'prevention'},
+  /* ── Технології ── */
+  {uk:'комп\'ютер',en:'computer'},{uk:'ноутбук',en:'laptop'},{uk:'телефон',en:'phone'},{uk:'планшет',en:'tablet'},{uk:'екран',en:'screen'},
+  {uk:'клавіатура',en:'keyboard'},{uk:'миша',en:'mouse'},{uk:'принтер',en:'printer'},{uk:'камера',en:'camera'},{uk:'мікрофон',en:'microphone'},
+  {uk:'інтернет',en:'internet'},{uk:'сайт',en:'website'},{uk:'додаток',en:'app'},{uk:'програма',en:'program'},{uk:'файл',en:'file'},
+  {uk:'папка',en:'folder'},{uk:'хмара',en:'cloud'},{uk:'пароль',en:'password'},{uk:'акаунт',en:'account'},{uk:'завантажити',en:'download'},
+  {uk:'вивантажити',en:'upload'},{uk:'видалити',en:'delete'},{uk:'оновити',en:'update'},{uk:'встановити',en:'install'},{uk:'увімкнути',en:'turn on'},
+  {uk:'вимкнути',en:'turn off'},{uk:'перезавантажити',en:'restart'},{uk:'зберегти',en:'save'},{uk:'скопіювати',en:'copy'},{uk:'вставити',en:'paste'},
+  {uk:'пошук',en:'search'},{uk:'браузер',en:'browser'},{uk:'поштова скринька',en:'mailbox'},{uk:'лист',en:'email'},{uk:'повідомлення',en:'message'},
+  /* ── Покупки та гроші ── */
+  {uk:'магазин',en:'shop'},{uk:'ринок',en:'market'},{uk:'супермаркет',en:'supermarket'},{uk:'покупка',en:'purchase'},{uk:'ціна',en:'price'},
+  {uk:'знижка',en:'discount'},{uk:'акція',en:'sale'},{uk:'чек',en:'receipt'},{uk:'каса',en:'checkout'},{uk:'черга',en:'queue'},
+  {uk:'гроші',en:'money'},{uk:'монета',en:'coin'},{uk:'банкнота',en:'banknote'},{uk:'картка',en:'card'},{uk:'банк',en:'bank'},
+  {uk:'рахунок',en:'account'},{uk:'борг',en:'debt'},{uk:'кредит',en:'credit'},{uk:'інвестиція',en:'investment'},{uk:'бюджет',en:'budget'},
+  {uk:'купити',en:'buy'},{uk:'продати',en:'sell'},{uk:'заплатити',en:'pay'},{uk:'повернути',en:'return'},{uk:'обміняти',en:'exchange'},
+  /* ── Місто та місця ── */
+  {uk:'місто',en:'city'},{uk:'село',en:'village'},{uk:'район',en:'district'},{uk:'площа',en:'square'},{uk:'парк',en:'park'},
+  {uk:'ресторан',en:'restaurant'},{uk:'кафе',en:'cafe'},{uk:'бар',en:'bar'},{uk:'готель',en:'hotel'},{uk:'музей',en:'museum'},
+  {uk:'театр',en:'theatre'},{uk:'кіно',en:'cinema'},{uk:'бібліотека',en:'library'},{uk:'лікарня',en:'hospital'},{uk:'школа',en:'school'},
+  {uk:'церква',en:'church'},{uk:'замок',en:'castle'},{uk:'пам\'ятник',en:'monument'},{uk:'фонтан',en:'fountain'},{uk:'стадіон',en:'stadium'},
+  {uk:'пошта',en:'post office'},{uk:'поліція',en:'police station'},{uk:'пожежна',en:'fire station'},{uk:'перукарня',en:'barbershop'},{uk:'аптека',en:'pharmacy'},
+  /* ── Спорт ── */
+  {uk:'спорт',en:'sport'},{uk:'футбол',en:'football'},{uk:'баскетбол',en:'basketball'},{uk:'теніс',en:'tennis'},{uk:'волейбол',en:'volleyball'},
+  {uk:'плавання',en:'swimming'},{uk:'біг',en:'running'},{uk:'велоспорт',en:'cycling'},{uk:'гімнастика',en:'gymnastics'},{uk:'бокс',en:'boxing'},
+  {uk:'йога',en:'yoga'},{uk:'тренування',en:'training'},{uk:'спортзал',en:'gym'},{uk:'команда',en:'team'},{uk:'гравець',en:'player'},
+  {uk:'тренер',en:'coach'},{uk:'перемога',en:'victory'},{uk:'поразка',en:'defeat'},{uk:'нічия',en:'draw'},{uk:'чемпіон',en:'champion'},
+  {uk:'м\'яч',en:'ball'},{uk:'ракетка',en:'racket'},{uk:'сітка',en:'net'},{uk:'ворота',en:'goal'},{uk:'рекорд',en:'record'},
+  /* ── Мистецтво та дозвілля ── */
+  {uk:'музика',en:'music'},{uk:'пісня',en:'song'},{uk:'мелодія',en:'melody'},{uk:'ритм',en:'rhythm'},{uk:'гітара',en:'guitar'},
+  {uk:'піаніно',en:'piano'},{uk:'скрипка',en:'violin'},{uk:'барабан',en:'drum'},{uk:'концерт',en:'concert'},{uk:'альбом',en:'album'},
+  {uk:'книга',en:'book'},{uk:'роман',en:'novel'},{uk:'вірш',en:'poem'},{uk:'казка',en:'fairy tale'},{uk:'оповідання',en:'story'},
+  {uk:'фільм',en:'film'},{uk:'серіал',en:'series'},{uk:'актор',en:'actor'},{uk:'режисер',en:'director'},{uk:'сцена',en:'scene'},
+  {uk:'малювання',en:'drawing'},{uk:'живопис',en:'painting'},{uk:'скульптура',en:'sculpture'},{uk:'фотографія',en:'photography'},{uk:'виставка',en:'exhibition'},
+  {uk:'гра',en:'game'},{uk:'іграшка',en:'toy'},{uk:'хобі',en:'hobby'},{uk:'колекція',en:'collection'},{uk:'подорож',en:'travel'},
+  /* ── Подорожі ── */
+  {uk:'туризм',en:'tourism'},{uk:'турист',en:'tourist'},{uk:'відпустка',en:'vacation'},{uk:'паспорт',en:'passport'},{uk:'віза',en:'visa'},
+  {uk:'митниця',en:'customs'},{uk:'валюта',en:'currency'},{uk:'обмін',en:'exchange'},{uk:'бронювання',en:'booking'},{uk:'реєстрація',en:'check-in'},
+  {uk:'сувенір',en:'souvenir'},{uk:'карта',en:'map'},{uk:'гід',en:'guide'},{uk:'екскурсія',en:'tour'},{uk:'затримка',en:'delay'},
+  {uk:'посадка',en:'boarding'},{uk:'пересадка',en:'transfer'},{uk:'багаж',en:'luggage'},{uk:'валіза',en:'suitcase'},{uk:'рюкзак',en:'backpack'},
+  /* ── Почуття та емоції ── */
+  {uk:'почуття',en:'feeling'},{uk:'емоція',en:'emotion'},{uk:'радість',en:'joy'},{uk:'сум',en:'sadness'},{uk:'страх',en:'fear'},
+  {uk:'злість',en:'anger'},{uk:'здивування',en:'surprise'},{uk:'відраза',en:'disgust'},{uk:'гордість',en:'pride'},{uk:'сором',en:'shame'},
+  {uk:'провина',en:'guilt'},{uk:'заздрість',en:'envy'},{uk:'ревнощі',en:'jealousy'},{uk:'надія',en:'hope'},{uk:'розчарування',en:'disappointment'},
+  {uk:'задоволення',en:'satisfaction'},{uk:'тривога',en:'anxiety'},{uk:'стрес',en:'stress'},{uk:'спокій',en:'peace'},{uk:'щастя',en:'happiness'},
+  {uk:'сміятись',en:'laugh'},{uk:'плакати',en:'cry'},{uk:'кричати',en:'shout'},{uk:'посміхатись',en:'smile'},{uk:'хвилюватись',en:'worry'},
+  /* ── Розмовні фрази ── */
+  {uk:'привіт',en:'hello'},{uk:'до побачення',en:'goodbye'},{uk:'дякую',en:'thank you'},{uk:'будь ласка',en:'please'},{uk:'вибачте',en:'excuse me'},
+  {uk:'перепрошую',en:'sorry'},{uk:'добрий ранок',en:'good morning'},{uk:'добрий вечір',en:'good evening'},{uk:'як справи',en:'how are you'},{uk:'все добре',en:'I\'m fine'},
+  {uk:'так',en:'yes'},{uk:'ні',en:'no'},{uk:'можливо',en:'maybe'},{uk:'звичайно',en:'of course'},{uk:'не знаю',en:'I don\'t know'},
+  {uk:'розумію',en:'I understand'},{uk:'не розумію',en:'I don\'t understand'},{uk:'згоден',en:'I agree'},{uk:'не згоден',en:'I disagree'},{uk:'давайте спробуємо',en:'let\'s try'},
+  /* ── Абстрактні поняття ── */
+  {uk:'ідея',en:'idea'},{uk:'думка',en:'thought'},{uk:'мрія',en:'dream'},{uk:'мета',en:'goal'},{uk:'план',en:'plan'},
+  {uk:'рішення',en:'decision'},{uk:'проблема',en:'problem'},{uk:'рішення',en:'solution'},{uk:'успіх',en:'success'},{uk:'невдача',en:'failure'},
+  {uk:'правда',en:'truth'},{uk:'брехня',en:'lie'},{uk:'довіра',en:'trust'},{uk:'відповідальність',en:'responsibility'},{uk:'свобода',en:'freedom'},
+  {uk:'справедливість',en:'justice'},{uk:'мир',en:'peace'},{uk:'любов',en:'love'},{uk:'дружба',en:'friendship'},{uk:'повага',en:'respect'},
+  {uk:'влада',en:'power'},{uk:'закон',en:'law'},{uk:'право',en:'right'},{uk:'обов\'язок',en:'duty'},{uk:'цінність',en:'value'},
+  {uk:'культура',en:'culture'},{uk:'традиція',en:'tradition'},{uk:'звичай',en:'custom'},{uk:'релігія',en:'religion'},{uk:'мистецтво',en:'art'},
+  /* ── Суспільство та державa ── */
+  {uk:'країна',en:'country'},{uk:'держава',en:'state'},{uk:'нація',en:'nation'},{uk:'уряд',en:'government'},{uk:'президент',en:'president'},
+  {uk:'парламент',en:'parliament'},{uk:'вибори',en:'elections'},{uk:'голосування',en:'voting'},{uk:'партія',en:'party'},{uk:'демократія',en:'democracy'},
+  {uk:'суспільство',en:'society'},{uk:'населення',en:'population'},{uk:'громадянин',en:'citizen'},{uk:'паспорт',en:'passport'},{uk:'армія',en:'army'},
+  {uk:'економіка',en:'economy'},{uk:'промисловість',en:'industry'},{uk:'сільське господарство',en:'agriculture'},{uk:'торгівля',en:'trade'},{uk:'податок',en:'tax'},
+  /* ── Наука та технологія ── */
+  {uk:'наука',en:'science'},{uk:'технологія',en:'technology'},{uk:'відкриття',en:'discovery'},{uk:'винахід',en:'invention'},{uk:'дослідження',en:'research'},
+  {uk:'лабораторія',en:'laboratory'},{uk:'експеримент',en:'experiment'},{uk:'теорія',en:'theory'},{uk:'гіпотеза',en:'hypothesis'},{uk:'доказ',en:'evidence'},
+  {uk:'математика',en:'mathematics'},{uk:'фізика',en:'physics'},{uk:'хімія',en:'chemistry'},{uk:'біологія',en:'biology'},{uk:'астрономія',en:'astronomy'},
+  {uk:'штучний інтелект',en:'artificial intelligence'},{uk:'робот',en:'robot'},{uk:'автоматизація',en:'automation'},{uk:'енергія',en:'energy'},{uk:'електрика',en:'electricity'},
+  /* ── Екологія ── */
+  {uk:'екологія',en:'ecology'},{uk:'довкілля',en:'environment'},{uk:'клімат',en:'climate'},{uk:'глобальне потепління',en:'global warming'},{uk:'забруднення',en:'pollution'},
+  {uk:'переробка',en:'recycling'},{uk:'відходи',en:'waste'},{uk:'сонячна енергія',en:'solar energy'},{uk:'вітрова енергія',en:'wind energy'},{uk:'збереження',en:'conservation'},
+  /* ── Медіа та комунікація ── */
+  {uk:'новини',en:'news'},{uk:'газета',en:'newspaper'},{uk:'журнал',en:'magazine'},{uk:'радіо',en:'radio'},{uk:'телебачення',en:'television'},
+  {uk:'соціальні мережі',en:'social media'},{uk:'блог',en:'blog'},{uk:'реклама',en:'advertisement'},{uk:'інтерв\'ю',en:'interview'},{uk:'репортаж',en:'report'},
+  {uk:'публікація',en:'publication'},{uk:'редактор',en:'editor'},{uk:'журналіст',en:'journalist'},{uk:'фотограф',en:'photographer'},{uk:'коментар',en:'comment'},
+];
 function addDemo(){
   // Дата 30 днів тому щоб дефолтні слова не впливали на завдання дня
   const pastDate=new Date();pastDate.setDate(pastDate.getDate()-30);
   const pd=pastDate.toISOString();
-  const demo=[
-    {uk:'я',en:'I'},{uk:'ти',en:'you'},{uk:'він',en:'he'},{uk:'вона',en:'she'},
-    {uk:'воно',en:'it'},{uk:'і',en:'and'},{uk:'але',en:'but'},{uk:'або',en:'or'},
-    {uk:'так',en:'yes'},{uk:'ні',en:'no'},{uk:'хто',en:'who'},{uk:'що',en:'what'},
-    {uk:'бути',en:'be'},{uk:'робити',en:'do'},{uk:'мати',en:'have'},{uk:'йти',en:'go'},
-    {uk:'казати',en:'say'},{uk:'отримати',en:'get'},{uk:'знати',en:'know'},{uk:'думати',en:'think'},
-    {uk:'бачити',en:'see'},{uk:'хотіти',en:'want'},{uk:'час',en:'time'},{uk:'день',en:'day'},
-    {uk:'людина',en:'person'},{uk:'світ',en:'world'},{uk:'дім',en:'house'},{uk:'робота',en:'work'},
-    {uk:'їжа',en:'food'},{uk:'вода',en:'water'},
-  ];
   let added=0;
-  demo.forEach(d=>{
+  DEMO_WORDS.forEach(d=>{
     if(!W.find(w=>w.uk===d.uk&&w.en===d.en)){
       W.push({id:Date.now()+Math.random()*999|0,...d,cat:'general',level:'new',
         added:pd,nextReview:pd,reviewCount:0,correctCount:0,interval:1,
@@ -3576,6 +3781,95 @@ function addDemo(){
   else notify('Базові слова вже є','info');
 }
 
+
+
+function startQuizMyWords(){
+  const pool=W.filter(w=>w.isUserAdded&&w.level!=='known');
+  if(pool.length<4){
+    const all=W.filter(w=>w.isUserAdded);
+    if(all.length<4){notify('Потрібно мінімум 4 слова в «Мої Слова!»','err');return;}
+  }
+  // Тимчасово підміняємо пул — перевизначаємо startQuiz щоб використав наш пул
+  const origW=W;
+  // Запускаємо startQuiz зі стандартним алгоритмом але з фільтром на isUserAdded
+  qDir=document.getElementById('qDir')?.value||'uk2en';
+  const cnt=parseInt(document.getElementById('qCnt')?.value||'10');
+  let p=W.filter(w=>w.isUserAdded&&w.level!=='known');
+  if(p.length<4)p=W.filter(w=>w.isUserAdded);
+  if(p.length<4){notify('Потрібно мінімум 4 власних слова','err');return;}
+  qS=p.sort(()=>Math.random()-0.5).slice(0,Math.min(cnt,p.length));
+  qI=0;qMiss=[];
+  initLives();
+  sv('qSetup',false);sv('qRes',false);
+  document.getElementById('qSess').style.display='block';
+  sessActive.quiz=true;
+  renderQQ();
+}
+
+function startMatchMyWords(){
+  const pairCount=parseInt(document.getElementById('mPairCount')?.value||'8');
+  let pool=W.filter(w=>w.isUserAdded&&w.level!=='known');
+  if(pool.length<4)pool=W.filter(w=>w.isUserAdded);
+  if(pool.length<4){notify('Потрібно мінімум 4 власних слова','err');return;}
+  mP=pool.sort(()=>Math.random()-0.5).slice(0,Math.min(pairCount,pool.length));
+  mSel=null;mDone=0;mSec=0;mErrors=0;mFirstSel=null;mCorrect=0;mPaused=false;
+  clearInterval(mTi);mTi=setInterval(()=>{mSec++;document.getElementById('mTimer').textContent=mSec+'s';},1000);
+  sv('mSetup',false);sv('mRes',false);
+  document.getElementById('mSess').style.display='block';
+  sessActive.match=true;
+  renderMG();
+}
+
+/* MY WORDS PAGE */
+function renderMyWords(){
+  const q=(document.getElementById('mywordsSearch')?.value||'').toLowerCase().trim();
+  const lvl=document.getElementById('mywordsLevel')?.value||'';
+  let words=W.filter(w=>w.isUserAdded);
+  if(lvl)words=words.filter(w=>w.level===lvl);
+  if(q)words=words.filter(w=>w.uk.toLowerCase().includes(q)||w.en.toLowerCase().includes(q));
+  words=[...words].sort((a,b)=>new Date(b.added||0)-new Date(a.added||0));
+  const el=document.getElementById('mywordsList');
+  const cnt=document.getElementById('mywordsCnt');
+  const total=W.filter(w=>w.isUserAdded).length;
+  if(cnt)cnt.textContent=words.length+(q||lvl?' з '+total:'')+' слів';
+  if(!words.length){
+    el.innerHTML="<div class='empty'><div style='font-size:2.5rem;margin-bottom:12px'>★</div><h3>"+(total===0?'Ще немає доданих слів':'Нічого не знайдено')+"</h3><p>"+(total===0?'Додай перше слово через «Додати слово»':'Спробуй інший фільтр')+"</p></div>";
+    return;
+  }
+  const e2=s=>(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');
+  el.innerHTML=words.map(w=>`
+    <div class="wrow">
+      <div class="wrow-main">
+        <span class="wuk">${w.uk}</span><span class="wsep"></span>
+        <span class="wen">${w.en}</span>
+        <span class="wlvl l${w.level}">${lvlL(w.level)}</span>
+      </div>
+      <div class="wrow-actions">
+        <button class="wact wact-spk" onclick="speak('${e2(w.uk)}','uk')">UA</button>
+        <button class="wact wact-spk" onclick="speak('${e2(w.en)}','en')">EN</button>
+        <button class="wact" onclick="showWordStats(${w.id})">&#9432;</button>
+        <button class="wact" onclick="editW(${w.id})">ред</button>
+        <button class="wact wact-del" onclick="delW(${w.id})">&#10005;</button>
+      </div>
+    </div>`).join('');
+}
+
+function syncDemoWords(){
+  const pastDate=new Date();pastDate.setDate(pastDate.getDate()-30);
+  const pd=pastDate.toISOString();
+  let added=0;
+  DEMO_WORDS.forEach(d=>{
+    if(!W.find(w=>w.uk===d.uk&&w.en===d.en)){
+      W.push({id:Date.now()+Math.random()*999|0,...d,cat:'general',level:'new',
+        added:pd,nextReview:pd,reviewCount:0,correctCount:0,interval:1,
+        easeFactor:2.5,correctStreak:0,isDefault:true});
+      added++;
+    }
+  });
+  if(added>0){sW();renderDict();updateHome();updateFlashSetup();
+    if(W.filter(w=>!w.isDefault).length===0)notify(added+' базових слів додано!');
+  }
+}
 function sv(id,v){
   const el=document.getElementById(id);
   if(!el)return;
@@ -3886,6 +4180,78 @@ const COURSE_LEVELS=[
     {uk:'аргумент',en:'argument'},{uk:'висновок',en:'conclusion'},{uk:'дослідження',en:'research'},{uk:'принцип',en:'principle'},{uk:'концепція',en:'concept'},
     {uk:'інновація',en:'innovation'},{uk:'трансформація',en:'transformation'},{uk:'інтеграція',en:'integration'},{uk:'оптимізація',en:'optimization'},{uk:'масштабування',en:'scaling'},
   ]},
+  {id:13,emoji:'🍎',title:'Рівень 13 — Їжа і напої',sub:'Продукти, страви, напої',color:'#ef4444',words:[
+    {uk:'сніданок',en:'breakfast'},{uk:'обід',en:'lunch'},{uk:'вечеря',en:'dinner'},{uk:'закуска',en:'snack'},{uk:'десерт',en:'dessert'},
+    {uk:'рис',en:'rice'},{uk:'макарони',en:'pasta'},{uk:'суп',en:'soup'},{uk:'салат',en:'salad'},{uk:'пицца',en:'pizza'},
+    {uk:'курка',en:'chicken'},{uk:'яловичина',en:'beef'},{uk:'свинина',en:'pork'},{uk:'риба',en:'fish'},{uk:'яйце',en:'egg'},
+    {uk:'картопля',en:'potato'},{uk:'морква',en:'carrot'},{uk:'цибуля',en:'onion'},{uk:'часник',en:'garlic'},{uk:'помідор',en:'tomato'},
+    {uk:'огірок',en:'cucumber'},{uk:'капуста',en:'cabbage'},{uk:'апельсин',en:'orange'},{uk:'банан',en:'banana'},{uk:'полуниця',en:'strawberry'},
+    {uk:'виноград',en:'grape'},{uk:'лимон',en:'lemon'},{uk:'сік',en:'juice'},{uk:'вино',en:'wine'},{uk:'пиво',en:'beer'},
+    {uk:'смажений',en:'fried'},{uk:'варений',en:'boiled'},{uk:'запечений',en:'baked'},{uk:'солоний',en:'salty'},{uk:'солодкий',en:'sweet'},
+  ]},
+  {id:14,emoji:'🐘',title:'Рівень 14 — Тварини',sub:'Домашні, дикі, морські',color:'#14b8a6',words:[
+    {uk:'кіт',en:'cat'},{uk:'собака',en:'dog'},{uk:'кінь',en:'horse'},{uk:'корова',en:'cow'},{uk:'свиня',en:'pig'},
+    {uk:'вівця',en:'sheep'},{uk:'курка',en:'hen'},{uk:'качка',en:'duck'},{uk:'кролик',en:'rabbit'},{uk:'миша',en:'mouse'},
+    {uk:'лев',en:'lion'},{uk:'тигр',en:'tiger'},{uk:'слон',en:'elephant'},{uk:'жираф',en:'giraffe'},{uk:'зебра',en:'zebra'},
+    {uk:'ведмідь',en:'bear'},{uk:'вовк',en:'wolf'},{uk:'лисиця',en:'fox'},{uk:'заєць',en:'hare'},{uk:'олень',en:'deer'},
+    {uk:'орел',en:'eagle'},{uk:'папуга',en:'parrot'},{uk:'сова',en:'owl'},{uk:'пінгвін',en:'penguin'},{uk:'дельфін',en:'dolphin'},
+    {uk:'акула',en:'shark'},{uk:'кит',en:'whale'},{uk:'жаба',en:'frog'},{uk:'змія',en:'snake'},{uk:'черепаха',en:'turtle'},
+    {uk:'мавпа',en:'monkey'},{uk:'крокодил',en:'crocodile'},{uk:'верблюд',en:'camel'},{uk:'кенгуру',en:'kangaroo'},{uk:'коала',en:'koala'},
+  ]},
+  {id:15,emoji:'🌍',title:'Рівень 15 — Подорожі',sub:'Туризм, транспорт, готелі',color:'#f97316',words:[
+    {uk:'подорож',en:'travel'},{uk:'туризм',en:'tourism'},{uk:'турист',en:'tourist'},{uk:'відпустка',en:'vacation'},{uk:'паспорт',en:'passport'},
+    {uk:'віза',en:'visa'},{uk:'митниця',en:'customs'},{uk:'валюта',en:'currency'},{uk:'обмін',en:'exchange'},{uk:'страхування',en:'insurance'},
+    {uk:'бронювання',en:'booking'},{uk:'реєстрація',en:'check-in'},{uk:'номер',en:'room number'},{uk:'ключ-картка',en:'key card'},{uk:'поверх',en:'floor'},
+    {uk:'ліфт',en:'elevator'},{uk:'ресепшн',en:'reception'},{uk:'портье',en:'porter'},{uk:'чайові',en:'tip'},{uk:'рахунок',en:'bill'},
+    {uk:'пляж',en:'beach'},{uk:'гора',en:'mountain'},{uk:'водоспад',en:'waterfall'},{uk:'замок',en:'castle'},{uk:'пам\'ятка',en:'landmark'},
+    {uk:'сувенір',en:'souvenir'},{uk:'фотографія',en:'photo'},{uk:'карта',en:'map'},{uk:'гід',en:'guide'},{uk:'екскурсія',en:'tour'},
+    {uk:'затримка',en:'delay'},{uk:'розклад',en:'schedule'},{uk:'посадка',en:'boarding'},{uk:'рейс',en:'flight'},{uk:'пересадка',en:'transfer'},
+  ]},
+  {id:16,emoji:'🏥',title:'Рівень 16 — Здоров\'я і тіло',sub:'Медицина, частини тіла',color:'#06b6d4',words:[
+    {uk:'голова',en:'head'},{uk:'обличчя',en:'face'},{uk:'очі',en:'eyes'},{uk:'ніс',en:'nose'},{uk:'рот',en:'mouth'},
+    {uk:'вухо',en:'ear'},{uk:'шия',en:'neck'},{uk:'плече',en:'shoulder'},{uk:'рука',en:'arm'},{uk:'палець',en:'finger'},
+    {uk:'спина',en:'back'},{uk:'живіт',en:'stomach'},{uk:'нога',en:'leg'},{uk:'коліно',en:'knee'},{uk:'стопа',en:'foot'},
+    {uk:'серце',en:'heart'},{uk:'легені',en:'lungs'},{uk:'мозок',en:'brain'},{uk:'кров',en:'blood'},{uk:'шкіра',en:'skin'},
+    {uk:'хвороба',en:'illness'},{uk:'симптом',en:'symptom'},{uk:'біль',en:'pain'},{uk:'температура',en:'temperature'},{uk:'ліки',en:'medicine'},
+    {uk:'таблетка',en:'pill'},{uk:'рецепт',en:'prescription'},{uk:'алергія',en:'allergy'},{uk:'операція',en:'surgery'},{uk:'одужання',en:'recovery'},
+    {uk:'здоровий',en:'healthy'},{uk:'хворий',en:'sick'},{uk:'стомлений',en:'tired'},{uk:'бадьорий',en:'energetic'},{uk:'кашель',en:'cough'},
+  ]},
+  {id:17,emoji:'🎓',title:'Рівень 17 — Освіта',sub:'Школа, університет, навчання',color:'#6366f1',words:[
+    {uk:'школа',en:'school'},{uk:'клас',en:'class'},{uk:'урок',en:'lesson'},{uk:'предмет',en:'subject'},{uk:'домашнє завдання',en:'homework'},
+    {uk:'іспит',en:'exam'},{uk:'оцінка',en:'grade'},{uk:'диплом',en:'diploma'},{uk:'ступінь',en:'degree'},{uk:'університет',en:'university'},
+    {uk:'студент',en:'student'},{uk:'викладач',en:'lecturer'},{uk:'лекція',en:'lecture'},{uk:'семінар',en:'seminar'},{uk:'бібліотека',en:'library'},
+    {uk:'підручник',en:'textbook'},{uk:'зошит',en:'notebook'},{uk:'ручка',en:'pen'},{uk:'олівець',en:'pencil'},{uk:'дошка',en:'board'},
+    {uk:'математика',en:'mathematics'},{uk:'фізика',en:'physics'},{uk:'хімія',en:'chemistry'},{uk:'біологія',en:'biology'},{uk:'географія',en:'geography'},
+    {uk:'історія',en:'history'},{uk:'мистецтво',en:'art'},{uk:'музика',en:'music'},{uk:'фізкультура',en:'PE'},{uk:'іноземна мова',en:'foreign language'},
+    {uk:'дослідження',en:'research'},{uk:'наука',en:'science'},{uk:'знання',en:'knowledge'},{uk:'розуміння',en:'understanding'},{uk:'практика',en:'practice'},
+  ]},
+  {id:18,emoji:'🏠',title:'Рівень 18 — Дім і меблі',sub:'Кімнати, меблі, побутова техніка',color:'#84cc16',words:[
+    {uk:'вітальня',en:'living room'},{uk:'спальня',en:'bedroom'},{uk:'кухня',en:'kitchen'},{uk:'ванна кімната',en:'bathroom'},{uk:'балкон',en:'balcony'},
+    {uk:'підвал',en:'basement'},{uk:'горище',en:'attic'},{uk:'гараж',en:'garage'},{uk:'двір',en:'yard'},{uk:'паркан',en:'fence'},
+    {uk:'диван',en:'sofa'},{uk:'крісло',en:'armchair'},{uk:'шафа',en:'wardrobe'},{uk:'полиця',en:'shelf'},{uk:'килим',en:'carpet'},
+    {uk:'фіранка',en:'curtain'},{uk:'подушка',en:'pillow'},{uk:'ковдра',en:'blanket'},{uk:'простирадло',en:'sheet'},{uk:'дзеркало',en:'mirror'},
+    {uk:'мікрохвильовка',en:'microwave'},{uk:'пральна машина',en:'washing machine'},{uk:'посудомийка',en:'dishwasher'},{uk:'пилосос',en:'vacuum cleaner'},{uk:'праска',en:'iron'},
+    {uk:'батарея',en:'radiator'},{uk:'кондиціонер',en:'air conditioner'},{uk:'вентилятор',en:'fan'},{uk:'розетка',en:'socket'},{uk:'вимикач',en:'switch'},
+    {uk:'прибирати',en:'clean'},{uk:'мити',en:'wash'},{uk:'готувати',en:'cook'},{uk:'ремонт',en:'renovation'},{uk:'оренда',en:'rent'},
+  ]},
+  {id:19,emoji:'💪',title:'Рівень 19 — Спорт і дозвілля',sub:'Активний відпочинок, хобі',color:'#f59e0b',words:[
+    {uk:'спорт',en:'sport'},{uk:'футбол',en:'football'},{uk:'баскетбол',en:'basketball'},{uk:'теніс',en:'tennis'},{uk:'плавання',en:'swimming'},
+    {uk:'біг',en:'running'},{uk:'велоспорт',en:'cycling'},{uk:'гімнастика',en:'gymnastics'},{uk:'бокс',en:'boxing'},{uk:'йога',en:'yoga'},
+    {uk:'тренування',en:'training'},{uk:'спортзал',en:'gym'},{uk:'стадіон',en:'stadium'},{uk:'команда',en:'team'},{uk:'гравець',en:'player'},
+    {uk:'тренер',en:'coach'},{uk:'перемога',en:'victory'},{uk:'поразка',en:'defeat'},{uk:'нічия',en:'draw'},{uk:'чемпіон',en:'champion'},
+    {uk:'музика',en:'music'},{uk:'читання',en:'reading'},{uk:'малювання',en:'drawing'},{uk:'фотографія',en:'photography'},{uk:'подорож',en:'travel'},
+    {uk:'кіно',en:'cinema'},{uk:'театр',en:'theatre'},{uk:'концерт',en:'concert'},{uk:'виставка',en:'exhibition'},{uk:'ігри',en:'games'},
+    {uk:'хобі',en:'hobby'},{uk:'відпочинок',en:'rest'},{uk:'розваги',en:'entertainment'},{uk:'пригода',en:'adventure'},{uk:'захоплення',en:'passion'},
+  ]},
+  {id:20,emoji:'💬',title:'Рівень 20 — Розмовна мова',sub:'Фрази, вирази, ввічливість',color:'#ec4899',words:[
+    {uk:'вибачте',en:'excuse me'},{uk:'перепрошую',en:'sorry'},{uk:'будь ласка',en:'please'},{uk:'дякую',en:'thank you'},{uk:'немає за що',en:'you\'re welcome'},
+    {uk:'добрий ранок',en:'good morning'},{uk:'добрий день',en:'good afternoon'},{uk:'добрий вечір',en:'good evening'},{uk:'на добраніч',en:'good night'},{uk:'до побачення',en:'goodbye'},
+    {uk:'як справи',en:'how are you'},{uk:'все добре',en:'I\'m fine'},{uk:'чудово',en:'great'},{uk:'непогано',en:'not bad'},{uk:'на жаль',en:'unfortunately'},
+    {uk:'звичайно',en:'of course'},{uk:'можливо',en:'maybe'},{uk:'точно',en:'exactly'},{uk:'не знаю',en:'I don\'t know'},{uk:'розумію',en:'I understand'},
+    {uk:'повторіть',en:'please repeat'},{uk:'говоріть повільніше',en:'speak slowly'},{uk:'як це перекласти',en:'how to translate this'},{uk:'що це означає',en:'what does it mean'},{uk:'я вчу англійську',en:'I\'m learning English'},
+    {uk:'скільки коштує',en:'how much does it cost'},{uk:'де знаходиться',en:'where is'},{uk:'коли відкривається',en:'when does it open'},{uk:'як дістатися',en:'how to get to'},{uk:'допоможіть мені',en:'help me'},
+    {uk:'не розумію',en:'I don\'t understand'},{uk:'чудова ідея',en:'great idea'},{uk:'згоден',en:'I agree'},{uk:'не згоден',en:'I disagree'},{uk:'давайте спробуємо',en:'let\'s try'},
+  ]},
 ];
 
 function getCourseProgress(){
@@ -3976,7 +4342,8 @@ function addLevelWords(id){
     if(!W.find(w=>w.uk===cw.uk&&w.en===cw.en)){
       W.unshift({id:Date.now()+Math.random()*999|0,uk:cw.uk,en:cw.en,cat:'course-'+id,level:'new',
         added:new Date().toISOString(),nextReview:new Date().toISOString(),
-        reviewCount:0,correctCount:0,interval:1,easeFactor:2.5,correctStreak:0});
+        reviewCount:0,correctCount:0,interval:1,easeFactor:2.5,correctStreak:0,
+        isCourseWord:true,isUserAdded:false,isDefault:false});
       added++;
     }
   });
@@ -3988,7 +4355,8 @@ function addSingleCourseWord(uk,en,lvlId){
   if(W.find(w=>w.uk===uk&&w.en===en)){notify('Слово вже є','info');return;}
   W.unshift({id:Date.now()+Math.random()*999|0,uk,en,cat:'course-'+lvlId,level:'new',
     added:new Date().toISOString(),nextReview:new Date().toISOString(),
-    reviewCount:0,correctCount:0,interval:1,easeFactor:2.5,correctStreak:0});
+    reviewCount:0,correctCount:0,interval:1,easeFactor:2.5,correctStreak:0,
+    isCourseWord:true,isUserAdded:false,isDefault:false});
   sW();updateHome();renderCourse();
   notify(`"${uk}" = "${en}" додано`);
 }
@@ -4009,11 +4377,13 @@ function startCourseLevel(lvlId){
   const lvl=COURSE_LEVELS.find(l=>l.id===lvlId);
   if(!lvl)return;
   cqIsRepeat=false;
+  // Додаємо слова рівня в словник якщо ще немає, позначаємо як isCourseWord
   lvl.words.forEach(cw=>{
     if(!W.find(w=>w.uk===cw.uk&&w.en===cw.en)){
       W.unshift({id:Date.now()+Math.random()*999|0,uk:cw.uk,en:cw.en,cat:'course-'+lvlId,level:'new',
         added:new Date().toISOString(),nextReview:new Date().toISOString(),
-        reviewCount:0,correctCount:0,interval:1,easeFactor:2.5,correctStreak:0});
+        reviewCount:0,correctCount:0,interval:1,easeFactor:2.5,correctStreak:0,
+        isCourseWord:true,isUserAdded:false,isDefault:false});
     }
   });
   sW();
@@ -4130,7 +4500,8 @@ function showCQResult(){
           }
         }catch(e){}
       }
-      setTimeout(()=>notify(`Рівень ${cqLvlId} пройдено! 🎓 Рівень ${cqLvlId+1} відкрито!`,'ok'),600);
+      const nextLvl=COURSE_LEVELS.find(l=>l.id===cqLvlId+1);
+      setTimeout(()=>notify(nextLvl?`Рівень ${cqLvlId} пройдено! 🎓 Рівень ${cqLvlId+1} відкрито!`:`Рівень ${cqLvlId} пройдено! 🎓 Всі рівні завершено!`,'ok'),600);
       showCelebration();
     }
   }
